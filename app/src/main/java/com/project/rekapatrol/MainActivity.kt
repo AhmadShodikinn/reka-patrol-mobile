@@ -12,6 +12,7 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.project.rekapatrol.ui.screen.DetailInputInspeksiScreen
 import com.project.rekapatrol.ui.screen.HasilInspeksiScreen
 import com.project.rekapatrol.ui.screen.HasilSafetyPatrolScreen
 import com.project.rekapatrol.ui.screen.InputInspeksiScreen
@@ -53,18 +54,27 @@ class MainActivity : ComponentActivity() {
 
             composable("mainMenu") {
                 MainMenuScreen(
-//                    onNavigate = { route ->
-//                        navController.navigate(route)
-//                    }
+                    onNavigate = { route ->
+                        navController.navigate(route)
+                    }
                 )
             }
 
             composable("inputSafetyPatrol") { InputSafetyPatrolScreen() }
             composable("hasilSafetyPatrol") { HasilSafetyPatrolScreen() }
             composable("tindakLanjutSafetyPatrol") { TindakLanjutSafetyPatrolScreen() }
-            composable("inputInspeksi") { InputInspeksiScreen() }
+            composable("inputInspeksi") { InputInspeksiScreen(navController = navController) }
             composable("hasilInspeksi") { HasilInspeksiScreen() }
             composable("jsa") { JSAScreen() }
+
+            // Menambahkan rute untuk halaman detail input inspeksi
+            composable("detailInputInspeksi/{kriteria}") { backStackEntry ->
+                val kriteria = backStackEntry.arguments?.getString("kriteria")
+                kriteria?.let {
+                    DetailInputInspeksiScreen(kriteria = it)
+                }
+            }
         }
     }
+
 }

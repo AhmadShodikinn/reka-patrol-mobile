@@ -23,7 +23,7 @@ import com.project.rekapatrol.R
 import com.project.rekapatrol.ui.theme.cream
 
 @Composable
-fun MainMenuScreen() {
+fun MainMenuScreen(onNavigate: (String) -> Unit) {
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -101,15 +101,18 @@ fun MainMenuScreen() {
                         ) {
                             MenuButton(
                                 iconId = R.drawable.ic_inspeksi1,
-                                label = "Input Inspeksi 5R"
+                                label = "Input Inspeksi 5R",
+                                onClick = { onNavigate("inputInspeksi") }
                             )
                             MenuButton(
                                 iconId = R.drawable.ic_inspeksi2,
-                                label = "Hasil Inspeksi 5R"
+                                label = "Hasil Inspeksi 5R",
+                                onClick = { onNavigate("inputInspeksi") }
                             )
                             MenuButton(
                                 iconId = R.drawable.ic_documentjsa,
-                                label = "Dokumen JSA"
+                                label = "Dokumen JSA",
+                                onClick = { onNavigate("inputInspeksi") }
                             )
                         }
 
@@ -121,15 +124,18 @@ fun MainMenuScreen() {
                         ) {
                             MenuButton(
                                 iconId = R.drawable.ic_patrol1,
-                                label = "Input Inspeksi Patrol"
+                                label = "Input Inspeksi Patrol",
+                                onClick = { onNavigate("inputSafetyPatrol") }
                             )
                             MenuButton(
                                 iconId = R.drawable.ic_patrol2,
-                                label = "Hasil Inspeksi Patrol"
+                                label = "Hasil Inspeksi Patrol",
+                                onClick = { onNavigate("inputSafetyPatrol") }
                             )
                             MenuButton(
                                 iconId = R.drawable.ic_exit,
-                                label = "Keluar"
+                                label = "Keluar",
+                                onClick = { onNavigate("inputSafetyPatrol") }
                             )
                         }
                     }
@@ -141,10 +147,12 @@ fun MainMenuScreen() {
 }
 
 @Composable
-fun MenuButton(iconId: Int, label: String) {
+fun MenuButton(iconId: Int, label: String, onClick: () -> Unit) {
     Column(
         modifier = Modifier
-            .size(150.dp),
+            .size(150.dp)
+            .size(150.dp)
+            .clickable { onClick() },
         verticalArrangement = Arrangement.Center
     ) {
         Box(
@@ -173,9 +181,10 @@ fun MenuButton(iconId: Int, label: String) {
 }
 
 
-@Preview(showSystemUi = true)
-@Composable
-fun MainMenuPreview() {
-    MainMenuScreen()
-}
+
+//@Preview(showSystemUi = true)
+//@Composable
+//fun MainMenuPreview() {
+//    MainMenuScreen()
+//}
 
