@@ -12,6 +12,14 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.project.rekapatrol.ui.screen.HasilInspeksiScreen
+import com.project.rekapatrol.ui.screen.HasilSafetyPatrolScreen
+import com.project.rekapatrol.ui.screen.InputInspeksiScreen
+import com.project.rekapatrol.ui.screen.InputSafetyPatrolScreen
+import com.project.rekapatrol.ui.screen.JSAScreen
+import com.project.rekapatrol.ui.screen.LoginScreen
+import com.project.rekapatrol.ui.screen.MainMenuScreen
+import com.project.rekapatrol.ui.screen.TindakLanjutSafetyPatrolScreen
 import com.project.rekapatrol.ui.theme.RekapatrolTheme
 
 class MainActivity : ComponentActivity() {
@@ -36,16 +44,27 @@ class MainActivity : ComponentActivity() {
 
         NavHost(navController = navController, startDestination = "loginScreen" ) {
             composable("loginScreen") {
-//                LoginScreen(onLoginSuccess = {
-//                    navController.navigate("mainMenu") {
-//                        popUpTo("login") { inclusive = true } // optional: remove login from backstack
-//                    }
-//                })
+                LoginScreen(onLoginSuccess = {
+                    navController.navigate("mainMenu") {
+                        popUpTo("login") { inclusive = true } // optional: remove login from backstack
+                    }
+                })
             }
 
             composable("mainMenu") {
-//                MainMenu()
+                MainMenuScreen(
+//                    onNavigate = { route ->
+//                        navController.navigate(route)
+//                    }
+                )
             }
+
+            composable("inputSafetyPatrol") { InputSafetyPatrolScreen() }
+            composable("hasilSafetyPatrol") { HasilSafetyPatrolScreen() }
+            composable("tindakLanjutSafetyPatrol") { TindakLanjutSafetyPatrolScreen() }
+            composable("inputInspeksi") { InputInspeksiScreen() }
+            composable("hasilInspeksi") { HasilInspeksiScreen() }
+            composable("jsa") { JSAScreen() }
         }
     }
 }
