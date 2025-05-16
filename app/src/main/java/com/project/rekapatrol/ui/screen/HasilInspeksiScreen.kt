@@ -16,6 +16,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
 import com.project.rekapatrol.ui.theme.cream
 import com.project.rekapatrol.ui.theme.disabled
 import com.project.rekapatrol.ui.theme.skyblue
@@ -30,7 +32,7 @@ data class InspeksiResult(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HasilInspeksiScreen(
-    onBack: () -> Unit = {},
+    navController: NavController,
     onAddClick: () -> Unit = {}
 ) {
     val inspeksiResults = listOf(
@@ -65,7 +67,7 @@ fun HasilInspeksiScreen(
                     navigationIconContentColor = Color.White
                 ),
                 navigationIcon = {
-                    IconButton(onClick = { onBack() }) {
+                    IconButton(onClick = { navController.popBackStack() }) {
                         Icon(Icons.Default.ArrowBack, contentDescription = "Kembali")
                     }
                 }
@@ -133,5 +135,5 @@ fun InspeksiCard(item: InspeksiResult) {
 @Preview(showSystemUi = true)
 @Composable
 fun HasilInspeksiScreenPreview() {
-    HasilInspeksiScreen()
+    HasilInspeksiScreen(navController = rememberNavController())
 }

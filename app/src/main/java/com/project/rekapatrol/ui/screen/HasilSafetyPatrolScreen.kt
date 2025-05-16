@@ -18,6 +18,8 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.material3.Card
 import androidx.compose.material3.Text
 import androidx.compose.ui.text.font.FontWeight
+import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
 import com.project.rekapatrol.ui.theme.cream
 import com.project.rekapatrol.ui.theme.disabled
 import com.project.rekapatrol.ui.theme.skyblue
@@ -35,7 +37,7 @@ data class InspectionResult(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HasilSafetyPatrolScreen(
-    onBack: () -> Unit = {},
+    navController: NavController,
     onAddClick: () -> Unit = {}
 ) {
     val inspectionResults = listOf(
@@ -62,7 +64,7 @@ fun HasilSafetyPatrolScreen(
                     navigationIconContentColor = Color.White
                 ),
                 navigationIcon = {
-                    IconButton(onClick = { onBack() }) {
+                    IconButton(onClick = { navController.popBackStack() }) {
                         Icon(Icons.Default.ArrowBack, contentDescription = "Kembali")
                     }
                 },
@@ -144,5 +146,5 @@ fun InspectionCard(result: InspectionResult) {
 @Preview(showSystemUi = true)
 @Composable
 fun HasilSafetyPatrolScreenPreview() {
-    HasilSafetyPatrolScreen()
+    HasilSafetyPatrolScreen(navController = rememberNavController())
 }

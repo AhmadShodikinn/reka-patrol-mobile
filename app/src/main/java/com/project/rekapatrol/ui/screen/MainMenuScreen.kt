@@ -107,12 +107,12 @@ fun MainMenuScreen(onNavigate: (String) -> Unit) {
                             MenuButton(
                                 iconId = R.drawable.ic_inspeksi2,
                                 label = "Hasil Inspeksi 5R",
-                                onClick = { onNavigate("inputInspeksi") }
+                                onClick = { onNavigate("hasilInspeksi") }
                             )
                             MenuButton(
                                 iconId = R.drawable.ic_documentjsa,
                                 label = "Dokumen JSA",
-                                onClick = { onNavigate("inputInspeksi") }
+                                onClick = { onNavigate("jsa") }
                             )
                         }
 
@@ -130,7 +130,7 @@ fun MainMenuScreen(onNavigate: (String) -> Unit) {
                             MenuButton(
                                 iconId = R.drawable.ic_patrol2,
                                 label = "Hasil Inspeksi Patrol",
-                                onClick = { onNavigate("inputSafetyPatrol") }
+                                onClick = { onNavigate("hasilSafetyPatrol") }
                             )
                             MenuButton(
                                 iconId = R.drawable.ic_exit,

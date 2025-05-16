@@ -21,6 +21,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
 import com.project.rekapatrol.R
 import com.project.rekapatrol.ui.theme.cream
 import com.project.rekapatrol.ui.theme.skyblue
@@ -28,7 +30,7 @@ import java.util.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun DetailInputInspeksiScreen(kriteria: String, onBack: () -> Unit = {}) {
+fun DetailInputInspeksiScreen(kriteria: String, navController: NavController) {
     val context = LocalContext.current
 
     // Form state
@@ -77,7 +79,7 @@ fun DetailInputInspeksiScreen(kriteria: String, onBack: () -> Unit = {}) {
                     navigationIconContentColor = Color.White
                 ),
                 navigationIcon = {
-                    IconButton(onClick = { onBack() }) {
+                    IconButton(onClick = { navController.popBackStack() }) {
                         Icon(Icons.Default.ArrowBack, contentDescription = "Kembali")
                     }
                 },
@@ -281,5 +283,5 @@ fun DetailInputInspeksiScreen(kriteria: String, onBack: () -> Unit = {}) {
 @Preview(showSystemUi = true)
 @Composable
 fun DetailInputInspeksiScreenPreview() {
-    DetailInputInspeksiScreen(kriteria = "Ringkas") {}
+    DetailInputInspeksiScreen(kriteria = "Ringkas", navController = rememberNavController())
 }

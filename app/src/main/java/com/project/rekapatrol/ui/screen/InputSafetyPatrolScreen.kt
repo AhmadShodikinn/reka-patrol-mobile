@@ -23,6 +23,8 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
 import com.project.rekapatrol.R
 import com.project.rekapatrol.ui.theme.cream
 import com.project.rekapatrol.ui.theme.skyblue
@@ -30,7 +32,7 @@ import java.util.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun InputSafetyPatrolScreen(onBack: () -> Unit = {}) {
+fun InputSafetyPatrolScreen(navController: NavController) {
     val context = LocalContext.current
 
     var temuan by remember { mutableStateOf("") }
@@ -75,7 +77,7 @@ fun InputSafetyPatrolScreen(onBack: () -> Unit = {}) {
                     navigationIconContentColor = Color.White
                 ),
                 navigationIcon = {
-                    IconButton(onClick = { onBack() }) {
+                    IconButton(onClick = { navController.popBackStack() }) {
                         Icon(Icons.Default.ArrowBack, contentDescription = "Kembali")
                     }
                 },
@@ -227,5 +229,5 @@ fun InputSafetyPatrolScreen(onBack: () -> Unit = {}) {
 @Preview(showSystemUi = true)
 @Composable
 fun InputSafetyScreenPreview() {
-    InputSafetyPatrolScreen()
+    InputSafetyPatrolScreen(navController = rememberNavController())
 }

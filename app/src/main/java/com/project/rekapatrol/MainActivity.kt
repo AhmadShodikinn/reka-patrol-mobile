@@ -60,18 +60,18 @@ class MainActivity : ComponentActivity() {
                 )
             }
 
-            composable("inputSafetyPatrol") { InputSafetyPatrolScreen() }
-            composable("hasilSafetyPatrol") { HasilSafetyPatrolScreen() }
-            composable("tindakLanjutSafetyPatrol") { TindakLanjutSafetyPatrolScreen() }
+            composable("inputSafetyPatrol") { InputSafetyPatrolScreen(navController = navController) }
+            composable("hasilSafetyPatrol") { HasilSafetyPatrolScreen(navController = navController) }
+            composable("tindakLanjutSafetyPatrol") { TindakLanjutSafetyPatrolScreen(navController = navController) }
             composable("inputInspeksi") { InputInspeksiScreen(navController = navController) }
-            composable("hasilInspeksi") { HasilInspeksiScreen() }
-            composable("jsa") { JSAScreen() }
+            composable("hasilInspeksi") { HasilInspeksiScreen(navController = navController) }
+            composable("jsa") { JSAScreen(navController = navController) }
 
             // Menambahkan rute untuk halaman detail input inspeksi
             composable("detailInputInspeksi/{kriteria}") { backStackEntry ->
                 val kriteria = backStackEntry.arguments?.getString("kriteria")
                 kriteria?.let {
-                    DetailInputInspeksiScreen(kriteria = it)
+                    DetailInputInspeksiScreen(kriteria = it, navController = rememberNavController())
                 }
             }
         }

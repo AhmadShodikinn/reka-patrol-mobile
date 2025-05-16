@@ -1,8 +1,133 @@
 package com.project.rekapatrol.ui.screen
 
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
+import com.project.rekapatrol.R
+import com.project.rekapatrol.ui.theme.cream
+import com.project.rekapatrol.ui.theme.skyblue
+
+data class JSAItem(
+    val title: String,
+    val date: String,
+    val imageRes: Int
+)
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun JSAScreen(navController: NavController) {
+    val jsaList = listOf(
+        JSAItem("JSA Pemasangan Tiang Listrik", "15/05/2025", R.drawable.ic_inspeksi2),
+        JSAItem("JSA Pekerjaan di Ketinggian", "12/05/2025", R.drawable.ic_inspeksi2),
+        JSAItem("JSA Penggalian Manual", "10/05/2025", R.drawable.ic_inspeksi2)
+    )
+
+    Scaffold(
+        topBar = {
+            CenterAlignedTopAppBar(
+                title = {
+                    Text(
+                        text = "Job Safety Analisis",
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight.Medium,
+                        color = Color.White
+                    )
+                },
+                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
+                    containerColor = cream,
+                    titleContentColor = Color.Black,
+                    navigationIconContentColor = Color.White
+                ),
+                navigationIcon = {
+                    IconButton(onClick = { navController.popBackStack() }) {
+                        Icon(Icons.Default.ArrowBack, contentDescription = "Kembali")
+                    }
+                }
+            )
+        },
+        containerColor = Color.White
+    ) { paddingValues ->
+        LazyColumn(
+            modifier = Modifier
+                .padding(paddingValues)
+                .fillMaxSize()
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            items(jsaList) { item ->
+                JSACard(item)
+            }
+        }
+    }
+}
 
 @Composable
-fun JSAScreen(){
+fun JSACard(item: JSAItem) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(80.dp),
+        shape = RoundedCornerShape(8.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            // Gambar
+            val image: Painter = painterResource(id = item.imageRes)
+            Image(
+                painter = image,
+                contentDescription = "Gambar JSA",
+                modifier = Modifier
+                    .size(50.dp)
+                    .aspectRatio(1f)
+            )
 
+            Spacer(modifier = Modifier.width(12.dp))
+
+            // Judul dan tanggal
+            Column(
+                verticalArrangement = Arrangement.Center,
+                modifier = Modifier.fillMaxHeight()
+            ) {
+                Text(
+                    text = item.title,
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Bold
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = item.date,
+                    fontSize = 14.sp,
+                    color = Color.Gray
+                )
+            }
+        }
+    }
+}
+
+@Composable
+@Preview(showSystemUi = true)
+fun JSAScreenPreview() {
+    JSAScreen(navController = rememberNavController())
 }
