@@ -1,6 +1,8 @@
 package com.project.rekapatrol.network
 
+import com.project.rekapatrol.data.request.InputSafetyPatrolsRequest
 import com.project.rekapatrol.data.request.LoginRequest
+import com.project.rekapatrol.data.response.InputSafetyPatrolsResponse
 import com.project.rekapatrol.data.response.LoginResponse
 import com.project.rekapatrol.data.response.LogoutResponse
 import retrofit2.Response
@@ -14,4 +16,8 @@ interface ApiService {
 
     @POST("logout")
     suspend fun authLogout(): Response<LogoutResponse>
+
+    @POST("safety-patrols")
+    suspend fun inputSafetyPatrols(@Body request: InputSafetyPatrolsRequest): Response<InputSafetyPatrolsResponse>
+
 }

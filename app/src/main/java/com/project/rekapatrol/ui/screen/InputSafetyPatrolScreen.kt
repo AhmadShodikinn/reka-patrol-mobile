@@ -2,6 +2,7 @@ package com.project.rekapatrol.ui.screen
 
 import android.app.DatePickerDialog
 import android.widget.DatePicker
+import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -13,6 +14,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -23,9 +25,13 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.project.rekapatrol.R
+import com.project.rekapatrol.data.repository.Repository
+import com.project.rekapatrol.data.viewModel.GeneralViewModel
+import com.project.rekapatrol.data.viewModelFactory.GeneralViewModelFactory
 import com.project.rekapatrol.ui.theme.cream
 import com.project.rekapatrol.ui.theme.skyblue
 import java.util.*
@@ -35,13 +41,17 @@ import java.util.*
 fun InputSafetyPatrolScreen(navController: NavController) {
     val context = LocalContext.current
 
+    val generalViewModel: GeneralViewModel = viewModel(
+        factory = GeneralViewModelFactory(context)
+    )
+
     var temuan by remember { mutableStateOf("") }
     var lokasi by remember { mutableStateOf("") }
     var kategori by remember { mutableStateOf("") }
     var resiko by remember { mutableStateOf("") }
     var tanggal by remember { mutableStateOf("") }
 
-    val kategoriOptions = listOf("Kebersihan", "Peralatan", "Keselamatan")
+    val kategoriOptions = listOf("UC", "CA")
     val resikoOptions = listOf("Rendah", "Sedang", "Tinggi")
 
     var expandedKategori by remember { mutableStateOf(false) }
@@ -50,37 +60,37 @@ fun InputSafetyPatrolScreen(navController: NavController) {
     val calendar = Calendar.getInstance()
     val datePickerDialog = DatePickerDialog(
         context,
-        { _: DatePicker, year: Int, month: Int, day: Int ->
-            tanggal = "$day/${month + 1}/$year"
+        { _, year, month, dayOfMonth ->
+            tanggal = "$year-${month + 1}-$dayOfMonth"
         },
         calendar.get(Calendar.YEAR),
         calendar.get(Calendar.MONTH),
         calendar.get(Calendar.DAY_OF_MONTH)
     )
 
-    val scrollState = rememberScrollState()
+    val result by generalViewModel.inputSafetyPatrolsResponse.observeAsState()
+
+    LaunchedEffect(result) {
+        result?.let {
+            Toast.makeText(context, "Berhasil submit data!", Toast.LENGTH_SHORT).show()
+            navController.popBackStack() // Kembali ke screen sebelumnya
+        }
+    }
 
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
                 title = {
-                    Text(
-                        text = "Input Safety Patrol",
-                        fontSize = 20.sp,
-                        fontWeight = FontWeight.Medium,
-                        color = Color.White
-                    )
+                    Text("Input Safety Patrol", color = Color.White)
                 },
                 colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
-                    containerColor = cream,
-                    titleContentColor = Color.Black,
-                    navigationIconContentColor = Color.White
+                    containerColor = cream
                 ),
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
                         Icon(Icons.Default.ArrowBack, contentDescription = "Kembali")
                     }
-                },
+                }
             )
         },
         containerColor = Color.White
@@ -90,9 +100,8 @@ fun InputSafetyPatrolScreen(navController: NavController) {
                 .padding(paddingValues)
                 .padding(16.dp)
                 .fillMaxSize()
-                .verticalScroll(scrollState),
+                .verticalScroll(rememberScrollState()),
             verticalArrangement = Arrangement.spacedBy(8.dp),
-            horizontalAlignment = Alignment.Start
         ) {
             OutlinedTextField(
                 value = temuan,
@@ -108,20 +117,24 @@ fun InputSafetyPatrolScreen(navController: NavController) {
                 modifier = Modifier.fillMaxWidth()
             )
 
-            // Gambar Dummy Upload
+            // Dummy gambar
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(100.dp)
+                    .height(180.dp)
                     .clickable {
-                        // Di sini nanti bisa pakai image picker
+                        // Nanti buka kamera atau galeri
+                        Toast
+                            .makeText(context, "Klik gambar untuk pilih dari kamera/galeri", Toast.LENGTH_SHORT)
+                            .show()
                     },
-                contentAlignment = Alignment.CenterStart
+                contentAlignment = Alignment.Center
             ) {
                 Image(
-                    painter = painterResource(id = R.drawable.ic_documentjsa), // placeholder image
+                    painter = painterResource(id = R.drawable.ic_documentjsa), // Gambar placeholder
                     contentDescription = "Upload Gambar",
-                    modifier = Modifier.size(100.dp)
+                    modifier = Modifier
+                        .size(120.dp)
                 )
             }
 
@@ -136,8 +149,9 @@ fun InputSafetyPatrolScreen(navController: NavController) {
                     readOnly = true,
                     label = { Text("Kategori") },
                     trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedKategori) },
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier
                         .menuAnchor()
+                        .fillMaxWidth()
                 )
                 ExposedDropdownMenu(
                     expanded = expandedKategori,
@@ -166,8 +180,9 @@ fun InputSafetyPatrolScreen(navController: NavController) {
                     readOnly = true,
                     label = { Text("Resiko") },
                     trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedResiko) },
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier
                         .menuAnchor()
+                        .fillMaxWidth()
                 )
                 ExposedDropdownMenu(
                     expanded = expandedResiko,
@@ -194,37 +209,41 @@ fun InputSafetyPatrolScreen(navController: NavController) {
                 modifier = Modifier
                     .fillMaxWidth()
                     .clickable {
+                        Toast.makeText(context, "Opening Date Picker", Toast.LENGTH_SHORT).show()
                         datePickerDialog.show()
                     }
             )
 
             Spacer(modifier = Modifier.height(24.dp))
-
+//token e gaada kang
             Button(
                 onClick = {
-                    // Handle simpan / submit data
+                    if (temuan.isNotBlank() && lokasi.isNotBlank() && kategori.isNotBlank() &&
+                        resiko.isNotBlank() && tanggal.isNotBlank()
+                    ) {
+                        generalViewModel.inputSafetyPatrol(
+                            finding_path = listOf("dummy_path.jpg"), // bisa kamu ganti dengan URI nanti
+                            finding_description = temuan,
+                            location = lokasi,
+                            category = kategori,
+                            risk = resiko,
+                            checkup_date = tanggal
+                        )
+                    } else {
+                        Toast.makeText(context, "Mohon lengkapi semua data", Toast.LENGTH_SHORT).show()
+                    }
                 },
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(50.dp),
                 shape = RoundedCornerShape(8.dp),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = skyblue,
-                    contentColor = Color.Black
-                )
+                colors = ButtonDefaults.buttonColors(containerColor = skyblue)
             ) {
-                Text(
-                    text = "Submit",
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Medium,
-                    color = Color.White
-                )
+                Text("Submit", color = Color.White)
             }
-
         }
     }
 }
-
 
 @Preview(showSystemUi = true)
 @Composable
