@@ -1,5 +1,6 @@
 package com.project.rekapatrol.ui.screen
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -89,7 +90,7 @@ fun HasilSafetyPatrolScreen(
                 .padding(16.dp)
         ) {
             items(inspectionResults) { result ->
-                InspectionCard(result)
+                InspectionCard(result, navController = navController)
                 Spacer(modifier = Modifier.height(8.dp))
             }
         }
@@ -97,9 +98,13 @@ fun HasilSafetyPatrolScreen(
 }
 
 @Composable
-fun InspectionCard(result: InspectionResult) {
+fun InspectionCard(result: InspectionResult, navController: NavController) {
     Card(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable {
+                   navController.navigate("tindakLanjutSafetyPatrol")
+            },
         shape = RoundedCornerShape(2.dp),
         colors = CardDefaults.cardColors(
             containerColor = if (result.isSolved) disabled else Color.White

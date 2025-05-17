@@ -1,5 +1,6 @@
 package com.project.rekapatrol.ui.screen
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -92,7 +93,7 @@ fun HasilInspeksiScreen(
                 .fillMaxSize()
         ) {
             items(inspeksiResults) { item ->
-                InspeksiCard(item)
+                InspeksiCard(item, navController = navController)
                 Spacer(modifier = Modifier.height(8.dp))
             }
         }
@@ -100,9 +101,13 @@ fun HasilInspeksiScreen(
 }
 
 @Composable
-fun InspeksiCard(item: InspeksiResult) {
+fun InspeksiCard(item: InspeksiResult, navController: NavController) {
     Card(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable {
+                navController.navigate("tindakLanjutInspeksi")
+            },
         shape = RoundedCornerShape(2.dp),
         colors = CardDefaults.cardColors(
             containerColor = if (item.isSolved) disabled else Color.White

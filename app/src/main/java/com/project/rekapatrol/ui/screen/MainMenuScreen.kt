@@ -1,5 +1,6 @@
 package com.project.rekapatrol.ui.screen
 
+import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -9,21 +10,44 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.project.rekapatrol.R
+import com.project.rekapatrol.data.viewModel.AuthViewModel
+import com.project.rekapatrol.data.viewModelFactory.AuthViewModelFactory
 import com.project.rekapatrol.ui.theme.cream
 
 @Composable
-fun MainMenuScreen(onNavigate: (String) -> Unit) {
+fun MainMenuScreen(
+    onNavigate: (String) -> Unit,
+    onLogoutSuccess: () -> Unit
+) {
+    val context = LocalContext.current
+
+    val authViewModel: AuthViewModel = viewModel(
+        factory = AuthViewModelFactory(context)
+    )
+    val logoutResult by authViewModel.authLogoutResult.observeAsState()
+
+    LaunchedEffect(logoutResult) {
+        logoutResult?.let {
+            Toast.makeText(context, "Logout berhasil!", Toast.LENGTH_SHORT).show()
+            onLogoutSuccess() // Navigasi ke login
+        }
+    }
+
+
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -39,7 +63,7 @@ fun MainMenuScreen(onNavigate: (String) -> Unit) {
                 .align(Alignment.TopCenter)
         )
 
-        Image(
+        Image( //bug aga keatas
             painter = painterResource(id = R.drawable.bg_vector3),
             contentDescription = "Vector Gelombang Bawah",
             modifier = Modifier
@@ -52,7 +76,7 @@ fun MainMenuScreen(onNavigate: (String) -> Unit) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(top=120.dp, start = 15.dp, end = 15.dp)
+                .padding(top = 120.dp, start = 15.dp, end = 15.dp)
                 .align(Alignment.BottomCenter),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
@@ -135,7 +159,7 @@ fun MainMenuScreen(onNavigate: (String) -> Unit) {
                             MenuButton(
                                 iconId = R.drawable.ic_exit,
                                 label = "Keluar",
-                                onClick = { onNavigate("inputSafetyPatrol") }
+                                onClick = { authViewModel.logout() }
                             )
                         }
                     }

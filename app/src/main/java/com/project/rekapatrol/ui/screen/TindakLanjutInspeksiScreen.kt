@@ -23,13 +23,15 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.material3.Text
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.res.painterResource
+import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
 import com.project.rekapatrol.R
 import com.project.rekapatrol.ui.theme.cream
 import com.project.rekapatrol.ui.theme.skyblue
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun TindakLanjutInspeksiScreen(onBack: () -> Unit = {}) {
+fun TindakLanjutInspeksiScreen(navController: NavController) {
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
@@ -47,7 +49,7 @@ fun TindakLanjutInspeksiScreen(onBack: () -> Unit = {}) {
                     navigationIconContentColor = Color.White
                 ),
                 navigationIcon = {
-                    IconButton(onClick = { onBack() }) {
+                    IconButton(onClick = { navController.popBackStack() }) {
                         Icon(Icons.Default.ArrowBack, contentDescription = "Kembali")
                     }
                 },
@@ -142,5 +144,5 @@ fun TindakLanjutInspeksiScreen(onBack: () -> Unit = {}) {
 @Preview(showSystemUi = true)
 @Composable
 fun TindakLanjutInspeksiScreenPreview() {
-    TindakLanjutInspeksiScreen()
+    TindakLanjutInspeksiScreen(navController = rememberNavController())
 }

@@ -20,6 +20,7 @@ import com.project.rekapatrol.ui.screen.InputSafetyPatrolScreen
 import com.project.rekapatrol.ui.screen.JSAScreen
 import com.project.rekapatrol.ui.screen.LoginScreen
 import com.project.rekapatrol.ui.screen.MainMenuScreen
+import com.project.rekapatrol.ui.screen.TindakLanjutInspeksiScreen
 import com.project.rekapatrol.ui.screen.TindakLanjutSafetyPatrolScreen
 import com.project.rekapatrol.ui.theme.RekapatrolTheme
 
@@ -47,15 +48,18 @@ class MainActivity : ComponentActivity() {
             composable("loginScreen") {
                 LoginScreen(onLoginSuccess = {
                     navController.navigate("mainMenu") {
-                        popUpTo("login") { inclusive = true } // optional: remove login from backstack
+                        popUpTo("login") { inclusive = true }
                     }
                 })
             }
 
             composable("mainMenu") {
                 MainMenuScreen(
-                    onNavigate = { route ->
-                        navController.navigate(route)
+                    onNavigate = { destination -> navController.navigate(destination) },
+                    onLogoutSuccess = {
+                        navController.navigate("login") {
+                            popUpTo("mainMenu") { inclusive = true } // Supaya back tidak kembali ke mainMenu
+                        }
                     }
                 )
             }
@@ -65,9 +69,9 @@ class MainActivity : ComponentActivity() {
             composable("tindakLanjutSafetyPatrol") { TindakLanjutSafetyPatrolScreen(navController = navController) }
             composable("inputInspeksi") { InputInspeksiScreen(navController = navController) }
             composable("hasilInspeksi") { HasilInspeksiScreen(navController = navController) }
+            composable("tindakLanjutInspeksi") { TindakLanjutInspeksiScreen(navController = navController)}
             composable("jsa") { JSAScreen(navController = navController) }
 
-            // Menambahkan rute untuk halaman detail input inspeksi
             composable("detailInputInspeksi/{kriteria}") { backStackEntry ->
                 val kriteria = backStackEntry.arguments?.getString("kriteria")
                 kriteria?.let {
