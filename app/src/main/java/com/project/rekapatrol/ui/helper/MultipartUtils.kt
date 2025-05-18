@@ -3,18 +3,21 @@ package com.project.rekapatrol.ui.helper
 import android.content.Context
 import android.net.Uri
 import okhttp3.MediaType.Companion.toMediaType
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
 import okhttp3.RequestBody.Companion.asRequestBody
 import java.io.File
+import java.io.FileOutputStream
 
-fun uriToMultipart(context: Context, uri: Uri, partName: String = "finding_paths"): MultipartBody.Part {
+fun uriToMultipart(context: Context, uri: Uri): MultipartBody.Part {
+    val file = File(context.cacheDir, "image.jpg")
     val inputStream = context.contentResolver.openInputStream(uri)
-    val tempFile = File.createTempFile("upload_", ".jpg", context.cacheDir)
-    inputStream?.use { input ->
-        tempFile.outputStream().use { output ->
-            input.copyTo(output)
-        }
-    }
-    val requestBody = tempFile.asRequestBody("image/*".toMediaType())
-    return MultipartBody.Part.createFormData(partName, tempFile.name, requestBody)
+    val outputStream = FileOutputStream(file)
+    inputStream?.copyTo(outputStream)
+    inputStream?.close()
+    outputStream.close()
+
+    val requestBody = file.asRequestBody("image/jpeg".toMediaTypeOrNull())
+    return MultipartBody.Part.createFormData("finding_paths[]", file.name, requestBody)
 }
+

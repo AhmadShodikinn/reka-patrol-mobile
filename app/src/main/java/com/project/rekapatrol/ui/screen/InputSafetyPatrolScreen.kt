@@ -66,15 +66,18 @@ fun InputSafetyPatrolScreen(navController: NavController) {
 
     // Date picker
     val calendar = Calendar.getInstance()
-    val datePickerDialog = DatePickerDialog(
-        context,
-        { _, year, month, dayOfMonth ->
-            tanggal = "$year-${month + 1}-$dayOfMonth"
-        },
-        calendar.get(Calendar.YEAR),
-        calendar.get(Calendar.MONTH),
-        calendar.get(Calendar.DAY_OF_MONTH)
-    )
+    val datePickerDialog = remember {
+        DatePickerDialog(
+            context,
+            { _, year, month, dayOfMonth ->
+                tanggal = "$year-${month + 1}-$dayOfMonth"
+            },
+            calendar.get(Calendar.YEAR),
+            calendar.get(Calendar.MONTH),
+            calendar.get(Calendar.DAY_OF_MONTH)
+        )
+    }
+
 
     // Camera preview state
     var isCameraActive by remember { mutableStateOf(false) }
@@ -239,18 +242,23 @@ fun InputSafetyPatrolScreen(navController: NavController) {
             }
 
             // Date picker
-            OutlinedTextField(
-                value = tanggal,
-                onValueChange = {},
-                readOnly = true,
-                label = { Text("Tanggal Pemeriksaan") },
+            Box(
                 modifier = Modifier
                     .fillMaxWidth()
                     .clickable {
-                        Toast.makeText(context, "Opening Date Picker", Toast.LENGTH_SHORT).show()
                         datePickerDialog.show()
                     }
-            )
+            ) {
+                OutlinedTextField(
+                    value = tanggal,
+                    onValueChange = {},
+                    readOnly = true,
+                    label = { Text("Tanggal Pemeriksaan") },
+                    modifier = Modifier.fillMaxWidth(),
+                    enabled = false // agar user tahu ini readonly
+                )
+            }
+
 
             Spacer(modifier = Modifier.height(24.dp))
 
