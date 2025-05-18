@@ -1,8 +1,8 @@
 package com.project.rekapatrol.data.request
 
 data class InputSafetyPatrolsRequest(
-    val findings_path: List<String>,
-    val findings_descriptions: String,
+    val finding_paths: List<String>,
+    val findings_description: String,
     val location: String,
     val category: String,
     val risk: String,

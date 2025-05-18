@@ -1,6 +1,7 @@
 package com.project.rekapatrol.data.viewModelFactory
 
 import android.content.Context
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import com.project.rekapatrol.data.repository.Repository
@@ -15,6 +16,8 @@ class GeneralViewModelFactory(
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         val tokenHandler = TokenHandler(context)
         val token = tokenHandler.getToken() ?: throw IllegalStateException("Token kosong")
+
+        Log.e("GeneralViewModelFactory", "Token: $token")
         val apiService = ApiConfig.getApiService(token)
         val repository = Repository(apiService)
 

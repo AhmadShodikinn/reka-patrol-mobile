@@ -6,7 +6,12 @@ import com.project.rekapatrol.data.response.InputSafetyPatrolsResponse
 import com.project.rekapatrol.data.response.LoginResponse
 import com.project.rekapatrol.data.response.LogoutResponse
 import com.project.rekapatrol.network.ApiService
+import com.project.rekapatrol.support.toPlainPart
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.MultipartBody
+import okhttp3.RequestBody.Companion.asRequestBody
 import retrofit2.Response
+import java.io.File
 
 class Repository(private val apiService: ApiService) {
     suspend fun authLogin(nip: String, password: String): Response<LoginResponse>{
@@ -19,16 +24,22 @@ class Repository(private val apiService: ApiService) {
     }
 
     suspend fun inputSafetyPatrols(
-        finding_path: List<String>,
-        finding_description: String,
+        findingPaths: List<MultipartBody.Part>,
+        findingsDescription: String,
         location: String,
         category: String,
         risk: String,
-        checkup_date: String
-    ): Response<InputSafetyPatrolsResponse>{
-        val bodyRequest = InputSafetyPatrolsRequest(
-                finding_path, finding_description, location, category, risk, checkup_date
+        checkupDate: String
+    ): Response<InputSafetyPatrolsResponse> {
+        return apiService.inputSafetyPatrols(
+            findingsDescription = findingsDescription.toPlainPart(),
+            location = location.toPlainPart(),
+            category = category.toPlainPart(),
+            risk = risk.toPlainPart(),
+            checkupDate = checkupDate.toPlainPart(),
+            finding_paths = findingPaths
         )
-        return apiService.inputSafetyPatrols(bodyRequest)
     }
+
+
 }
