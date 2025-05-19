@@ -1,8 +1,5 @@
-package com.project.rekapatrol.ui.helper
-import android.content.ContentValues
 import android.content.Context
 import android.net.Uri
-import android.os.Build
 import android.provider.MediaStore
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageCapture
@@ -10,52 +7,133 @@ import androidx.camera.core.ImageCaptureException
 import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.Button
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.remember
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
+import com.project.rekapatrol.R
+import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlin.coroutines.resume
-import kotlin.coroutines.suspendCoroutine
 
 @Composable
 fun CameraPreviewScreen(
     onImageCaptured: (Uri) -> Unit,
     onError: (ImageCaptureException) -> Unit = {}
 ) {
-    val lensFacing = CameraSelector.LENS_FACING_BACK
-    val lifecycleOwner = LocalLifecycleOwner.current
     val context = LocalContext.current
-    val preview = Preview.Builder().build()
-    val previewView = remember { PreviewView(context) }
-    val cameraSelector = CameraSelector.Builder().requireLensFacing(lensFacing).build()
+    val lifecycleOwner = LocalLifecycleOwner.current
 
-    val imageCapture = remember {
-        ImageCapture.Builder().build()
+    var lensFacing by remember { mutableStateOf(CameraSelector.LENS_FACING_BACK) }
+    var flashEnabled by remember { mutableStateOf(false) }
+
+    val preview = remember { Preview.Builder().build() }
+    val previewView = remember { PreviewView(context) }
+    var imageCapture by remember {
+        mutableStateOf(
+            ImageCapture.Builder()
+                .setFlashMode(ImageCapture.FLASH_MODE_OFF)
+                .build()
+        )
     }
 
-    LaunchedEffect(lensFacing) {
+    val cameraSelector = remember(lensFacing) {
+        CameraSelector.Builder().requireLensFacing(lensFacing).build()
+    }
+
+    LaunchedEffect(lensFacing, flashEnabled) {
         val cameraProvider = context.getCameraProvider()
         cameraProvider.unbindAll()
-        cameraProvider.bindToLifecycle(lifecycleOwner, cameraSelector, preview, imageCapture)
+
+        imageCapture = ImageCapture.Builder()
+            .setFlashMode(if (flashEnabled) ImageCapture.FLASH_MODE_ON else ImageCapture.FLASH_MODE_OFF)
+            .build()
+
+        cameraProvider.bindToLifecycle(
+            lifecycleOwner,
+            cameraSelector,
+            preview,
+            imageCapture
+        )
+
         preview.setSurfaceProvider(previewView.surfaceProvider)
     }
 
-    Box(contentAlignment = Alignment.BottomCenter, modifier = Modifier.fillMaxSize()) {
-        AndroidView({ previewView }, modifier = Modifier.fillMaxSize())
+    Box(modifier = Modifier.fillMaxSize()) {
+        AndroidView(factory = { previewView }, modifier = Modifier.fillMaxSize())
 
-        Button(onClick = {
-            captureImage(imageCapture, context, onImageCaptured, onError)
-        }) {
-            Text(text = "Capture Image")
+        // Flash toggle (top-right)
+        IconButton(
+            onClick = { flashEnabled = !flashEnabled },
+            modifier = Modifier
+                .align(Alignment.TopEnd)
+                .padding(16.dp)
+        ) {
+            Icon(
+                painter = painterResource(
+                    id = if (flashEnabled) R.drawable.flash_on else R.drawable.flash_off
+                ),
+                contentDescription = "Toggle Flash",
+                tint = Color.White
+            )
+        }
+
+        // Bottom control row
+        Row(
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .fillMaxWidth()
+                .padding(bottom = 32.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceEvenly
+        ) {
+            Spacer(modifier = Modifier.weight(1f))
+
+            // Capture Button
+            Box(
+                modifier = Modifier
+                    .size(80.dp)
+                    .weight(1f)
+                    .clickable {
+                        captureImage(imageCapture, context, onImageCaptured, onError)
+                    },
+                contentAlignment = Alignment.Center
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(70.dp)
+                        .background(Color.White, shape = CircleShape)
+                )
+            }
+
+            // Switch camera button
+            IconButton(
+                onClick = {
+                    lensFacing =
+                        if (lensFacing == CameraSelector.LENS_FACING_BACK)
+                            CameraSelector.LENS_FACING_FRONT else CameraSelector.LENS_FACING_BACK
+                },
+                modifier = Modifier
+                    .size(56.dp)
+                    .weight(1f)
+            ) {
+                Icon(
+                    painter = painterResource(id = R.drawable.flip_camera),
+                    contentDescription = "Switch Camera",
+                    tint = Color.White
+                )
+            }
         }
     }
 }
@@ -66,11 +144,11 @@ private fun captureImage(
     onImageCaptured: (Uri) -> Unit,
     onError: (ImageCaptureException) -> Unit
 ) {
-    val name = "CameraxImage_${System.currentTimeMillis()}.jpeg"
-    val contentValues = ContentValues().apply {
+    val name = "CameraxImage_${System.currentTimeMillis()}.jpg"
+    val contentValues = android.content.ContentValues().apply {
         put(MediaStore.MediaColumns.DISPLAY_NAME, name)
         put(MediaStore.MediaColumns.MIME_TYPE, "image/jpeg")
-        if (Build.VERSION.SDK_INT > Build.VERSION_CODES.P) {
+        if (android.os.Build.VERSION.SDK_INT > android.os.Build.VERSION_CODES.P) {
             put(MediaStore.Images.Media.RELATIVE_PATH, "Pictures/CameraX-Image")
         }
     }
@@ -80,8 +158,7 @@ private fun captureImage(
             context.contentResolver,
             MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
             contentValues
-        )
-        .build()
+        ).build()
 
     imageCapture.takePicture(
         outputOptions,
@@ -90,7 +167,7 @@ private fun captureImage(
             override fun onImageSaved(outputFileResults: ImageCapture.OutputFileResults) {
                 outputFileResults.savedUri?.let {
                     onImageCaptured(it)
-                } ?: onError(ImageCaptureException(0, "Gagal menyimpan gambar", null))
+                } ?: onError(ImageCaptureException(ImageCapture.ERROR_UNKNOWN, "Uri null", null))
             }
 
             override fun onError(exception: ImageCaptureException) {
@@ -100,12 +177,10 @@ private fun captureImage(
     )
 }
 
-
 private suspend fun Context.getCameraProvider(): ProcessCameraProvider =
-    suspendCoroutine { continuation ->
-        ProcessCameraProvider.getInstance(this).also { cameraProvider ->
-            cameraProvider.addListener({
-                continuation.resume(cameraProvider.get())
-            }, ContextCompat.getMainExecutor(this))
-        }
+    suspendCancellableCoroutine { continuation ->
+        val provider = ProcessCameraProvider.getInstance(this)
+        provider.addListener({
+            continuation.resume(provider.get())
+        }, ContextCompat.getMainExecutor(this))
     }
