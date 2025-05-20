@@ -1,5 +1,6 @@
 package com.project.rekapatrol.ui.screen
 
+import android.widget.Toast
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -18,16 +19,23 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.material3.Card
 import androidx.compose.material3.Text
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import com.project.rekapatrol.data.viewModel.GeneralViewModel
+import com.project.rekapatrol.data.viewModelFactory.GeneralViewModelFactory
 import com.project.rekapatrol.ui.theme.cream
 import com.project.rekapatrol.ui.theme.disabled
 import com.project.rekapatrol.ui.theme.skyblue
 import com.project.rekapatrol.ui.theme.whiteblue
 
-//sementara
 data class InspectionResult(
+    val id: Int,
     val risk: String,
     val date: String,
     val category: String,
@@ -41,12 +49,25 @@ fun HasilSafetyPatrolScreen(
     navController: NavController,
     onAddClick: () -> Unit = {}
 ) {
-    val inspectionResults = listOf(
-        InspectionResult("Tinggi", "12/05/2025", "UC", "Area Workshop", true),
-        InspectionResult("Sedang", "11/05/2025", "UC", "Area Kantor", false),
-        InspectionResult("Rendah", "10/05/2025", "UC", "Area Workshop", false),
-        InspectionResult("Tinggi", "09/05/2025", "UC", "Area Kantor", true)
-    )
+    val context = LocalContext.current
+    val generalViewModel: GeneralViewModel = viewModel(factory = GeneralViewModelFactory(context))
+
+    val safetyPatrolList by generalViewModel.safetyPatrolList.observeAsState(emptyList())
+
+    LaunchedEffect(Unit) {
+        generalViewModel.fetchSafetyPatrolList()
+    }
+
+    val inspectionResults = safetyPatrolList.map {
+        InspectionResult(
+            id = it.id ?: -1,
+            risk = it.risk ?: "-",
+            date = it.checkupDate ?: "-",
+            category = it.category ?: "-",
+            location = it.location ?: "-",
+            isSolved = !it.actionDescription.isNullOrBlank()
+        )
+    }
 
     Scaffold(
         topBar = {
@@ -99,12 +120,27 @@ fun HasilSafetyPatrolScreen(
 
 @Composable
 fun InspectionCard(result: InspectionResult, navController: NavController) {
-    Card(
-        modifier = Modifier
+    val context = LocalContext.current
+
+    val cardModifier = if (result.isSolved)
+    {
+        Modifier
             .fillMaxWidth()
             .clickable {
-                   navController.navigate("tindakLanjutSafetyPatrol")
-            },
+                Toast.makeText(context, "This Safety Patrol is already solved", Toast.LENGTH_SHORT).show()
+            }
+            .padding(8.dp)
+    } else {
+        Modifier
+            .fillMaxWidth()
+            .clickable {
+                navController.navigate("tindakLanjutSafetyPatrol/${result.id}")
+            }
+            .padding(8.dp)
+    }
+
+    Card(
+        modifier = cardModifier,
         shape = RoundedCornerShape(2.dp),
         colors = CardDefaults.cardColors(
             containerColor = if (result.isSolved) disabled else Color.White
@@ -148,8 +184,9 @@ fun InspectionCard(result: InspectionResult, navController: NavController) {
     }
 }
 
-@Preview(showSystemUi = true)
-@Composable
-fun HasilSafetyPatrolScreenPreview() {
-    HasilSafetyPatrolScreen(navController = rememberNavController())
-}
+
+//@Preview(showSystemUi = true)
+//@Composable
+//fun HasilSafetyPatrolScreenPreview() {
+//    HasilSafetyPatrolScreen(navController = rememberNavController())
+//}

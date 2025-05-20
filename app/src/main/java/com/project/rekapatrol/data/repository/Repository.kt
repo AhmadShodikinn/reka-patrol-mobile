@@ -3,6 +3,7 @@ package com.project.rekapatrol.data.repository
 import com.project.rekapatrol.data.request.InputSafetyPatrolsRequest
 import com.project.rekapatrol.data.request.LoginRequest
 import com.project.rekapatrol.data.response.InputSafetyPatrolsResponse
+import com.project.rekapatrol.data.response.ListSafetyPatrolsResponse
 import com.project.rekapatrol.data.response.LoginResponse
 import com.project.rekapatrol.data.response.LogoutResponse
 import com.project.rekapatrol.network.ApiService
@@ -40,6 +41,19 @@ class Repository(private val apiService: ApiService) {
             finding_paths = findingPaths
         )
     }
+
+    suspend fun getSafetyPatrolsList(
+        relations: List<String> = listOf("pic"),
+        perPage: Int = 10,
+        page: Int = 1
+    ): Response<ListSafetyPatrolsResponse> {
+        return apiService.getInputSafetyPatrolsList(
+            relations = relations,
+            perPage = perPage,
+            page = page
+        )
+    }
+
 
 
 }

@@ -90,7 +90,12 @@ class MainActivity : ComponentActivity() {
 
             composable("inputSafetyPatrol") { InputSafetyPatrolScreen(navController = navController) }
             composable("hasilSafetyPatrol") { HasilSafetyPatrolScreen(navController = navController) }
-            composable("tindakLanjutSafetyPatrol") { TindakLanjutSafetyPatrolScreen(navController = navController) }
+            composable("tindakLanjutSafetyPatrol/{id}") { backStackEntry ->
+                val patrolId = backStackEntry.arguments?.getString("id")?.toIntOrNull()
+                patrolId?.let {
+                    TindakLanjutSafetyPatrolScreen(navController = navController, safetyPatrolId = it)
+                }
+            }
             composable("inputInspeksi") { InputInspeksiScreen(navController = navController) }
             composable("hasilInspeksi") { HasilInspeksiScreen(navController = navController) }
             composable("tindakLanjutInspeksi") { TindakLanjutInspeksiScreen(navController = navController) }

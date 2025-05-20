@@ -152,7 +152,7 @@ fun InputSafetyPatrolScreen(navController: NavController) {
                     modifier = Modifier.fillMaxWidth()
                 )
 
-                ImagePickerSection(
+                ImagePickerSectionForInputSafetyPatrol(
                     imageUris = imageUris,
                     onClick = { showDialog = true }
                 )
@@ -294,7 +294,7 @@ fun InputSafetyPatrolScreen(navController: NavController) {
 }
 
 @Composable
-fun ImagePickerSection(imageUris: List<Uri>, onClick: () -> Unit) {
+fun ImagePickerSectionForInputSafetyPatrol(imageUris: List<Uri>, onClick: () -> Unit) {
     Box(
         modifier = Modifier
             .fillMaxWidth()

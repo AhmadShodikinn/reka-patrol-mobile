@@ -1,5 +1,10 @@
 package com.project.rekapatrol.ui.screen
 
+import CameraPreviewScreen
+import android.widget.Toast
+import android.net.Uri
+import android.provider.MediaStore
+import android.graphics.Bitmap
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
@@ -10,17 +15,16 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
-import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.material3.Text
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.res.painterResource
 import androidx.navigation.NavController
@@ -28,99 +32,219 @@ import androidx.navigation.compose.rememberNavController
 import com.project.rekapatrol.R
 import com.project.rekapatrol.ui.theme.cream
 import com.project.rekapatrol.ui.theme.skyblue
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.text.input.ImeAction
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun TindakLanjutSafetyPatrolScreen(navController: NavController) {
+fun TindakLanjutSafetyPatrolScreen(navController: NavController, safetyPatrolId: Int) {
+    val context = LocalContext.current
+
+    // States for image picking
+    var imageUris by remember { mutableStateOf<List<Uri>>(emptyList()) }
+    var showDialog by remember { mutableStateOf(false) }
+    var bitmap by remember { mutableStateOf<Bitmap?>(null) }
+
+    // Gallery launcher
+    val galleryLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetMultipleContents()
+    ) { uris: List<Uri> -> imageUris = uris }
+
+    // Camera preview state (optional)
+    var isCameraActive by remember { mutableStateOf(false) }
+
+    // Displaying Toast when the screen is composed
+    LaunchedEffect(safetyPatrolId) {
+        Toast.makeText(context, "Safety Patrol ID: $safetyPatrolId", Toast.LENGTH_SHORT).show()
+    }
+
     Scaffold(
         topBar = {
-            CenterAlignedTopAppBar(
-                title = {
-                    Text(
-                        text = "Tindak Lanjut Safety Patrol",
-                        fontSize = 20.sp,
-                        fontWeight = FontWeight.Medium,
-                        color = Color.White
-                    )
-                },
-                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
-                    containerColor = cream,
-                    titleContentColor = Color.Black,
-                    navigationIconContentColor = Color.White
-                ),
-                navigationIcon = {
-                    IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Kembali")
-                    }
-                },
-            )
+            if (!isCameraActive) {
+                CenterAlignedTopAppBar(
+                    title = {
+                        Text(
+                            text = "Tindak Lanjut Safety Patrol",
+                            fontSize = 20.sp,
+                            fontWeight = FontWeight.Medium,
+                            color = Color.White
+                        )
+                    },
+                    colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
+                        containerColor = cream,
+                        titleContentColor = Color.Black,
+                        navigationIconContentColor = Color.White
+                    ),
+                    navigationIcon = {
+                        IconButton(onClick = { navController.popBackStack() }) {
+                            Icon(Icons.Default.ArrowBack, contentDescription = "Kembali")
+                        }
+                    },
+                )
+            }
         },
         containerColor = Color.White
     ) { paddingValues ->
-        Column(
-            modifier = Modifier
-                .padding(paddingValues)
-                .fillMaxSize()
-                .padding(16.dp)
-        ) {
-
-            val image: Painter = painterResource(id = R.drawable.bg_vector1) // Replace with actual image resource
-            Image(
-                painter = image,
-                contentDescription = "Safety Image",
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(200.dp) // Gambar besar dan lebar
-            )
-            Spacer(modifier = Modifier.height(2.dp))
-            // Tindak Lanjut
-            Text(
-                text = "Tindak Lanjut:",
-                fontSize = 16.sp,
-                fontWeight = FontWeight.Medium
-            )
-
-            // Text Area Input
-            val textState = remember { androidx.compose.runtime.mutableStateOf("") }
-
-            BasicTextField(
-                value = textState.value,
-                onValueChange = { textState.value = it },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(150.dp)
-                    .border(1.dp, Color.Gray, RoundedCornerShape(2.dp)),
-                keyboardOptions = KeyboardOptions.Default.copy(
-                    imeAction = ImeAction.Done
-                ),
-                keyboardActions = KeyboardActions(
-                    onDone = {
-                        // Handle keyboard action if necessary
-                    }
-                )
-            )
-            Spacer(modifier = Modifier.height(24.dp))
-
-            Button(
-                onClick = {
-                    // Handle simpan / submit data
+        if (isCameraActive) {
+            // Tampilkan layar kamera
+            CameraPreviewScreen(
+                onImageCaptured = { uri ->
+                    imageUris = listOf(uri)
+                    bitmap = MediaStore.Images.Media.getBitmap(context.contentResolver, uri)
+                    isCameraActive = false
                 },
+                onError = {
+                    Toast.makeText(context, "Gagal ambil gambar", Toast.LENGTH_SHORT).show()
+                    isCameraActive = false
+                }
+            )
+        } else {
+            // Form section appears only when camera is not active
+            Column(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .height(50.dp),
-                shape = RoundedCornerShape(8.dp),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = cream,
-                    contentColor = Color.Black
-                )
+                    .padding(paddingValues)
+                    .fillMaxSize()
+                    .padding(16.dp)
             ) {
+                // Image Picker Section
+                ImagePickerSectionForTindakLanjutSafety(imageUris = imageUris, onClick = { showDialog = true })
+
+                // Image Picker Dialog (Gallery / Camera)
+                if (showDialog) {
+                    AlertDialog(
+                        onDismissRequest = { showDialog = false },
+                        title = { Text("Pilih Gambar") },
+                        text = { Text("Pilih sumber gambar:") },
+                        confirmButton = {
+                            TextButton(onClick = {
+                                showDialog = false
+                                isCameraActive = true
+                            }) {
+                                Text("Kamera")
+                            }
+                        },
+                        dismissButton = {
+                            TextButton(onClick = {
+                                showDialog = false
+                                galleryLauncher.launch("image/*")
+                            }) {
+                                Text("Galeri")
+                            }
+                        }
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                // Tindak Lanjut
                 Text(
-                    text = "Submit",
+                    text = "Tindak Lanjut:",
                     fontSize = 16.sp,
-                    fontWeight = FontWeight.Medium,
-                    color = Color.White
+                    fontWeight = FontWeight.Medium
                 )
+
+                // Text Area Input with Enhanced Visuals
+                val textState = remember { mutableStateOf("") }
+
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(150.dp)
+                        .border(1.dp, Color.Gray, RoundedCornerShape(8.dp))
+                ) {
+                    BasicTextField(
+                        value = textState.value,
+                        onValueChange = { textState.value = it },
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(16.dp),
+                        keyboardOptions = KeyboardOptions.Default.copy(
+                            imeAction = ImeAction.Done
+                        ),
+                        keyboardActions = KeyboardActions(
+                            onDone = {
+                                // Handle the Done action if needed
+                            }
+                        )
+                    )
+                    if (textState.value.isEmpty()) {
+                        Text(
+                            text = "Masukkan Tindak Lanjut...",
+                            color = Color.Gray,
+                            modifier = Modifier
+                                .align(Alignment.TopStart)
+                                .padding(16.dp)
+                        )
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(24.dp))
+
+                Button(
+                    onClick = {
+                        // Handle simpan / submit data
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(50.dp),
+                    shape = RoundedCornerShape(8.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = cream,
+                        contentColor = Color.Black
+                    )
+                ) {
+                    Text(
+                        text = "Submit",
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Medium,
+                        color = Color.White
+                    )
+                }
             }
+        }
+    }
+}
+
+@Composable
+fun ImagePickerSectionForTindakLanjutSafety(imageUris: List<Uri>, onClick: () -> Unit) {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(200.dp)
+            .background(Color(0xFFEFEFEF), shape = RoundedCornerShape(8.dp))
+            .border(BorderStroke(1.dp, Color.Gray), shape = RoundedCornerShape(8.dp))
+            .clickable(onClick = onClick),
+        contentAlignment = Alignment.Center
+    ) {
+        if (imageUris.isNotEmpty()) {
+            LazyRow {
+                items(imageUris) { uri ->
+                    val bitmap = MediaStore.Images.Media.getBitmap(LocalContext.current.contentResolver, uri)
+                    Image(
+                        bitmap = bitmap.asImageBitmap(),
+                        contentDescription = "Gambar terpilih",
+                        modifier = Modifier
+                            .height(120.dp)
+                            .padding(end = 8.dp)
+                            .aspectRatio(1f) // opsional, untuk menjaga bentuk square-ish
+                    )
+                }
+            }
+        } else {
+            Image(
+                painter = painterResource(id = R.drawable.imagesmode),
+                contentDescription = "Placeholder Gambar",
+                modifier = Modifier
+                    .size(80.dp)
+                    .align(Alignment.Center)
+            )
         }
     }
 }
@@ -128,5 +252,5 @@ fun TindakLanjutSafetyPatrolScreen(navController: NavController) {
 @Preview(showSystemUi = true)
 @Composable
 fun TindakLanjutSafetyPatrolScreenPreview() {
-    TindakLanjutSafetyPatrolScreen(navController = rememberNavController())
+    TindakLanjutSafetyPatrolScreen(navController = rememberNavController(), safetyPatrolId = 1)
 }
