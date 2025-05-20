@@ -1,7 +1,8 @@
 package com.project.rekapatrol.network
 
-import com.project.rekapatrol.data.request.InputSafetyPatrolsRequest
 import com.project.rekapatrol.data.request.LoginRequest
+import com.project.rekapatrol.data.response.CriteriaResponse
+import com.project.rekapatrol.data.response.InputInspeksiResponse
 import com.project.rekapatrol.data.response.InputSafetyPatrolsResponse
 import com.project.rekapatrol.data.response.ListSafetyPatrolsResponse
 import com.project.rekapatrol.data.response.LoginResponse
@@ -45,13 +46,35 @@ interface ApiService {
         @Query("page") page: Int = 2
     ): Response<ListSafetyPatrolsResponse>
 
-    //perbaiki ini ye kang
-    @PUT("safety-patrols/{id}")
+    @Multipart
+    @POST("safety-patrols/{id}")
     suspend fun updateSafetyPatrol(
-        @Query("relations[]") relations: List<String> = listOf("findings"),
         @Path("id") safetyPatrolId: Int,
+        @Query("_method") _method:String,
+        @Query("relations[]") relations: List<String> = listOf("findings"),
         @Part("action_description") actionDescription: RequestBody,
         @Part actionPath: MultipartBody.Part
     ): Response<TindakLanjutSafetyPatrolsResponse>
+
+    @Multipart
+    @POST("inspections")
+    suspend fun inputInspeksi(
+        @Part("criteria_id") criteria_id: RequestBody,
+        @Part("findings_description") findingsDescription: RequestBody,
+        @Part("inspection_location") inspection_location: RequestBody,
+        @Part("value") value: RequestBody,
+        @Part("suitability") suitability: RequestBody,
+        @Part("checkup_date") checkupDate: RequestBody,
+        @Part finding_paths: List<MultipartBody.Part>
+    ): Response<InputInspeksiResponse>
+
+    @GET("criterias")
+    suspend fun getCriterias(
+        @Query("relations[]") relations: String = "location",
+        @Query("per_page") perPage: Int = 10,
+        @Query("page") page: Int = 1,
+        @Query("criteria_type") criteriaType: String,
+        @Query("location_id") locationId: Int
+    ): Response<CriteriaResponse>
 
 }

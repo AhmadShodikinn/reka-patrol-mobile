@@ -23,10 +23,12 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import com.project.rekapatrol.R
 import com.project.rekapatrol.data.viewModel.GeneralViewModel
 import com.project.rekapatrol.data.viewModelFactory.GeneralViewModelFactory
 import com.project.rekapatrol.ui.theme.cream
@@ -99,7 +101,12 @@ fun HasilSafetyPatrolScreen(
                 contentColor = Color.White,
                 shape = RoundedCornerShape(16.dp)
             ) {
-                Icon(Icons.Default.Add, contentDescription = "Tambah")
+                Icon(
+                    painterResource(
+                        id = R.drawable.download_24px
+                    ),
+                    contentDescription = "Tambah"
+                )
             }
         },
         containerColor = Color.White
@@ -127,7 +134,9 @@ fun InspectionCard(result: InspectionResult, navController: NavController) {
         Modifier
             .fillMaxWidth()
             .clickable {
-                Toast.makeText(context, "This Safety Patrol is already solved", Toast.LENGTH_SHORT).show()
+                Toast
+                    .makeText(context, "Patrol ini sudah ditindak", Toast.LENGTH_SHORT)
+                    .show()
             }
             .padding(8.dp)
     } else {

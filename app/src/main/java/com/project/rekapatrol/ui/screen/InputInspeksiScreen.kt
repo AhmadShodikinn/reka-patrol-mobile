@@ -86,7 +86,6 @@ fun InputInspeksiScreen(navController: NavController) {
                 }
             }
 
-            // Menampilkan kriteria yang dipilih
             selectedKriteria?.let {
                 Spacer(modifier = Modifier.height(16.dp))
                 Text(

@@ -9,7 +9,7 @@ import okhttp3.RequestBody.Companion.asRequestBody
 import java.io.File
 import java.io.FileOutputStream
 
-fun uriToMultipart(context: Context, uri: Uri): MultipartBody.Part {
+fun uriToMultipartFinding(context: Context, uri: Uri): MultipartBody.Part {
     val file = File(context.cacheDir, "image.jpg")
     val inputStream = context.contentResolver.openInputStream(uri)
     val outputStream = FileOutputStream(file)
@@ -20,4 +20,18 @@ fun uriToMultipart(context: Context, uri: Uri): MultipartBody.Part {
     val requestBody = file.asRequestBody("image/jpeg".toMediaTypeOrNull())
     return MultipartBody.Part.createFormData("finding_paths[]", file.name, requestBody)
 }
+
+fun uriToMultipartAction(context: Context, uri: Uri): MultipartBody.Part {
+    val file = File(context.cacheDir, "image.jpg")
+    val inputStream = context.contentResolver.openInputStream(uri)
+    val outputStream = FileOutputStream(file)
+    inputStream?.copyTo(outputStream)
+    inputStream?.close()
+    outputStream.close()
+
+    val requestBody = file.asRequestBody("image/jpeg".toMediaTypeOrNull())
+    return MultipartBody.Part.createFormData("action_path", file.name, requestBody)
+}
+
+
 

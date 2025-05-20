@@ -39,30 +39,47 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.text.input.ImeAction
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.project.rekapatrol.data.viewModel.GeneralViewModel
+import com.project.rekapatrol.data.viewModelFactory.GeneralViewModelFactory
+import com.project.rekapatrol.ui.helper.uriToMultipartAction
+import com.project.rekapatrol.ui.helper.uriToMultipartFinding
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TindakLanjutSafetyPatrolScreen(navController: NavController, safetyPatrolId: Int) {
     val context = LocalContext.current
+    val generalViewModel: GeneralViewModel = viewModel(factory = GeneralViewModelFactory(context))
 
-    // States for image picking
-    var imageUris by remember { mutableStateOf<List<Uri>>(emptyList()) }
+    //form states
+    var tindaklanjut by remember { mutableStateOf("") }
+
+    // Image picker states
     var showDialog by remember { mutableStateOf(false) }
     var bitmap by remember { mutableStateOf<Bitmap?>(null) }
+    var imageUris by remember { mutableStateOf<List<Uri>>(emptyList()) }
+
+    // Camera preview state
+    var isCameraActive by remember { mutableStateOf(false) }
 
     // Gallery launcher
     val galleryLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetMultipleContents()
-    ) { uris: List<Uri> -> imageUris = uris }
+    ) { uris: List<Uri>
+        -> imageUris = uris
+    }
 
-    // Camera preview state (optional)
-    var isCameraActive by remember { mutableStateOf(false) }
+    val result by generalViewModel.updateSafetyPatrolsResponse.observeAsState()
 
     // Displaying Toast when the screen is composed
-    LaunchedEffect(safetyPatrolId) {
-        Toast.makeText(context, "Safety Patrol ID: $safetyPatrolId", Toast.LENGTH_SHORT).show()
+    LaunchedEffect(result) {
+        result?.let {
+            Toast.makeText(context, "Berhasil submit data!", Toast.LENGTH_SHORT).show()
+            navController.popBackStack()
+        }
     }
 
     Scaffold(
@@ -106,17 +123,18 @@ fun TindakLanjutSafetyPatrolScreen(navController: NavController, safetyPatrolId:
                 }
             )
         } else {
-            // Form section appears only when camera is not active
+            // Main Form UI
             Column(
                 modifier = Modifier
                     .padding(paddingValues)
                     .fillMaxSize()
                     .padding(16.dp)
             ) {
-                // Image Picker Section
-                ImagePickerSectionForTindakLanjutSafety(imageUris = imageUris, onClick = { showDialog = true })
+                ImagePickerSectionForTindakLanjutSafety(
+                    imageUris = imageUris,
+                    onClick = { showDialog = true }
+                )
 
-                // Image Picker Dialog (Gallery / Camera)
                 if (showDialog) {
                     AlertDialog(
                         onDismissRequest = { showDialog = false },
@@ -150,46 +168,33 @@ fun TindakLanjutSafetyPatrolScreen(navController: NavController, safetyPatrolId:
                     fontWeight = FontWeight.Medium
                 )
 
-                // Text Area Input with Enhanced Visuals
-                val textState = remember { mutableStateOf("") }
-
-                Box(
+                OutlinedTextField(
+                    value = tindaklanjut,
+                    onValueChange = { tindaklanjut = it },
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(150.dp)
-                        .border(1.dp, Color.Gray, RoundedCornerShape(8.dp))
-                ) {
-                    BasicTextField(
-                        value = textState.value,
-                        onValueChange = { textState.value = it },
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(16.dp),
-                        keyboardOptions = KeyboardOptions.Default.copy(
-                            imeAction = ImeAction.Done
-                        ),
-                        keyboardActions = KeyboardActions(
-                            onDone = {
-                                // Handle the Done action if needed
-                            }
-                        )
-                    )
-                    if (textState.value.isEmpty()) {
-                        Text(
-                            text = "Masukkan Tindak Lanjut...",
-                            color = Color.Gray,
-                            modifier = Modifier
-                                .align(Alignment.TopStart)
-                                .padding(16.dp)
-                        )
-                    }
-                }
+                        .height(150.dp),
+                    label = { Text("Tindak Lanjut") },
+                    placeholder = { Text("Masukkan Tindak Lanjut...") },
+                    shape = RoundedCornerShape(8.dp),
+                    maxLines = Int.MAX_VALUE
+                )
 
                 Spacer(modifier = Modifier.height(24.dp))
 
                 Button(
                     onClick = {
-                        // Handle simpan / submit data
+                        if (tindaklanjut.isNotBlank() && imageUris.isNotEmpty()) {
+                            val multipartFile = uriToMultipartAction(context, imageUris.first())
+
+                            generalViewModel.updateSafetyPatrol(
+                                safetyPatrolId = safetyPatrolId,
+                                actionDescription = tindaklanjut,
+                                actionImagePath = multipartFile
+                            )
+                        } else {
+                            Toast.makeText(context, "Mohon lengkapi semua data", Toast.LENGTH_SHORT)
+                        }
                     },
                     modifier = Modifier
                         .fillMaxWidth()

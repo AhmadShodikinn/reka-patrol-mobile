@@ -8,7 +8,7 @@ data class InputSafetyPatrolsResponse(
 	val data: DataSafetyPatrols? = null
 )
 
-data class FindingsItem(
+data class FindingsItemSafetyPatrol(
 
 	@field:SerializedName("findable_id")
 	val findableId: Int? = null,
@@ -38,7 +38,7 @@ data class DataSafetyPatrols(
 	val picId: Any? = null,
 
 	@field:SerializedName("findings")
-	val findings: List<FindingsItem?>? = null,
+	val findings: List<FindingsItemSafetyPatrol?>? = null,
 
 	@field:SerializedName("created_at")
 	val createdAt: String? = null,

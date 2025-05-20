@@ -1,11 +1,13 @@
 package com.project.rekapatrol.data.repository
 
-import com.project.rekapatrol.data.request.InputSafetyPatrolsRequest
 import com.project.rekapatrol.data.request.LoginRequest
+import com.project.rekapatrol.data.response.CriteriaResponse
+import com.project.rekapatrol.data.response.InputInspeksiResponse
 import com.project.rekapatrol.data.response.InputSafetyPatrolsResponse
 import com.project.rekapatrol.data.response.ListSafetyPatrolsResponse
 import com.project.rekapatrol.data.response.LoginResponse
 import com.project.rekapatrol.data.response.LogoutResponse
+import com.project.rekapatrol.data.response.TindakLanjutSafetyPatrolsResponse
 import com.project.rekapatrol.network.ApiService
 import com.project.rekapatrol.support.toPlainPart
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
@@ -54,6 +56,45 @@ class Repository(private val apiService: ApiService) {
         )
     }
 
+    suspend fun updateSafetyPatrols(
+        safetyPatrolId: Int,
+        actionDescription: String,
+        actionImagePath: MultipartBody.Part
+    ): Response<TindakLanjutSafetyPatrolsResponse> {
+        return apiService.updateSafetyPatrol(
+            safetyPatrolId = safetyPatrolId,
+            _method = "PUT",
+            actionDescription = actionDescription.toPlainPart(),
+            actionPath = actionImagePath
+        )
+    }
+
+    suspend fun inputInspeksi(
+        criteria_id: Int,
+        findingPaths: List<MultipartBody.Part>,
+        findings_description: String,
+        inspection_location: String,
+        value: String,
+        suitability: String,
+        checkupDate: String
+    ): Response<InputInspeksiResponse> {
+        return apiService.inputInspeksi(
+            criteria_id = criteria_id.toPlainPart(),
+            findingsDescription = findings_description.toPlainPart(),
+            inspection_location = inspection_location.toPlainPart(),
+            value = value.toPlainPart(),
+            suitability = suitability.toPlainPart(),
+            checkupDate = checkupDate.toPlainPart(),
+            finding_paths = findingPaths
+        )
+    }
+
+    suspend fun fetchCriterias(criteriaType: String, locationId: Int): Response<CriteriaResponse> {
+        return apiService.getCriterias(
+            criteriaType = criteriaType,
+            locationId = locationId
+        )
+    }
 
 
 }

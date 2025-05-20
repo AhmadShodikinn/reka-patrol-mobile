@@ -104,7 +104,7 @@ class MainActivity : ComponentActivity() {
             composable("detailInputInspeksi/{kriteria}") { backStackEntry ->
                 val kriteria = backStackEntry.arguments?.getString("kriteria")
                 kriteria?.let {
-                    DetailInputInspeksiScreen(kriteria = it, navController = rememberNavController())
+                    DetailInputInspeksiScreen(criteriaType = it, navController = rememberNavController())
                 }
             }
         }

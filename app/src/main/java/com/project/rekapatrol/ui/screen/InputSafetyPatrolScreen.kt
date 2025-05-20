@@ -5,7 +5,6 @@ import android.app.DatePickerDialog
 import android.graphics.Bitmap
 import android.net.Uri
 import android.provider.MediaStore
-import android.util.Log
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -31,15 +30,18 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.project.rekapatrol.R
 import com.project.rekapatrol.data.viewModel.GeneralViewModel
 import com.project.rekapatrol.data.viewModelFactory.GeneralViewModelFactory
-import com.project.rekapatrol.ui.helper.uriToMultipart
+import com.project.rekapatrol.ui.helper.uriToMultipartAction
+import com.project.rekapatrol.ui.helper.uriToMultipartFinding
 import com.project.rekapatrol.ui.theme.cream
 import com.project.rekapatrol.ui.theme.skyblue
 import java.util.*
@@ -92,6 +94,7 @@ fun InputSafetyPatrolScreen(navController: NavController) {
     }
 
     val result by generalViewModel.inputSafetyPatrolsResponse.observeAsState()
+
     LaunchedEffect(result) {
         result?.let {
             Toast.makeText(context, "Berhasil submit data!", Toast.LENGTH_SHORT).show()
@@ -103,8 +106,19 @@ fun InputSafetyPatrolScreen(navController: NavController) {
         topBar = {
             if (!isCameraActive) {
                 CenterAlignedTopAppBar(
-                    title = { Text("Input Safety Patrol", color = Color.White) },
-                    colors = TopAppBarDefaults.centerAlignedTopAppBarColors(containerColor = cream),
+                    title = {
+                        Text(
+                            "Input Safety Patrol",
+                            fontSize = 20.sp,
+                            fontWeight = FontWeight.Medium,
+                            color = Color.White
+                        )
+                    },
+                    colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
+                        containerColor = cream,
+                        titleContentColor = Color.Black,
+                        navigationIconContentColor = Color.White
+                    ),
                     navigationIcon = {
                         IconButton(onClick = { navController.popBackStack() }) {
                             Icon(Icons.Default.ArrowBack, contentDescription = "Kembali")
@@ -116,7 +130,7 @@ fun InputSafetyPatrolScreen(navController: NavController) {
         containerColor = Color.White
     ) { paddingValues ->
         if (isCameraActive) {
-            // Fullscreen CameraX
+            // Tampilkan layar kamera
             CameraPreviewScreen(
                 onImageCaptured = { uri ->
                     imageUris = listOf(uri)
@@ -262,10 +276,10 @@ fun InputSafetyPatrolScreen(navController: NavController) {
                 Button(
                     onClick = {
                         if (temuan.isNotBlank() && lokasi.isNotBlank() && kategori.isNotBlank() &&
-                            resiko.isNotBlank() && imageUris.isNotEmpty()
+                            resiko.isNotBlank() && imageUris.isNotEmpty() && tanggal.isNotEmpty()
                         ) {
                             val multipartFiles = imageUris.map { uri ->
-                                uriToMultipart(context, uri)
+                                uriToMultipartFinding(context, uri)
                             }
 
                             generalViewModel.inputSafetyPatrol(
@@ -286,7 +300,12 @@ fun InputSafetyPatrolScreen(navController: NavController) {
                     shape = RoundedCornerShape(8.dp),
                     colors = ButtonDefaults.buttonColors(containerColor = skyblue)
                 ) {
-                    Text("Submit", color = Color.White)
+                    Text(
+                        text = "Submit",
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Medium,
+                        color = Color.White
+                    )
                 }
             }
         }
