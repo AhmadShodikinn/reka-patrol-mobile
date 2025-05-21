@@ -212,6 +212,14 @@ class GeneralViewModel(
         }
     }
 
+    val documentFlow = Pager(
+        config = PagingConfig(
+            pageSize = 10,
+            enablePlaceholders = false
+        ),
+        pagingSourceFactory = { repository.getDocumentPagingSource() }
+    ).flow.cachedIn(viewModelScope)
+
 
 
 }

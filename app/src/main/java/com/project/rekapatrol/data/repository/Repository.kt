@@ -2,11 +2,13 @@ package com.project.rekapatrol.data.repository
 
 import androidx.paging.PagingSource
 import com.project.rekapatrol.data.pagingSource.CriteriasPagingSource
+import com.project.rekapatrol.data.pagingSource.DocumentsPagingSource
 import com.project.rekapatrol.data.pagingSource.InspeksiPagingSource
 import com.project.rekapatrol.data.pagingSource.SafetyPatrolPagingSource
 import com.project.rekapatrol.data.request.LoginRequest
 import com.project.rekapatrol.data.response.CriteriaResponse
 import com.project.rekapatrol.data.response.DataItemCriterias
+import com.project.rekapatrol.data.response.DataItemDocuments
 import com.project.rekapatrol.data.response.DataItemInspeksi
 import com.project.rekapatrol.data.response.DataItemSafetyPatrols
 import com.project.rekapatrol.data.response.DetailInspeksiResponse
@@ -114,5 +116,9 @@ class Repository(private val apiService: ApiService) {
 
     suspend fun getInspectionDetail(inspectionId: Int): Response<DetailInspeksiResponse> {
         return apiService.getDetailInspection(inspectionId)
+    }
+
+    fun getDocumentPagingSource(): PagingSource<Int, DataItemDocuments> {
+        return DocumentsPagingSource(apiService)
     }
 }

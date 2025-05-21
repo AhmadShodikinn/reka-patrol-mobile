@@ -5,6 +5,7 @@ import com.project.rekapatrol.data.response.CriteriaResponse
 import com.project.rekapatrol.data.response.DetailInspeksiResponse
 import com.project.rekapatrol.data.response.InputInspeksiResponse
 import com.project.rekapatrol.data.response.InputSafetyPatrolsResponse
+import com.project.rekapatrol.data.response.ListDocumentResponse
 import com.project.rekapatrol.data.response.ListInspeksiResponse
 import com.project.rekapatrol.data.response.ListSafetyPatrolsResponse
 import com.project.rekapatrol.data.response.LoginResponse
@@ -102,4 +103,10 @@ interface ApiService {
         @Query("relations[]") relationsFindings: String = "findings",
     ): Response<DetailInspeksiResponse>
 
+    @GET("documents")
+    suspend fun getDocuments(
+        @Query("relations[]") relations: List<String> = listOf("user"),
+        @Query("per_page") perPage: Int = 10,
+        @Query("page") page: Int = 1
+    ): Response<ListDocumentResponse>
 }
