@@ -14,6 +14,7 @@ import com.project.rekapatrol.data.response.TindakLanjutInspeksiResponse
 import com.project.rekapatrol.data.response.TindakLanjutSafetyPatrolsResponse
 import okhttp3.MultipartBody
 import okhttp3.RequestBody
+import okhttp3.ResponseBody
 import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.GET
@@ -109,4 +110,11 @@ interface ApiService {
         @Query("per_page") perPage: Int = 10,
         @Query("page") page: Int = 1
     ): Response<ListDocumentResponse>
+
+    @GET("documents/{id}")
+    suspend fun downloadDocument(
+        @Path("id") id: Int,
+        @Query("download") download: Int = 1
+    ): Response<ResponseBody>
+
 }

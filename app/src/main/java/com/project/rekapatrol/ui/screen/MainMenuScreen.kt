@@ -25,7 +25,10 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.project.rekapatrol.R
 import com.project.rekapatrol.data.viewModel.AuthViewModel
+import com.project.rekapatrol.data.viewModel.GeneralViewModel
 import com.project.rekapatrol.data.viewModelFactory.AuthViewModelFactory
+import com.project.rekapatrol.data.viewModelFactory.GeneralViewModelFactory
+import com.project.rekapatrol.support.TokenHandler
 import com.project.rekapatrol.ui.theme.cream
 
 @Composable
@@ -34,14 +37,15 @@ fun MainMenuScreen(
     onLogoutSuccess: () -> Unit
 ) {
     val context = LocalContext.current
+    val generalViewModel: GeneralViewModel = viewModel(factory = GeneralViewModelFactory(context))
 
-    val authViewModel: AuthViewModel = viewModel(
-        factory = AuthViewModelFactory(context)
-    )
-    val logoutResult by authViewModel.authLogoutResult.observeAsState()
+    val logoutResult by generalViewModel.authLogoutResult.observeAsState()
 
     LaunchedEffect(logoutResult) {
         logoutResult?.let {
+            val tokenHandler = TokenHandler(context)
+            tokenHandler.removeToken()
+
             Toast.makeText(context, "Logout berhasil!", Toast.LENGTH_SHORT).show()
             onLogoutSuccess() // Navigasi ke login
         }
@@ -71,12 +75,10 @@ fun MainMenuScreen(
                 .align(Alignment.BottomStart)
         )
 
-
-
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(top = 120.dp, start = 15.dp, end = 15.dp)
+                .padding(top = 120.dp, start = 15.dp, end = 15.dp, bottom = 90.dp)
                 .align(Alignment.BottomCenter),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
@@ -102,7 +104,6 @@ fun MainMenuScreen(
             Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(bottom = 90.dp)
                     .border(1.dp, cream, RoundedCornerShape(8.dp))
             ) {
                 Column(
@@ -159,7 +160,7 @@ fun MainMenuScreen(
                             MenuButton(
                                 iconId = R.drawable.ic_exit,
                                 label = "Keluar",
-                                onClick = { authViewModel.logout() }
+                                onClick = { generalViewModel.logout() }
                             )
                         }
                     }
@@ -206,9 +207,12 @@ fun MenuButton(iconId: Int, label: String, onClick: () -> Unit) {
 
 
 
-//@Preview(showSystemUi = true)
-//@Composable
-//fun MainMenuPreview() {
-//    MainMenuScreen()
-//}
+@Preview(showSystemUi = true)
+@Composable
+fun MainMenuPreview() {
+    MainMenuScreen(
+        onNavigate = {},
+        onLogoutSuccess = {}
+    )
+}
 

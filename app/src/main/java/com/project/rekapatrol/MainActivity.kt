@@ -31,9 +31,9 @@ class MainActivity : ComponentActivity() {
     private val requestPermissionLauncher =
         registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted: Boolean ->
             if (isGranted) {
-                Toast.makeText(this, "Permission granted!", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, "Kamera diizinkan!", Toast.LENGTH_SHORT).show()
             } else {
-                Toast.makeText(this, "Permission denied!", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, "Kamera tidak diizinkan!", Toast.LENGTH_SHORT).show()
             }
         }
 
@@ -50,6 +50,22 @@ class MainActivity : ComponentActivity() {
             // Izin belum diberikan, kita meminta izin
             requestPermissionLauncher.launch(Manifest.permission.CAMERA)
         }
+
+        // ==== STORAGE PERMISSION (Android 9 dan di bawah) ====
+        if (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.Q) {
+            if (ContextCompat.checkSelfPermission(
+                    this,
+                    Manifest.permission.WRITE_EXTERNAL_STORAGE
+                ) != PackageManager.PERMISSION_GRANTED
+            ) {
+                ActivityCompat.requestPermissions(
+                    this,
+                    arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE),
+                    1001
+                )
+            }
+        }
+
 
         val tokenHandler = TokenHandler(this)
         val token = tokenHandler.getToken()
@@ -91,7 +107,7 @@ class MainActivity : ComponentActivity() {
             composable("loginScreen") {
                 LoginScreen(onLoginSuccess = {
                     navController.navigate("mainMenu") {
-                        popUpTo("login") { inclusive = true }
+                        popUpTo("loginScreen") { inclusive = true }
                     }
                 })
             }
@@ -100,7 +116,7 @@ class MainActivity : ComponentActivity() {
                 MainMenuScreen(
                     onNavigate = { destination -> navController.navigate(destination) },
                     onLogoutSuccess = {
-                        navController.navigate("login") {
+                        navController.navigate("loginScreen") {
                             popUpTo("mainMenu") { inclusive = true }
                         }
                     }

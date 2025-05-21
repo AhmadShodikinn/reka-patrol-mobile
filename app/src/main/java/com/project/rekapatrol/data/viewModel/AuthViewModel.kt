@@ -21,9 +21,6 @@ class AuthViewModel(
     private val _authLoginResult = MutableLiveData<LoginResponse>()
     val authLoginResult: LiveData<LoginResponse> = _authLoginResult
 
-    private val _authLogoutResult = MutableLiveData<LogoutResponse>()
-    val authLogoutResult: LiveData<LogoutResponse> = _authLogoutResult
-
     fun login(nip: String, password: String){
         viewModelScope.launch {
             try {
@@ -35,28 +32,6 @@ class AuthViewModel(
                     response.body()?.token?.let {
                         tokenHandler.saveToken(it)
                     }
-                } else {
-                    val errorBody = response.errorBody()?.string()
-                    val message = JSONObject(errorBody).getString("message")
-                    Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
-                }
-            } catch (e: Exception) {
-                Toast.makeText(context,"Server Error!", Toast.LENGTH_SHORT).show()
-            }
-        }
-    }
-
-    fun logout(){
-        viewModelScope.launch {
-            try {
-                val response = repository.authLogout()
-
-                if (response.isSuccessful) {
-//                    tokenHandler.clearToken()
-                    _authLogoutResult.value = response.body()
-
-
-
                 } else {
                     val errorBody = response.errorBody()?.string()
                     val message = JSONObject(errorBody).getString("message")

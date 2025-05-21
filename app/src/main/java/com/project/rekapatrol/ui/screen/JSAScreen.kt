@@ -94,7 +94,7 @@ fun JSAScreen(
                                 imageRes = R.drawable.baseline_source_24
                             ),
                                 onClick = {
-//                                generalViewModel.downloadDocument(it.id ?: -1)
+                                    generalViewModel.downloadDocument(context, id = it.id ?: -1)
                             }
                         )
                     }

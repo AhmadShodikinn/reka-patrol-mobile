@@ -25,6 +25,7 @@ import com.project.rekapatrol.support.toPlainPart
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
 import okhttp3.RequestBody.Companion.asRequestBody
+import okhttp3.ResponseBody
 import retrofit2.Response
 import java.io.File
 
@@ -121,4 +122,9 @@ class Repository(private val apiService: ApiService) {
     fun getDocumentPagingSource(): PagingSource<Int, DataItemDocuments> {
         return DocumentsPagingSource(apiService)
     }
+
+    suspend fun downloadDocument(id: Int): Response<ResponseBody> {
+        return apiService.downloadDocument(id)
+    }
+
 }
