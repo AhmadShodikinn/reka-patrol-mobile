@@ -11,17 +11,37 @@ class TokenHandler(context: Context) {
 
     companion object {
         private const val TOKEN_KEY = "token"
+        private const val TOKEN_TIMESTAMP_KEY = "token_timestamp"
+        private const val TWO_HOURS_IN_MILLIS = 2 * 60 * 60 * 1000 //2 jam token hilang
     }
 
-    fun saveToken(token: String){
-        Log.d("TokenHandler", "Saving token: $token")
-        sharedPreferences.edit().putString(TOKEN_KEY, token).apply()
+    fun saveToken(token: String) {
+        val currentTime = System.currentTimeMillis()
+        sharedPreferences.edit()
+            .putString(TOKEN_KEY, token)
+            .putLong(TOKEN_TIMESTAMP_KEY, currentTime)
+            .apply()
     }
 
     fun getToken(): String? {
         val token = sharedPreferences.getString(TOKEN_KEY, null)
+        val timestamp = sharedPreferences.getLong(TOKEN_TIMESTAMP_KEY, 0)
+
+        if (token == null || System.currentTimeMillis() - timestamp > TWO_HOURS_IN_MILLIS) {
+            Log.d("TokenHandler", "Token expired or missing, removing token.")
+            removeToken()
+            return null
+        }
+
         Log.d("TokenHandler", "Retrieved token: $token")
         return token
     }
 
+    // Hapus token dan timestamp
+    fun removeToken() {
+        sharedPreferences.edit()
+            .remove(TOKEN_KEY)
+            .remove(TOKEN_TIMESTAMP_KEY)
+            .apply()
+    }
 }

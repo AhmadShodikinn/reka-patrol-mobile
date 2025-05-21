@@ -4,6 +4,7 @@ import CameraPreviewScreen
 import android.graphics.Bitmap
 import android.net.Uri
 import android.provider.MediaStore
+import android.util.Log
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.compose.foundation.Image
@@ -58,11 +59,13 @@ fun TindakLanjutInspeksiScreen(navController: NavController, inspectionId: Int) 
     val context = LocalContext.current
     val generalViewModel: GeneralViewModel = viewModel(factory = GeneralViewModelFactory(context))
 
+    // Memantau data inspeksi yang diterima
     val inspectionDetail by generalViewModel.inspectionDetailResposne.observeAsState()
 
+    // Menyediakan fallback value jika data masih kosong
     val criteriaName = inspectionDetail?.data?.criteria?.criteriaName ?: "Memuat kriteria..."
 
-    // State
+    // State untuk input dan gambar
     var tindakLanjut by remember { mutableStateOf("") }
     var showDialog by remember { mutableStateOf(false) }
     var imageUris by remember { mutableStateOf<List<Uri>>(emptyList()) }
@@ -77,15 +80,25 @@ fun TindakLanjutInspeksiScreen(navController: NavController, inspectionId: Int) 
         imageUris = uris
     }
 
+    // Pastikan data inspeksi diambil saat komponen dimuat
+    LaunchedEffect(inspectionId) {
+        Log.d("TindakLanjutInspeksi", "panggil detailInspeksi")
+        generalViewModel.getDetailInspection(inspectionId)
+    }
+
+    LaunchedEffect(inspectionDetail) {
+        inspectionDetail?.let {
+            // Data sudah diterima, lakukan sesuatu jika perlu
+            Log.d("API_RESPONSE", "Criteria Name: ${it.data?.criteria?.criteriaName}")
+        }
+    }
+
+    // Tangani hasil submit
     LaunchedEffect(result) {
         result?.let {
             Toast.makeText(context, "Berhasil submit data inspeksi!", Toast.LENGTH_SHORT).show()
             navController.popBackStack()
         }
-    }
-
-    LaunchedEffect(Unit) {
-        generalViewModel.getDetailInspection(inspectionId)
     }
 
     Scaffold(

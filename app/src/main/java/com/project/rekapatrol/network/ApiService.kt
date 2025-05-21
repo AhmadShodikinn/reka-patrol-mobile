@@ -97,7 +97,9 @@ interface ApiService {
 
     @GET("inspections/{id}")
     suspend fun getDetailInspection(
-        @Path("id") id: Int
+        @Path("id") id: Int,
+        @Query("relations[]") relationsCriteria: String = "criteria",
+        @Query("relations[]") relationsFindings: String = "findings",
     ): Response<DetailInspeksiResponse>
 
 }

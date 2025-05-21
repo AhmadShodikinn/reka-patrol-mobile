@@ -5,31 +5,10 @@ import com.google.gson.annotations.SerializedName
 data class DetailInspeksiResponse(
 
 	@field:SerializedName("data")
-	val data: DataDetailInspection? = null
+	val data: DataDetailInspeksi? = null
 )
 
-data class FindingsItemDetailInspection(
-
-	@field:SerializedName("findable_id")
-	val findableId: Int? = null,
-
-	@field:SerializedName("updated_at")
-	val updatedAt: String? = null,
-
-	@field:SerializedName("findable_type")
-	val findableType: String? = null,
-
-	@field:SerializedName("image_path")
-	val imagePath: String? = null,
-
-	@field:SerializedName("created_at")
-	val createdAt: String? = null,
-
-	@field:SerializedName("id")
-	val id: Int? = null
-)
-
-data class CriteriaDetailInspection(
+data class CriteriaDetailInspeksi(
 
 	@field:SerializedName("updated_at")
 	val updatedAt: String? = null,
@@ -50,7 +29,7 @@ data class CriteriaDetailInspection(
 	val criteriaName: String? = null
 )
 
-data class DataDetailInspection(
+data class DataDetailInspeksi(
 
 	@field:SerializedName("checkup_date")
 	val checkupDate: String? = null,
@@ -62,10 +41,10 @@ data class DataDetailInspection(
 	val suitability: Int? = null,
 
 	@field:SerializedName("criteria")
-	val criteria: Criteria? = null,
+	val criteria: CriteriaDetailInspeksi? = null,
 
 	@field:SerializedName("findings")
-	val findings: List<FindingsItemDetailInspection?>? = null,
+	val findings: List<Any?>? = null,
 
 	@field:SerializedName("criteria_id")
 	val criteriaId: Int? = null,

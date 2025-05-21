@@ -115,7 +115,4 @@ class Repository(private val apiService: ApiService) {
     suspend fun getInspectionDetail(inspectionId: Int): Response<DetailInspeksiResponse> {
         return apiService.getDetailInspection(inspectionId)
     }
-
-
-
 }

@@ -21,6 +21,7 @@ import androidx.core.content.ContextCompat
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.project.rekapatrol.support.TokenHandler
 import com.project.rekapatrol.ui.screen.*
 import com.project.rekapatrol.ui.theme.RekapatrolTheme
 
@@ -50,25 +51,43 @@ class MainActivity : ComponentActivity() {
             requestPermissionLauncher.launch(Manifest.permission.CAMERA)
         }
 
+        val tokenHandler = TokenHandler(this)
+        val token = tokenHandler.getToken()
+
         // Izin sudah diberikan, bisa lanjutkan
-        setContent {
-            RekapatrolTheme {
-                // A surface container using the 'background' color from the theme
-                Surface(
-                    modifier = Modifier.fillMaxSize(),
-                    color = MaterialTheme.colorScheme.background
-                ) {
-                    AppNavigator()
+        if (token == null) {
+            setContent {
+                RekapatrolTheme {
+                    // A surface container using the 'background' color from the theme
+                    Surface(
+                        modifier = Modifier.fillMaxSize(),
+                        color = MaterialTheme.colorScheme.background
+                    ) {
+                        AppNavigator(tokenExists = false)
+                    }
+                }
+            }
+        } else {
+            // Jika token ada, lanjutkan aplikasi ke layar utama
+            setContent {
+                RekapatrolTheme {
+                    // A surface container using the 'background' color from the theme
+                    Surface(
+                        modifier = Modifier.fillMaxSize(),
+                        color = MaterialTheme.colorScheme.background
+                    ) {
+                        AppNavigator(tokenExists = true)
+                    }
                 }
             }
         }
     }
 
     @Composable
-    fun AppNavigator() {
+    fun AppNavigator(tokenExists: Boolean) {
         val navController = rememberNavController()
 
-        NavHost(navController = navController, startDestination = "loginScreen" ) {
+        NavHost(navController = navController, startDestination = if (tokenExists) "mainMenu" else "loginScreen") {
             composable("loginScreen") {
                 LoginScreen(onLoginSuccess = {
                     navController.navigate("mainMenu") {

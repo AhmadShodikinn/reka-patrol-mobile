@@ -113,7 +113,7 @@ fun InspeksiCard(item: InspeksiResult, navController: NavController) {
             .fillMaxWidth()
             .clickable {
                 Toast
-                    .makeText(context, "Patrol ini sudah ditindak", Toast.LENGTH_SHORT)
+                    .makeText(context, "Inspeksi ini sudah ditindak", Toast.LENGTH_SHORT)
                     .show()
             }
             .padding(8.dp)
@@ -121,7 +121,7 @@ fun InspeksiCard(item: InspeksiResult, navController: NavController) {
         Modifier
             .fillMaxWidth()
             .clickable {
-                navController.navigate("tindakLanjutSafetyPatrol/${item.id}")
+                navController.navigate("tindakLanjutInspeksi/${item.id}")
             }
             .padding(8.dp)
     }
