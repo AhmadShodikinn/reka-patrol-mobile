@@ -234,21 +234,18 @@ fun ImagePickerSectionForTindakLanjutSafety(imageUris: List<Uri>, onClick: () ->
                     val bitmap = MediaStore.Images.Media.getBitmap(LocalContext.current.contentResolver, uri)
                     Image(
                         bitmap = bitmap.asImageBitmap(),
-                        contentDescription = "Gambar terpilih",
+                        contentDescription = "Gambar",
                         modifier = Modifier
-                            .height(120.dp)
-                            .padding(end = 8.dp)
-                            .aspectRatio(1f) // opsional, untuk menjaga bentuk square-ish
+                            .fillMaxHeight()
+                            .aspectRatio(16 / 9f)
                     )
                 }
             }
         } else {
             Image(
                 painter = painterResource(id = R.drawable.imagesmode),
-                contentDescription = "Placeholder Gambar",
-                modifier = Modifier
-                    .size(80.dp)
-                    .align(Alignment.Center)
+                contentDescription = "Placeholder",
+                modifier = Modifier.size(120.dp)
             )
         }
     }

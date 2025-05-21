@@ -1,5 +1,6 @@
 package com.project.rekapatrol.ui.screen
 
+import android.widget.Toast
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -13,20 +14,26 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import androidx.paging.compose.collectAsLazyPagingItems
 import com.project.rekapatrol.R
+import com.project.rekapatrol.data.viewModel.GeneralViewModel
+import com.project.rekapatrol.data.viewModelFactory.GeneralViewModelFactory
 import com.project.rekapatrol.ui.theme.cream
 import com.project.rekapatrol.ui.theme.disabled
 import com.project.rekapatrol.ui.theme.skyblue
 
 // Dummy data model
 data class InspeksiResult(
+    val id: Int,
     val keterangan: String,
     val lokasi: String,
     val isSolved: Boolean
@@ -38,20 +45,9 @@ fun HasilInspeksiScreen(
     navController: NavController,
     onAddClick: () -> Unit = {}
 ) {
-    val inspeksiResults = listOf(
-        InspeksiResult(
-            "Tidak ada barang yang tidak diperlukan di area mesin/tempat kerja.",
-            "Workshop", true
-        ),
-        InspeksiResult(
-            "Peralatan tidak tertata rapi di rak.",
-            "Gudang", false
-        ),
-        InspeksiResult(
-            "Papan instruksi tidak terlihat jelas.",
-            "Workshop", false
-        )
-    )
+    val context = LocalContext.current
+    val generalViewModel: GeneralViewModel = viewModel(factory = GeneralViewModelFactory(context))
+    val inspeksiItems = generalViewModel.inspeksiFlow.collectAsLazyPagingItems()
 
     Scaffold(
         topBar = {
@@ -64,11 +60,7 @@ fun HasilInspeksiScreen(
                         color = Color.White
                     )
                 },
-                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
-                    containerColor = skyblue,
-                    titleContentColor = Color.Black,
-                    navigationIconContentColor = Color.White
-                ),
+                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(containerColor = skyblue),
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
                         Icon(Icons.Default.ArrowBack, contentDescription = "Kembali")
@@ -83,12 +75,7 @@ fun HasilInspeksiScreen(
                 contentColor = Color.White,
                 shape = RoundedCornerShape(16.dp)
             ) {
-                Icon(
-                    painterResource(
-                        id = R.drawable.download_24px
-                    ),
-                    contentDescription = "Tambah"
-                )
+                Icon(painterResource(id = R.drawable.download_24px), contentDescription = "Download")
             }
         },
         containerColor = Color.White
@@ -99,9 +86,18 @@ fun HasilInspeksiScreen(
                 .padding(16.dp)
                 .fillMaxSize()
         ) {
-            items(inspeksiResults) { item ->
-                InspeksiCard(item, navController = navController)
-                Spacer(modifier = Modifier.height(8.dp))
+            items(inspeksiItems.itemCount) { index ->
+                val item = inspeksiItems[index]
+                item?.let {
+                    val inspeksiResult = InspeksiResult(
+                        id = it.id ?: -1,
+                        keterangan = it.findingsDescription ?: "-",
+                        lokasi = it.inspectionLocation ?: "-",
+                        isSolved = it.suitability == 1
+                    )
+                    InspeksiCard(item = inspeksiResult, navController = navController)
+                    Spacer(modifier = Modifier.height(8.dp))
+                }
             }
         }
     }
@@ -109,12 +105,29 @@ fun HasilInspeksiScreen(
 
 @Composable
 fun InspeksiCard(item: InspeksiResult, navController: NavController) {
-    Card(
-        modifier = Modifier
+    val context = LocalContext.current
+
+    val cardModifier = if (item.isSolved)
+    {
+        Modifier
             .fillMaxWidth()
             .clickable {
-                navController.navigate("tindakLanjutInspeksi")
-            },
+                Toast
+                    .makeText(context, "Patrol ini sudah ditindak", Toast.LENGTH_SHORT)
+                    .show()
+            }
+            .padding(8.dp)
+    } else {
+        Modifier
+            .fillMaxWidth()
+            .clickable {
+                navController.navigate("tindakLanjutSafetyPatrol/${item.id}")
+            }
+            .padding(8.dp)
+    }
+
+    Card(
+        modifier = cardModifier,
         shape = RoundedCornerShape(2.dp),
         colors = CardDefaults.cardColors(
             containerColor = if (item.isSolved) disabled else Color.White

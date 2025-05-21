@@ -90,7 +90,7 @@ fun HasilSafetyPatrolScreen(
                     painterResource(
                         id = R.drawable.download_24px
                     ),
-                    contentDescription = "Tambah"
+                    contentDescription = "Download"
                 )
             }
         },

@@ -2,13 +2,34 @@ package com.project.rekapatrol.data.response
 
 import com.google.gson.annotations.SerializedName
 
-data class InputInspeksiResponse(
+data class DetailInspeksiResponse(
 
 	@field:SerializedName("data")
-	val data: DataInspection? = null
+	val data: DataDetailInspection? = null
 )
 
-data class CriteriaInspection(
+data class FindingsItemDetailInspection(
+
+	@field:SerializedName("findable_id")
+	val findableId: Int? = null,
+
+	@field:SerializedName("updated_at")
+	val updatedAt: String? = null,
+
+	@field:SerializedName("findable_type")
+	val findableType: String? = null,
+
+	@field:SerializedName("image_path")
+	val imagePath: String? = null,
+
+	@field:SerializedName("created_at")
+	val createdAt: String? = null,
+
+	@field:SerializedName("id")
+	val id: Int? = null
+)
+
+data class CriteriaDetailInspection(
 
 	@field:SerializedName("updated_at")
 	val updatedAt: String? = null,
@@ -29,31 +50,31 @@ data class CriteriaInspection(
 	val criteriaName: String? = null
 )
 
-data class DataInspection(
+data class DataDetailInspection(
 
 	@field:SerializedName("checkup_date")
 	val checkupDate: String? = null,
 
 	@field:SerializedName("pic_id")
-	val picId: Any? = null,
+	val picId: Int? = null,
 
 	@field:SerializedName("suitability")
-	val suitability: String? = null,
+	val suitability: Int? = null,
 
 	@field:SerializedName("criteria")
 	val criteria: Criteria? = null,
 
 	@field:SerializedName("findings")
-	val findings: List<FindingsItemInspection?>? = null,
+	val findings: List<FindingsItemDetailInspection?>? = null,
 
 	@field:SerializedName("criteria_id")
-	val criteriaId: String? = null,
+	val criteriaId: Int? = null,
 
 	@field:SerializedName("created_at")
 	val createdAt: String? = null,
 
 	@field:SerializedName("action_path")
-	val actionPath: Any? = null,
+	val actionPath: String? = null,
 
 	@field:SerializedName("worker_id")
 	val workerId: Int? = null,
@@ -62,7 +83,7 @@ data class DataInspection(
 	val inspectionLocation: String? = null,
 
 	@field:SerializedName("action_description")
-	val actionDescription: Any? = null,
+	val actionDescription: String? = null,
 
 	@field:SerializedName("updated_at")
 	val updatedAt: String? = null,
@@ -75,25 +96,4 @@ data class DataInspection(
 
 	@field:SerializedName("value")
 	val value: String? = null
-)
-
-data class FindingsItemInspection(
-
-	@field:SerializedName("findable_id")
-	val findableId: Int? = null,
-
-	@field:SerializedName("updated_at")
-	val updatedAt: String? = null,
-
-	@field:SerializedName("findable_type")
-	val findableType: String? = null,
-
-	@field:SerializedName("image_path")
-	val imagePath: String? = null,
-
-	@field:SerializedName("created_at")
-	val createdAt: String? = null,
-
-	@field:SerializedName("id")
-	val id: Int? = null
 )

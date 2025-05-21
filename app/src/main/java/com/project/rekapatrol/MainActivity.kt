@@ -82,14 +82,16 @@ class MainActivity : ComponentActivity() {
                     onNavigate = { destination -> navController.navigate(destination) },
                     onLogoutSuccess = {
                         navController.navigate("login") {
-                            popUpTo("mainMenu") { inclusive = true } // Supaya back tidak kembali ke mainMenu
+                            popUpTo("mainMenu") { inclusive = true }
                         }
                     }
                 )
             }
 
             composable("inputSafetyPatrol") { InputSafetyPatrolScreen(navController = navController) }
+
             composable("hasilSafetyPatrol") { HasilSafetyPatrolScreen(navController = navController) }
+
             composable("tindakLanjutSafetyPatrol/{id}") { backStackEntry ->
                 val patrolId = backStackEntry.arguments?.getString("id")?.toIntOrNull()
                 patrolId?.let {
@@ -97,8 +99,15 @@ class MainActivity : ComponentActivity() {
                 }
             }
             composable("inputInspeksi") { InputInspeksiScreen(navController = navController) }
+
             composable("hasilInspeksi") { HasilInspeksiScreen(navController = navController) }
-            composable("tindakLanjutInspeksi") { TindakLanjutInspeksiScreen(navController = navController) }
+
+            composable("tindakLanjutInspeksi/{id}") { backStackEntry ->
+                val inspectionId = backStackEntry.arguments?.getString("id")?.toIntOrNull()
+                inspectionId?.let {
+                    TindakLanjutInspeksiScreen(navController = navController, inspectionId = it)
+                } }
+
             composable("jsa") { JSAScreen(navController = navController) }
 
             composable("detailInputInspeksi/{kriteria}") { backStackEntry ->

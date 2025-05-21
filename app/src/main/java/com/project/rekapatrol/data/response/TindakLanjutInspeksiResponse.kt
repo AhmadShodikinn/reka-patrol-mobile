@@ -2,82 +2,13 @@ package com.project.rekapatrol.data.response
 
 import com.google.gson.annotations.SerializedName
 
-data class InputInspeksiResponse(
+data class TindakLanjutInspeksiResponse(
 
 	@field:SerializedName("data")
-	val data: DataInspection? = null
+	val data: Data? = null
 )
 
-data class CriteriaInspection(
-
-	@field:SerializedName("updated_at")
-	val updatedAt: String? = null,
-
-	@field:SerializedName("created_at")
-	val createdAt: String? = null,
-
-	@field:SerializedName("id")
-	val id: Int? = null,
-
-	@field:SerializedName("criteria_type")
-	val criteriaType: String? = null,
-
-	@field:SerializedName("location_id")
-	val locationId: Int? = null,
-
-	@field:SerializedName("criteria_name")
-	val criteriaName: String? = null
-)
-
-data class DataInspection(
-
-	@field:SerializedName("checkup_date")
-	val checkupDate: String? = null,
-
-	@field:SerializedName("pic_id")
-	val picId: Any? = null,
-
-	@field:SerializedName("suitability")
-	val suitability: String? = null,
-
-	@field:SerializedName("criteria")
-	val criteria: Criteria? = null,
-
-	@field:SerializedName("findings")
-	val findings: List<FindingsItemInspection?>? = null,
-
-	@field:SerializedName("criteria_id")
-	val criteriaId: String? = null,
-
-	@field:SerializedName("created_at")
-	val createdAt: String? = null,
-
-	@field:SerializedName("action_path")
-	val actionPath: Any? = null,
-
-	@field:SerializedName("worker_id")
-	val workerId: Int? = null,
-
-	@field:SerializedName("inspection_location")
-	val inspectionLocation: String? = null,
-
-	@field:SerializedName("action_description")
-	val actionDescription: Any? = null,
-
-	@field:SerializedName("updated_at")
-	val updatedAt: String? = null,
-
-	@field:SerializedName("id")
-	val id: Int? = null,
-
-	@field:SerializedName("findings_description")
-	val findingsDescription: String? = null,
-
-	@field:SerializedName("value")
-	val value: String? = null
-)
-
-data class FindingsItemInspection(
+data class FindingsItem(
 
 	@field:SerializedName("findable_id")
 	val findableId: Int? = null,
@@ -96,4 +27,73 @@ data class FindingsItemInspection(
 
 	@field:SerializedName("id")
 	val id: Int? = null
+)
+
+data class Data(
+
+	@field:SerializedName("checkup_date")
+	val checkupDate: String? = null,
+
+	@field:SerializedName("pic_id")
+	val picId: String? = null,
+
+	@field:SerializedName("suitability")
+	val suitability: Int? = null,
+
+	@field:SerializedName("criteria")
+	val criteria: Criteria? = null,
+
+	@field:SerializedName("findings")
+	val findings: List<FindingsItem?>? = null,
+
+	@field:SerializedName("criteria_id")
+	val criteriaId: Int? = null,
+
+	@field:SerializedName("created_at")
+	val createdAt: String? = null,
+
+	@field:SerializedName("action_path")
+	val actionPath: String? = null,
+
+	@field:SerializedName("worker_id")
+	val workerId: Int? = null,
+
+	@field:SerializedName("inspection_location")
+	val inspectionLocation: String? = null,
+
+	@field:SerializedName("action_description")
+	val actionDescription: String? = null,
+
+	@field:SerializedName("updated_at")
+	val updatedAt: String? = null,
+
+	@field:SerializedName("id")
+	val id: Int? = null,
+
+	@field:SerializedName("findings_description")
+	val findingsDescription: String? = null,
+
+	@field:SerializedName("value")
+	val value: String? = null
+)
+
+data class Criteria(
+
+	@field:SerializedName("updated_at")
+	val updatedAt: String? = null,
+
+	@field:SerializedName("created_at")
+	val createdAt: String? = null,
+
+	@field:SerializedName("id")
+	val id: Int? = null,
+
+	@field:SerializedName("criteria_type")
+	val criteriaType: String? = null,
+
+	@field:SerializedName("location_id")
+	val locationId: Int? = null,
+
+	@field:SerializedName("criteria_name")
+	val criteriaName: String? = null
 )

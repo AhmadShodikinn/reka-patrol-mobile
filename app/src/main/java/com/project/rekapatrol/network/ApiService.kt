@@ -2,11 +2,14 @@ package com.project.rekapatrol.network
 
 import com.project.rekapatrol.data.request.LoginRequest
 import com.project.rekapatrol.data.response.CriteriaResponse
+import com.project.rekapatrol.data.response.DetailInspeksiResponse
 import com.project.rekapatrol.data.response.InputInspeksiResponse
 import com.project.rekapatrol.data.response.InputSafetyPatrolsResponse
+import com.project.rekapatrol.data.response.ListInspeksiResponse
 import com.project.rekapatrol.data.response.ListSafetyPatrolsResponse
 import com.project.rekapatrol.data.response.LoginResponse
 import com.project.rekapatrol.data.response.LogoutResponse
+import com.project.rekapatrol.data.response.TindakLanjutInspeksiResponse
 import com.project.rekapatrol.data.response.TindakLanjutSafetyPatrolsResponse
 import okhttp3.MultipartBody
 import okhttp3.RequestBody
@@ -76,5 +79,25 @@ interface ApiService {
         @Query("criteria_type") criteriaType: String,
         @Query("location_id") locationId: Int
     ): Response<CriteriaResponse>
+
+    @GET("inspections")
+    suspend fun getInspectionsList(
+        @Query("per_page") perPage: Int = 10,
+        @Query("page") page: Int = 1
+    ): Response<ListInspeksiResponse>
+
+    @Multipart
+    @POST("inspections/{id}")
+    suspend fun updateInspection(
+        @Path("id") safetyPatrolId: Int,
+        @Query("_method") _method:String,
+        @Part("action_description") actionDescription: RequestBody,
+        @Part actionPath: MultipartBody.Part
+    ): Response<TindakLanjutInspeksiResponse>
+
+    @GET("inspections/{id}")
+    suspend fun getDetailInspection(
+        @Path("id") id: Int
+    ): Response<DetailInspeksiResponse>
 
 }

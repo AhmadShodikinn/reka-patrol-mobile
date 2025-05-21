@@ -15,8 +15,10 @@ import com.project.rekapatrol.data.repository.Repository
 import com.project.rekapatrol.data.response.CriteriaResponse
 import com.project.rekapatrol.data.response.DataItemCriterias
 import com.project.rekapatrol.data.response.DataItemSafetyPatrols
+import com.project.rekapatrol.data.response.DetailInspeksiResponse
 import com.project.rekapatrol.data.response.InputInspeksiResponse
 import com.project.rekapatrol.data.response.InputSafetyPatrolsResponse
+import com.project.rekapatrol.data.response.TindakLanjutInspeksiResponse
 import com.project.rekapatrol.data.response.TindakLanjutSafetyPatrolsResponse
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -44,6 +46,12 @@ class GeneralViewModel(
 
     private val _listCriteriaResult = MutableStateFlow<List<DataItemCriterias>>(emptyList())
     val listCriteriaResult: StateFlow<List<DataItemCriterias>> = _listCriteriaResult
+
+    private val _updateInspectionResults = MutableLiveData<TindakLanjutInspeksiResponse>()
+    val updateInspectionResponse: LiveData<TindakLanjutInspeksiResponse> =_updateInspectionResults
+
+    private val _inspectionDetailResuls = MutableLiveData<DetailInspeksiResponse>()
+    val inspectionDetailResposne: LiveData<DetailInspeksiResponse> = _inspectionDetailResuls
 
     fun inputSafetyPatrol(
         findingPaths: List<MultipartBody.Part>,
@@ -151,6 +159,57 @@ class GeneralViewModel(
                 repository.fetchCriteriasSource(criteriaType, locationId)
             }
         ).flow.cachedIn(viewModelScope)
+    }
+
+    val inspeksiFlow = Pager(
+        config = PagingConfig(
+            pageSize = 10,
+            enablePlaceholders = false
+        ),
+        pagingSourceFactory = { repository.getInspeksiPagingSource() }
+    ).flow.cachedIn(viewModelScope)
+
+    fun updateInspection(
+        inspectionId: Int,
+        actionDescription: String,
+        actionImagePath: MultipartBody.Part
+    ) {
+        viewModelScope.launch {
+            try {
+                val response = repository.updateInspection(
+                    inspectionId, actionDescription, actionImagePath
+                )
+
+                if (response.isSuccessful) {
+                    _updateInspectionResults.value = response.body()
+                } else {
+                    val errorBody = response.errorBody()?.string()
+                    val message = JSONObject(errorBody).getString("message")
+                    Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+                }
+            } catch (e: Exception) {
+                Log.e("GeneralViewModel", "Server Error: ${e.message}", e)
+                Toast.makeText(context, "Server Error!", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
+    fun getDetailInspection(inspectionId: Int) {
+        viewModelScope.launch {
+            try {
+                val response = repository.getInspectionDetail(inspectionId)
+                if (response.isSuccessful) {
+                    _inspectionDetailResuls.value = response.body()
+                } else {
+                    val error = response.errorBody()?.string()
+                    val message = JSONObject(error).getString("message")
+                    Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+                }
+            } catch (e: Exception) {
+                Log.e("GeneralViewModel", "Error: ${e.message}", e)
+                Toast.makeText(context, "Gagal mengambil data inspeksi", Toast.LENGTH_SHORT).show()
+            }
+        }
     }
 
 
