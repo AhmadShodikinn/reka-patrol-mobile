@@ -61,7 +61,7 @@ fun DetailInputInspeksiScreen(
     var lokasi by remember { mutableStateOf("") }
     var keteranganTemuan by remember { mutableStateOf("") }
     var value by remember { mutableStateOf("") }
-    var sustainability by remember { mutableStateOf("") }
+    var sustainability by remember { mutableStateOf<Boolean?>(null) }
     var tanggal by remember { mutableStateOf("") }
 
     // Gambar
@@ -85,11 +85,12 @@ fun DetailInputInspeksiScreen(
 
     val lokasiOptions = listOf("Workshop/Gudang", "Kantor")
     val lokasiToId = mapOf("Workshop/Gudang" to 1, "Kantor" to 2)
-    val valueOptions = listOf("Nilai 1", "Nilai 2", "Nilai 3")
-    val sustainabilityOptions = listOf("Sustainable", "Tidak Sustainable")
+    val sustainabilityOptions = listOf(
+        "Ya" to true,
+        "Tidak" to false
+    )
 
     var expandedLokasi by remember { mutableStateOf(false) }
-    var expandedValue by remember { mutableStateOf(false) }
     var expandedSustain by remember { mutableStateOf(false) }
     var selectedCriteriaId by remember { mutableStateOf<Int?>(null) }
     var expandedCriteria by remember { mutableStateOf(false) }
@@ -167,10 +168,6 @@ fun DetailInputInspeksiScreen(
                             DropdownMenuItem(text = { Text(it) }, onClick = {
                                 lokasi = it
                                 expandedLokasi = false
-//                                val locationId = lokasiToId[it]
-//                                if (locationId != null) {
-//                                    viewModel.loadCriterias(criteriaType, locationId)
-//                                }
                             })
                         }
                     }
@@ -259,45 +256,44 @@ fun DetailInputInspeksiScreen(
                 )
 
                 // Value Dropdown
-                ExposedDropdownMenuBox(expanded = expandedValue, onExpandedChange = { expandedValue = !expandedValue }) {
-                    OutlinedTextField(
-                        value = value,
-                        onValueChange = {},
-                        readOnly = true,
-                        label = { Text("Value") },
-                        trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expandedValue) },
-                        modifier = Modifier
-                            .menuAnchor()
-                            .fillMaxWidth()
-                    )
-                    ExposedDropdownMenu(expanded = expandedValue, onDismissRequest = { expandedValue = false }) {
-                        valueOptions.forEach {
-                            DropdownMenuItem(text = { Text(it) }, onClick = {
-                                value = it
-                                expandedValue = false
-                            })
-                        }
-                    }
-                }
+                OutlinedTextField(
+                    value = value,
+                    onValueChange = { value = it },
+                    label = { Text("Nilai") },
+                    modifier = Modifier.fillMaxWidth()
+                )
 
                 // Sustainability Dropdown
-                ExposedDropdownMenuBox(expanded = expandedSustain, onExpandedChange = { expandedSustain = !expandedSustain }) {
+                ExposedDropdownMenuBox(
+                    expanded = expandedSustain,
+                    onExpandedChange = { expandedSustain = !expandedSustain }
+                ) {
                     OutlinedTextField(
-                        value = sustainability,
+                        value = when (sustainability) {
+                            true -> "Ya"
+                            false -> "Tidak"
+                            else -> ""
+                        },
                         onValueChange = {},
                         readOnly = true,
-                        label = { Text("Sustainability") },
+                        label = { Text("Kesesuaian") },
                         trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expandedSustain) },
                         modifier = Modifier
                             .menuAnchor()
                             .fillMaxWidth()
                     )
-                    ExposedDropdownMenu(expanded = expandedSustain, onDismissRequest = { expandedSustain = false }) {
-                        sustainabilityOptions.forEach {
-                            DropdownMenuItem(text = { Text(it) }, onClick = {
-                                sustainability = it
-                                expandedSustain = false
-                            })
+                    ExposedDropdownMenu(
+                        expanded = expandedSustain,
+                        onDismissRequest = { expandedSustain = false }
+                    ) {
+                        sustainabilityOptions.forEach { (label, value) ->
+                            DropdownMenuItem(
+                                text = { Text(label) },
+                                onClick = {
+                                    sustainability = value
+                                    expandedSustain = false
+                                }
+                            )
                         }
                     }
                 }
@@ -322,7 +318,7 @@ fun DetailInputInspeksiScreen(
                         if (
                             selectedCriteriaId != null &&
                             lokasi.isNotBlank() && keteranganTemuan.isNotBlank() &&
-                            value.isNotBlank() && sustainability.isNotBlank() &&
+                            value.isNotBlank() &&
                             tanggal.isNotBlank() && imageUris.isNotEmpty()
                         ) {
                             val multipartFiles = imageUris.map { uriToMultipartFinding(context, it) }
@@ -333,7 +329,7 @@ fun DetailInputInspeksiScreen(
                                 findingsDescription = keteranganTemuan,
                                 inspectionLocation = lokasi,
                                 value = value,
-                                suitability = sustainability,
+                                suitability = sustainability == true, //default,
                                 checkupDate = tanggal
                             )
                         } else {

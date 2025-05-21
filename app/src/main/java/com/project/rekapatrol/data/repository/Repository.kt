@@ -14,6 +14,7 @@ import com.project.rekapatrol.data.response.LoginResponse
 import com.project.rekapatrol.data.response.LogoutResponse
 import com.project.rekapatrol.data.response.TindakLanjutSafetyPatrolsResponse
 import com.project.rekapatrol.network.ApiService
+import com.project.rekapatrol.support.toIntPlainPart
 import com.project.rekapatrol.support.toPlainPart
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
@@ -72,7 +73,7 @@ class Repository(private val apiService: ApiService) {
         findings_description: String,
         inspection_location: String,
         value: String,
-        suitability: String,
+        suitability: Boolean,
         checkupDate: String
     ): Response<InputInspeksiResponse> {
         return apiService.inputInspeksi(
@@ -80,7 +81,7 @@ class Repository(private val apiService: ApiService) {
             findingsDescription = findings_description.toPlainPart(),
             inspection_location = inspection_location.toPlainPart(),
             value = value.toPlainPart(),
-            suitability = suitability.toPlainPart(),
+            suitability = suitability.toIntPlainPart(),
             checkupDate = checkupDate.toPlainPart(),
             finding_paths = findingPaths
         )

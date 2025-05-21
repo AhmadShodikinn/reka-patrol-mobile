@@ -112,7 +112,7 @@ class GeneralViewModel(
         findingsDescription: String,
         inspectionLocation: String,
         value: String,
-        suitability: String,
+        suitability: Boolean,
         checkupDate: String
     ) {
         viewModelScope.launch {
