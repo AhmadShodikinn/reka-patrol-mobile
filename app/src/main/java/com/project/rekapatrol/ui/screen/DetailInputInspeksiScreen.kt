@@ -37,7 +37,10 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import androidx.paging.compose.LazyPagingItems
+import androidx.paging.compose.collectAsLazyPagingItems
 import com.project.rekapatrol.R
+import com.project.rekapatrol.data.response.DataItemCriterias
 import com.project.rekapatrol.data.viewModel.GeneralViewModel
 import com.project.rekapatrol.data.viewModelFactory.GeneralViewModelFactory
 import com.project.rekapatrol.ui.helper.uriToMultipartFinding
@@ -98,15 +101,13 @@ fun DetailInputInspeksiScreen(
         imageUris = uris
     }
 
-    val criteriaList by viewModel.listCriteriaResult.collectAsState()
+    val currentCriteriaType by rememberUpdatedState(newValue = criteriaType)
+    val currentLocationId = lokasiToId[lokasi] ?: 0
+    val criteriaPagingItems = remember(currentCriteriaType, currentLocationId) {
+        viewModel.getCriteriasPaging(currentCriteriaType, currentLocationId)
+    }.collectAsLazyPagingItems()
     val result by viewModel.inputInspeksiResponse.observeAsState()
 
-    LaunchedEffect(lokasi, criteriaType) {
-        val locationId = lokasiToId[lokasi]
-        if (locationId != null) {
-            viewModel.loadCriterias(criteriaType, locationId)
-        }
-    }
 
     LaunchedEffect(result) {
         result?.let {
@@ -150,7 +151,6 @@ fun DetailInputInspeksiScreen(
                     .verticalScroll(rememberScrollState()),
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                // Lokasi Dropdown
                 ExposedDropdownMenuBox(expanded = expandedLokasi, onExpandedChange = { expandedLokasi = !expandedLokasi }) {
                     OutlinedTextField(
                         value = lokasi,
@@ -167,6 +167,10 @@ fun DetailInputInspeksiScreen(
                             DropdownMenuItem(text = { Text(it) }, onClick = {
                                 lokasi = it
                                 expandedLokasi = false
+//                                val locationId = lokasiToId[it]
+//                                if (locationId != null) {
+//                                    viewModel.loadCriterias(criteriaType, locationId)
+//                                }
                             })
                         }
                     }
@@ -185,19 +189,36 @@ fun DetailInputInspeksiScreen(
                         trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expandedCriteria) },
                         modifier = Modifier.menuAnchor().fillMaxWidth()
                     )
-                    ExposedDropdownMenu(
+                    ExposedDropdownMenuBox(
                         expanded = expandedCriteria,
-                        onDismissRequest = { expandedCriteria = false }
+                        onExpandedChange = { expandedCriteria = !expandedCriteria }
                     ) {
-                        criteriaList.forEach { item ->
-                            DropdownMenuItem(
-                                text = { Text(item.criteriaName ?: "Tanpa Nama") },
-                                onClick = {
-                                    selectedCriteriaName = item.criteriaName ?: ""
-                                    selectedCriteriaId = item.id
-                                    expandedCriteria = false
+                        OutlinedTextField(
+                            value = selectedCriteriaName,
+                            onValueChange = {},
+                            readOnly = true,
+                            label = { Text("Kriteria") },
+                            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expandedCriteria) },
+                            modifier = Modifier.menuAnchor().fillMaxWidth()
+                        )
+                        ExposedDropdownMenu(
+                            expanded = expandedCriteria,
+                            onDismissRequest = { expandedCriteria = false }
+                        ) {
+                            for (i in 0 until criteriaPagingItems.itemCount) {
+                                val item = criteriaPagingItems[i]
+                                if (item != null) {
+                                    DropdownMenuItem(
+                                        text = { Text(item.criteriaName ?: "Tanpa Nama") },
+                                        onClick = {
+                                            selectedCriteriaName = item.criteriaName ?: ""
+                                            selectedCriteriaId = item.id
+                                            expandedCriteria = false
+                                        }
+                                    )
                                 }
-                            )
+                            }
+
                         }
                     }
                 }

@@ -1,7 +1,12 @@
 package com.project.rekapatrol.data.repository
 
+import androidx.paging.PagingSource
+import com.project.rekapatrol.data.pagingSource.CriteriasPagingSource
+import com.project.rekapatrol.data.pagingSource.SafetyPatrolPagingSource
 import com.project.rekapatrol.data.request.LoginRequest
 import com.project.rekapatrol.data.response.CriteriaResponse
+import com.project.rekapatrol.data.response.DataItemCriterias
+import com.project.rekapatrol.data.response.DataItemSafetyPatrols
 import com.project.rekapatrol.data.response.InputInspeksiResponse
 import com.project.rekapatrol.data.response.InputSafetyPatrolsResponse
 import com.project.rekapatrol.data.response.ListSafetyPatrolsResponse
@@ -44,16 +49,8 @@ class Repository(private val apiService: ApiService) {
         )
     }
 
-    suspend fun getSafetyPatrolsList(
-        relations: List<String> = listOf("pic"),
-        perPage: Int = 10,
-        page: Int = 1
-    ): Response<ListSafetyPatrolsResponse> {
-        return apiService.getInputSafetyPatrolsList(
-            relations = relations,
-            perPage = perPage,
-            page = page
-        )
+    fun getSafetyPatrolsPagingSource(): PagingSource<Int, DataItemSafetyPatrols> {
+        return SafetyPatrolPagingSource(apiService)
     }
 
     suspend fun updateSafetyPatrols(
@@ -89,11 +86,8 @@ class Repository(private val apiService: ApiService) {
         )
     }
 
-    suspend fun fetchCriterias(criteriaType: String, locationId: Int): Response<CriteriaResponse> {
-        return apiService.getCriterias(
-            criteriaType = criteriaType,
-            locationId = locationId
-        )
+    fun fetchCriteriasSource(criteriaType: String, locationId: Int): PagingSource<Int, DataItemCriterias> {
+        return CriteriasPagingSource(apiService, criteriaType, locationId)
     }
 
 

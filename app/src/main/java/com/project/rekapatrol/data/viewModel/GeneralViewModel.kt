@@ -7,6 +7,10 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.paging.Pager
+import androidx.paging.PagingConfig
+import androidx.paging.PagingData
+import androidx.paging.cachedIn
 import com.project.rekapatrol.data.repository.Repository
 import com.project.rekapatrol.data.response.CriteriaResponse
 import com.project.rekapatrol.data.response.DataItemCriterias
@@ -14,6 +18,7 @@ import com.project.rekapatrol.data.response.DataItemSafetyPatrols
 import com.project.rekapatrol.data.response.InputInspeksiResponse
 import com.project.rekapatrol.data.response.InputSafetyPatrolsResponse
 import com.project.rekapatrol.data.response.TindakLanjutSafetyPatrolsResponse
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
@@ -36,9 +41,6 @@ class GeneralViewModel(
 
     private val _inputInspeksiResult = MutableLiveData<InputInspeksiResponse>()
     val inputInspeksiResponse: LiveData<InputInspeksiResponse> = _inputInspeksiResult
-
-//    private val _listCriteriaResult = MutableLiveData<CriteriaResponse>()
-//    val listCriteriaResponse: LiveData<CriteriaResponse> = _listCriteriaResult
 
     private val _listCriteriaResult = MutableStateFlow<List<DataItemCriterias>>(emptyList())
     val listCriteriaResult: StateFlow<List<DataItemCriterias>> = _listCriteriaResult
@@ -96,28 +98,13 @@ class GeneralViewModel(
         }
     }
 
-
-    fun fetchSafetyPatrolList(perPage: Int = 10, page: Int = 1) {
-        viewModelScope.launch {
-            try {
-                val response = repository.getSafetyPatrolsList(
-                    relations = listOf("pic"),
-                    perPage = perPage,
-                    page = page
-                )
-
-                if (response.isSuccessful) {
-                    val list = response.body()?.data?.filterNotNull() ?: emptyList()
-                    _safetyPatrolList.value = list
-                } else {
-                    val error = response.errorBody()?.string()
-                    Log.e("GeneralViewModel", "Fetch gagal: $error")
-                }
-            } catch (e: Exception) {
-                Log.e("GeneralViewModel", "Server error: ${e.message}", e)
-            }
-        }
-    }
+    val safetyPatrolFlow = Pager(
+        config = PagingConfig(
+            pageSize = 10,
+            enablePlaceholders = false
+        ),
+        pagingSourceFactory = { repository.getSafetyPatrolsPagingSource() }
+    ).flow.cachedIn(viewModelScope)
 
     fun inputInspeksi(
         criteriaId: Int,
@@ -154,27 +141,18 @@ class GeneralViewModel(
         }
     }
 
-//    fun loadCriterias(type: String, locationId: Int) {
-//        viewModelScope.launch {
-//            try {
-//                val response = repository.fetchCriterias(type, locationId)
-//                _listCriteriaResult.value = response.body()
-//            } catch (e: Exception) {
-//                Log.e("ViewModel", "Error fetching criteria: ${e.message}")
-//            }
-//        }
-//    }
-
-    fun loadCriterias(type: String, locationId: Int) {
-        viewModelScope.launch {
-            try {
-                val response = repository.fetchCriterias(type, locationId)
-                val data = response.body()?.data?.filterNotNull() ?: emptyList()
-                _listCriteriaResult.value = data
-            } catch (e: Exception) {
-                Log.e("ViewModel", "Error fetching criteria: ${e.message}")
+    fun getCriteriasPaging(criteriaType: String, locationId: Int): Flow<PagingData<DataItemCriterias>> {
+        return Pager(
+            config = PagingConfig(
+                pageSize = 10,
+                enablePlaceholders = false
+            ),
+            pagingSourceFactory = {
+                repository.fetchCriteriasSource(criteriaType, locationId)
             }
-        }
+        ).flow.cachedIn(viewModelScope)
     }
+
+
 
 }

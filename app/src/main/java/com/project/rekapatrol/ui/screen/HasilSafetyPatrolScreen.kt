@@ -28,6 +28,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import androidx.paging.compose.collectAsLazyPagingItems
 import com.project.rekapatrol.R
 import com.project.rekapatrol.data.viewModel.GeneralViewModel
 import com.project.rekapatrol.data.viewModelFactory.GeneralViewModelFactory
@@ -53,23 +54,7 @@ fun HasilSafetyPatrolScreen(
 ) {
     val context = LocalContext.current
     val generalViewModel: GeneralViewModel = viewModel(factory = GeneralViewModelFactory(context))
-
-    val safetyPatrolList by generalViewModel.safetyPatrolList.observeAsState(emptyList())
-
-    LaunchedEffect(Unit) {
-        generalViewModel.fetchSafetyPatrolList()
-    }
-
-    val inspectionResults = safetyPatrolList.map {
-        InspectionResult(
-            id = it.id ?: -1,
-            risk = it.risk ?: "-",
-            date = it.checkupDate ?: "-",
-            category = it.category ?: "-",
-            location = it.location ?: "-",
-            isSolved = !it.actionDescription.isNullOrBlank()
-        )
-    }
+    val safetyPatrolItems = generalViewModel.safetyPatrolFlow.collectAsLazyPagingItems()
 
     Scaffold(
         topBar = {
@@ -117,9 +102,20 @@ fun HasilSafetyPatrolScreen(
                 .fillMaxSize()
                 .padding(16.dp)
         ) {
-            items(inspectionResults) { result ->
-                InspectionCard(result, navController = navController)
-                Spacer(modifier = Modifier.height(8.dp))
+            items(safetyPatrolItems.itemCount) { index ->
+                val item = safetyPatrolItems[index]
+                item?.let {
+                    val inspectionResult = InspectionResult(
+                        id = it.id ?: -1,
+                        risk = it.risk ?: "-",
+                        date = it.checkupDate ?: "-",
+                        category = it.category ?: "-",
+                        location = it.location ?: "-",
+                        isSolved = !it.actionDescription.isNullOrBlank()
+                    )
+                    InspectionCard(inspectionResult, navController = navController)
+                    Spacer(modifier = Modifier.height(8.dp))
+                }
             }
         }
     }
