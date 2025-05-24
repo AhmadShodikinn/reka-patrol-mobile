@@ -37,7 +37,7 @@ import com.project.rekapatrol.ui.theme.disabled
 import com.project.rekapatrol.ui.theme.skyblue
 import com.project.rekapatrol.ui.theme.whiteblue
 
-data class InspectionResult(
+data class SafetyPatrolResult(
     val id: Int,
     val risk: String,
     val date: String,
@@ -104,7 +104,7 @@ fun HasilSafetyPatrolScreen(
             items(safetyPatrolItems.itemCount) { index ->
                 val item = safetyPatrolItems[index]
                 item?.let {
-                    val inspectionResult = InspectionResult(
+                    val inspectionResult = SafetyPatrolResult(
                         id = it.id ?: -1,
                         risk = it.risk ?: "-",
                         date = it.checkupDate ?: "-",
@@ -121,7 +121,7 @@ fun HasilSafetyPatrolScreen(
 }
 
 @Composable
-fun InspectionCard(result: InspectionResult, navController: NavController) {
+fun InspectionCard(result: SafetyPatrolResult, navController: NavController) {
     val context = LocalContext.current
 
     val cardModifier = if (result.isSolved)

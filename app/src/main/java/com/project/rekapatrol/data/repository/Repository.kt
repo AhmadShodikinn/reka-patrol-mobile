@@ -142,4 +142,18 @@ class Repository(private val apiService: ApiService) {
         )
     }
 
+    suspend fun downloadInspectionRecap(
+        fromDate: String,
+        toDate: String
+    ): Response<ResponseBody> {
+        val dateRangeRequest = DateRangeRequest(
+            from_date = fromDate,
+            to_date = toDate
+        )
+        return apiService.downloadInspectionRecap(
+            download = 1,
+            dateRange = dateRangeRequest
+        )
+    }
+
 }

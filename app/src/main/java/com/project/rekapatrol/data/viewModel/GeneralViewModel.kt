@@ -335,4 +335,32 @@ class GeneralViewModel(
             }
         }
     }
+
+    fun downloadInspectionRecapExcel() {
+        val (fromDate, toDate) = getCurrentMonthDateRange()
+
+        viewModelScope.launch {
+            try {
+                val response = repository.downloadInspectionRecap(
+                    fromDate,
+                    toDate
+                )
+                if (response.isSuccessful) {
+                    response.body()?.let { body ->
+                        val fileName = "rekap_inspeksi${fromDate}_to_${toDate}.xlsx"
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                            saveExcelToDownloads(context, body, fileName)
+                        } else {
+                            saveExcelToDownloadUnder(context, body, fileName)
+                        }
+                    }
+                } else {
+                    val message = JSONObject(response.errorBody()?.string() ?: "").optString("message", "Download gagal")
+                    Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+                }
+            } catch (e: Exception) {
+                Toast.makeText(context, "Terjadi kesalahan saat download", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
 }

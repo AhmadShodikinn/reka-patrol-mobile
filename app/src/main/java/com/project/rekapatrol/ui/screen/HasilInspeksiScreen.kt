@@ -31,7 +31,6 @@ import com.project.rekapatrol.ui.theme.cream
 import com.project.rekapatrol.ui.theme.disabled
 import com.project.rekapatrol.ui.theme.skyblue
 
-// Dummy data model
 data class InspeksiResult(
     val id: Int,
     val keterangan: String,
@@ -42,8 +41,7 @@ data class InspeksiResult(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HasilInspeksiScreen(
-    navController: NavController,
-    onAddClick: () -> Unit = {}
+    navController: NavController
 ) {
     val context = LocalContext.current
     val generalViewModel: GeneralViewModel = viewModel(factory = GeneralViewModelFactory(context))
@@ -74,7 +72,7 @@ fun HasilInspeksiScreen(
         },
         floatingActionButton = {
             FloatingActionButton(
-                onClick = { onAddClick() },
+                onClick = { generalViewModel.downloadInspectionRecapExcel() },
                 containerColor = skyblue,
                 contentColor = Color.White,
                 shape = RoundedCornerShape(16.dp)

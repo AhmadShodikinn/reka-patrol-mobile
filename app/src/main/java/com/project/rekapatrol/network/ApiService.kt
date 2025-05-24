@@ -129,4 +129,10 @@ interface ApiService {
         @Body dateRange: DateRangeRequest
     ): Response<ResponseBody>
 
+    @POST("inspection-recaps")
+    suspend fun downloadInspectionRecap(
+        @Query("download") download: Int = 1,
+        @Body dateRange: DateRangeRequest
+    ): Response<ResponseBody>
+
 }
