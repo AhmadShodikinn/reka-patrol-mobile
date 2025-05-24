@@ -110,7 +110,8 @@ interface ApiService {
     suspend fun getDocuments(
         @Query("relations[]") relations: List<String> = listOf("user"),
         @Query("per_page") perPage: Int = 10,
-        @Query("page") page: Int = 1
+        @Query("page") page: Int = 1,
+        @Query("document_type") documentType: String
     ): Response<ListDocumentResponse>
 
     @GET("documents/{id}")

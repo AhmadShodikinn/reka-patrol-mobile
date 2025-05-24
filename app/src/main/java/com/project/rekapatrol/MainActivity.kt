@@ -144,6 +144,7 @@ class MainActivity : ComponentActivity() {
                 } }
 
             composable("jsa") { JSAScreen(navController = navController) }
+            composable("peraturan") { PeraturanScreen(navController = navController) }
 
             composable("detailInputInspeksi/{kriteria}") { backStackEntry ->
                 val kriteria = backStackEntry.arguments?.getString("kriteria")

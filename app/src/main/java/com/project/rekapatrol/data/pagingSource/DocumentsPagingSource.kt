@@ -6,7 +6,8 @@ import com.project.rekapatrol.data.response.DataItemDocuments
 import com.project.rekapatrol.network.ApiService
 
 class DocumentsPagingSource(
-    private val apiService: ApiService
+    private val apiService: ApiService,
+    private val documentType: String
 ): PagingSource<Int, DataItemDocuments>() {
     override fun getRefreshKey(state: PagingState<Int, DataItemDocuments>): Int? {
         return state.anchorPosition?.let { position ->
@@ -20,7 +21,8 @@ class DocumentsPagingSource(
             val page = params.key ?: 1
             val response = apiService.getDocuments(
                 perPage = params.loadSize,
-                page = page
+                page = page,
+                documentType = documentType
             )
 
             val data = response.body()?.data?.filterNotNull() ?: emptyList()

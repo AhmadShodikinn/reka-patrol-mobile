@@ -4,7 +4,6 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
@@ -17,12 +16,10 @@ import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-import androidx.navigation.compose.rememberNavController
 import androidx.paging.compose.collectAsLazyPagingItems
 import com.project.rekapatrol.R
 import com.project.rekapatrol.data.response.DocumentItem
@@ -33,19 +30,19 @@ import com.project.rekapatrol.ui.theme.skyblue
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun JSAScreen(
+fun PeraturanScreen(
     navController: NavController
 ) {
     val context = LocalContext.current
     val generalViewModel: GeneralViewModel = viewModel(factory = GeneralViewModelFactory(context))
-    val documentItems = generalViewModel.getDocumentFlow("jsa").collectAsLazyPagingItems()
+    val documentItems = generalViewModel.getDocumentFlow("permenaker").collectAsLazyPagingItems()
 
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
                 title = {
                     Text(
-                        text = "Job Safety Analisis",
+                        text = "Permenaker",
                         fontSize = 20.sp,
                         fontWeight = FontWeight.Medium,
                         color = Color.White
@@ -72,26 +69,20 @@ fun JSAScreen(
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-//            items(jsaList) { item ->
-//                JSACard(item)
-//            }
-            items(documentItems.itemCount) {index ->
+            items(documentItems.itemCount) { index ->
                 val item = documentItems[index]
                 item?.let {
-                    val document = documentItems[index]
-                    document?.let {
-                        JSACard(
-                            item = DocumentItem(
-                                id = it.id ?: -1,
-                                title = it.fileName ?: "Tanpa Judul",
-                                date = it.createdAt ?: "Tanggal tidak tersedia",
-                                imageRes = R.drawable.baseline_source_24
-                            ),
-                                onClick = {
-                                    generalViewModel.downloadDocument(context, id = it.id ?: -1)
-                            }
-                        )
-                    }
+                    PermenakerCard(
+                        item = DocumentItem(
+                            id = it.id ?: -1,
+                            title = it.fileName ?: "Tanpa Judul",
+                            date = it.createdAt ?: "Tanggal tidak tersedia",
+                            imageRes = R.drawable.baseline_source_24
+                        ),
+                        onClick = {
+                            generalViewModel.downloadDocument(context, id = it.id ?: -1)
+                        }
+                    )
                 }
             }
         }
@@ -99,7 +90,7 @@ fun JSAScreen(
 }
 
 @Composable
-fun JSACard(
+fun PermenakerCard(
     item: DocumentItem,
     onClick: () -> Unit
 ) {
@@ -149,9 +140,3 @@ fun JSACard(
     }
 }
 
-
-@Composable
-@Preview(showSystemUi = true)
-fun JSAScreenPreview() {
-    JSAScreen(navController = rememberNavController())
-}

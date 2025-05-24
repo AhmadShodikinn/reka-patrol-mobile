@@ -15,6 +15,7 @@ import androidx.paging.cachedIn
 import com.project.rekapatrol.data.repository.Repository
 import com.project.rekapatrol.data.response.DashboardNotifyResponse
 import com.project.rekapatrol.data.response.DataItemCriterias
+import com.project.rekapatrol.data.response.DataItemDocuments
 import com.project.rekapatrol.data.response.DataItemSafetyPatrols
 import com.project.rekapatrol.data.response.DetailInspeksiResponse
 import com.project.rekapatrol.data.response.InputInspeksiResponse
@@ -245,13 +246,15 @@ class GeneralViewModel(
         }
     }
 
-    val documentFlow = Pager(
-        config = PagingConfig(
-            pageSize = 10,
-            enablePlaceholders = false
-        ),
-        pagingSourceFactory = { repository.getDocumentPagingSource() }
-    ).flow.cachedIn(viewModelScope)
+    fun getDocumentFlow(documentType: String): Flow<PagingData<DataItemDocuments>> {
+        return Pager(
+            config = PagingConfig(
+                pageSize = 10,
+                enablePlaceholders = false
+            ),
+            pagingSourceFactory = { repository.getDocumentPagingSource(documentType) }
+        ).flow.cachedIn(viewModelScope)
+    }
 
     fun downloadDocument(context: Context, id: Int) {
         viewModelScope.launch {

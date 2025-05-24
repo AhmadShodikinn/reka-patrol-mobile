@@ -116,8 +116,8 @@ class Repository(private val apiService: ApiService) {
         return apiService.getDetailInspection(inspectionId)
     }
 
-    fun getDocumentPagingSource(): PagingSource<Int, DataItemDocuments> {
-        return DocumentsPagingSource(apiService)
+    fun getDocumentPagingSource(documentType: String): PagingSource<Int, DataItemDocuments> {
+        return DocumentsPagingSource(apiService, documentType)
     }
 
     suspend fun downloadDocument(id: Int): Response<ResponseBody> {

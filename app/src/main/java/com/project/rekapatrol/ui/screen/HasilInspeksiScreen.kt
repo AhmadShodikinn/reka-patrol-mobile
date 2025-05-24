@@ -60,7 +60,11 @@ fun HasilInspeksiScreen(
                         color = Color.White
                     )
                 },
-                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(containerColor = skyblue),
+                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
+                    containerColor = skyblue,
+                    titleContentColor = Color.Black,
+                    navigationIconContentColor = Color.White
+                ),
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
                         Icon(Icons.Default.ArrowBack, contentDescription = "Kembali")
@@ -93,7 +97,7 @@ fun HasilInspeksiScreen(
                         id = it.id ?: -1,
                         keterangan = it.findingsDescription ?: "-",
                         lokasi = it.inspectionLocation ?: "-",
-                        isSolved = it.suitability == 1
+                        isSolved = !it.actionDescription.isNullOrBlank()
                     )
                     InspeksiCard(item = inspeksiResult, navController = navController)
                     Spacer(modifier = Modifier.height(8.dp))
