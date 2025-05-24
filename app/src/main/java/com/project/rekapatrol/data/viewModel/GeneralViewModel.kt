@@ -18,6 +18,7 @@ import com.project.rekapatrol.data.response.DataItemCriterias
 import com.project.rekapatrol.data.response.DataItemDocuments
 import com.project.rekapatrol.data.response.DataItemSafetyPatrols
 import com.project.rekapatrol.data.response.DetailInspeksiResponse
+import com.project.rekapatrol.data.response.DetailSafetyPatrolResponse
 import com.project.rekapatrol.data.response.InputInspeksiResponse
 import com.project.rekapatrol.data.response.InputSafetyPatrolsResponse
 import com.project.rekapatrol.data.response.LogoutResponse
@@ -50,6 +51,9 @@ class GeneralViewModel(
 
     private val _updateSafetyPatrolsResults = MutableLiveData<TindakLanjutSafetyPatrolsResponse>()
     val updateSafetyPatrolsResponse: LiveData<TindakLanjutSafetyPatrolsResponse> = _updateSafetyPatrolsResults
+
+    private val _safetyPatrolDetailResult = MutableLiveData<DetailSafetyPatrolResponse>()
+    val safetyPatrolResponse: LiveData<DetailSafetyPatrolResponse> = _safetyPatrolDetailResult
 
     private val _inputInspeksiResult = MutableLiveData<InputInspeksiResponse>()
     val inputInspeksiResponse: LiveData<InputInspeksiResponse> = _inputInspeksiResult
@@ -103,6 +107,25 @@ class GeneralViewModel(
 
                 if (response.isSuccessful) {
                     _inputSafetyPatrolsResult.value = response.body()
+                } else {
+                    val errorBody = response.errorBody()?.string()
+                    val message = JSONObject(errorBody).getString("message")
+                    Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+                }
+            } catch (e: Exception) {
+                Log.e("GeneralViewModel", "Server Error: ${e.message}", e)
+                Toast.makeText(context, "Server Error!", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
+    fun getDetailSafetyPatrol(safetyPatrolId: Int) {
+        viewModelScope.launch {
+            try {
+                val response = repository.getSafetyPatrolDetail(safetyPatrolId)
+
+                if (response.isSuccessful) {
+                    _safetyPatrolDetailResult.value = response.body()
                 } else {
                     val errorBody = response.errorBody()?.string()
                     val message = JSONObject(errorBody).getString("message")

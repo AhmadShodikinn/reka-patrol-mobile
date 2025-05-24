@@ -13,6 +13,7 @@ import com.project.rekapatrol.data.response.DataItemDocuments
 import com.project.rekapatrol.data.response.DataItemInspeksi
 import com.project.rekapatrol.data.response.DataItemSafetyPatrols
 import com.project.rekapatrol.data.response.DetailInspeksiResponse
+import com.project.rekapatrol.data.response.DetailSafetyPatrolResponse
 import com.project.rekapatrol.data.response.InputInspeksiResponse
 import com.project.rekapatrol.data.response.InputSafetyPatrolsResponse
 import com.project.rekapatrol.data.response.LoginResponse
@@ -56,6 +57,10 @@ class Repository(private val apiService: ApiService) {
 
     fun getSafetyPatrolsPagingSource(): PagingSource<Int, DataItemSafetyPatrols> {
         return SafetyPatrolPagingSource(apiService)
+    }
+
+    suspend fun getSafetyPatrolDetail(safetyPatrolId: Int): Response<DetailSafetyPatrolResponse> {
+        return apiService.getDetailSafetyPatrol(safetyPatrolId)
     }
 
     suspend fun updateSafetyPatrols(

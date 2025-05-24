@@ -93,6 +93,10 @@ fun InputSafetyPatrolScreen(navController: NavController) {
         imageUris = uris
     }
 
+    //uji gambar
+    var showImageOptionsDialog by remember { mutableStateOf(false) }
+    var selectedImageUri by remember { mutableStateOf<Uri?>(null) }
+
     val result by generalViewModel.inputSafetyPatrolsResponse.observeAsState()
 
     LaunchedEffect(result) {
@@ -166,33 +170,74 @@ fun InputSafetyPatrolScreen(navController: NavController) {
                     modifier = Modifier.fillMaxWidth()
                 )
 
+//                ImagePickerSectionForInputSafetyPatrol(
+//                    imageUris = imageUris,
+//                    onClick = { showDialog = true }
+//                )
+
+                //uji gambar ada lihat
                 ImagePickerSectionForInputSafetyPatrol(
                     imageUris = imageUris,
-                    onClick = { showDialog = true }
+                    onImageClick = { uri ->
+                        selectedImageUri = uri
+                        showImageOptionsDialog = true
+                    },
+                    onAddImageClick = {
+                        showDialog = true
+                    }
                 )
 
                 if (showDialog) {
-                    AlertDialog(
-                        onDismissRequest = { showDialog = false },
-                        title = { Text("Pilih Gambar") },
-                        text = { Text("Pilih sumber gambar:") },
-                        confirmButton = {
-                            TextButton(onClick = {
-                                showDialog = false
-                                isCameraActive = true
-                            }) {
-                                Text("Kamera")
+//                    AlertDialog(
+//                        onDismissRequest = { showDialog = false },
+//                        title = { Text("Pilih Gambar") },
+//                        text = { Text("Pilih sumber gambar:") },
+//                        confirmButton = {
+//                            TextButton(onClick = {
+//                                showDialog = false
+//                                isCameraActive = true
+//                            }) {
+//                                Text("Kamera")
+//                            }
+//                        },
+//                        dismissButton = {
+//                            TextButton(onClick = {
+//                                showDialog = false
+//                                galleryLauncher.launch("image/*")
+//                            }) {
+//                                Text("Galeri")
+//                            }
+//                        }
+//                    )
+
+                    //uji gambar
+                    if (showImageOptionsDialog && selectedImageUri != null) {
+                        AlertDialog(
+                            onDismissRequest = { showImageOptionsDialog = false },
+                            title = { Text("Gambar") },
+                            text = {
+                                Column {
+                                    Text("Pilih aksi untuk gambar ini:")
+                                }
+                            },
+                            confirmButton = {
+                                TextButton(onClick = {
+                                    showImageOptionsDialog = false
+                                    Toast.makeText(context, "Lihat gambar belum diimplementasikan", Toast.LENGTH_SHORT).show()
+                                }) {
+                                    Text("Lihat Gambar")
+                                }
+                            },
+                            dismissButton = {
+                                TextButton(onClick = {
+                                    showImageOptionsDialog = false
+                                    showDialog = true // Ganti gambar
+                                }) {
+                                    Text("Ganti Gambar")
+                                }
                             }
-                        },
-                        dismissButton = {
-                            TextButton(onClick = {
-                                showDialog = false
-                                galleryLauncher.launch("image/*")
-                            }) {
-                                Text("Galeri")
-                            }
-                        }
-                    )
+                        )
+                    }
                 }
 
                 // Dropdown Kategori
@@ -312,15 +357,56 @@ fun InputSafetyPatrolScreen(navController: NavController) {
     }
 }
 
+//@Composable
+//fun ImagePickerSectionForInputSafetyPatrol(imageUris: List<Uri>, onClick: () -> Unit) {
+//    Box(
+//        modifier = Modifier
+//            .fillMaxWidth()
+//            .height(200.dp)
+//            .background(Color(0xFFEFEFEF), shape = RoundedCornerShape(8.dp))
+//            .border(BorderStroke(1.dp, Color.Gray), shape = RoundedCornerShape(8.dp))
+//            .clickable(onClick = onClick),
+//        contentAlignment = Alignment.Center
+//    ) {
+//        if (imageUris.isNotEmpty()) {
+//            LazyRow {
+//                items(imageUris) { uri ->
+//                    val bitmap = MediaStore.Images.Media.getBitmap(LocalContext.current.contentResolver, uri)
+//                    Image(
+//                        bitmap = bitmap.asImageBitmap(),
+//                        contentDescription = "Gambar terpilih",
+//                        modifier = Modifier
+//                            .fillMaxHeight()
+//                            .fillMaxWidth()
+//                            .aspectRatio(16 / 9f, matchHeightConstraintsFirst = true) // Menjaga rasio
+//                    )
+//                }
+//            }
+//        } else {
+//            Image(
+//                painter = painterResource(id = R.drawable.imagesmode),
+//                contentDescription = "Placeholder Gambar",
+//                modifier = Modifier
+//                    .size(120.dp)
+//                    .align(Alignment.Center)
+//            )
+//        }
+//    }
+//}
+
+//uji gambar ada lihat
 @Composable
-fun ImagePickerSectionForInputSafetyPatrol(imageUris: List<Uri>, onClick: () -> Unit) {
+fun ImagePickerSectionForInputSafetyPatrol(
+    imageUris: List<Uri>,
+    onImageClick: (Uri) -> Unit,
+    onAddImageClick: () -> Unit
+) {
     Box(
         modifier = Modifier
             .fillMaxWidth()
             .height(200.dp)
             .background(Color(0xFFEFEFEF), shape = RoundedCornerShape(8.dp))
-            .border(BorderStroke(1.dp, Color.Gray), shape = RoundedCornerShape(8.dp))
-            .clickable(onClick = onClick),
+            .border(BorderStroke(1.dp, Color.Gray), shape = RoundedCornerShape(8.dp)),
         contentAlignment = Alignment.Center
     ) {
         if (imageUris.isNotEmpty()) {
@@ -331,20 +417,24 @@ fun ImagePickerSectionForInputSafetyPatrol(imageUris: List<Uri>, onClick: () -> 
                         bitmap = bitmap.asImageBitmap(),
                         contentDescription = "Gambar terpilih",
                         modifier = Modifier
-                            .fillMaxHeight()
-                            .fillMaxWidth()
-                            .aspectRatio(16 / 9f, matchHeightConstraintsFirst = true) // Menjaga rasio
+                            .padding(8.dp)
+                            .size(160.dp)
+                            .clickable { onImageClick(uri) }
                     )
                 }
             }
         } else {
-            Image(
-                painter = painterResource(id = R.drawable.imagesmode),
-                contentDescription = "Placeholder Gambar",
-                modifier = Modifier
-                    .size(120.dp)
-                    .align(Alignment.Center)
-            )
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                modifier = Modifier.clickable(onClick = onAddImageClick)
+            ) {
+                Image(
+                    painter = painterResource(id = R.drawable.imagesmode),
+                    contentDescription = "Tambah Gambar",
+                    modifier = Modifier.size(120.dp)
+                )
+                Text("Tambah Gambar", color = Color.Gray)
+            }
         }
     }
 }

@@ -32,6 +32,11 @@ class AuthViewModel(
                     response.body()?.token?.let {
                         tokenHandler.saveToken(it)
                     }
+
+                    response.body()?.user?.position?.positionName?.let {
+                        tokenHandler.saveUserRole(it)
+                    }
+
                 } else {
                     val errorBody = response.errorBody()?.string()
                     val message = JSONObject(errorBody).getString("message")

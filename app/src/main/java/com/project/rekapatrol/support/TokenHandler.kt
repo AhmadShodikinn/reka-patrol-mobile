@@ -12,6 +12,7 @@ class TokenHandler(context: Context) {
     companion object {
         private const val TOKEN_KEY = "token"
         private const val TOKEN_TIMESTAMP_KEY = "token_timestamp"
+        private const val ROLE_KEY = "user_role"
         private const val TWO_HOURS_IN_MILLIS = 2 * 60 * 60 * 1000 //2 jam token hilang
     }
 
@@ -37,11 +38,27 @@ class TokenHandler(context: Context) {
         return token
     }
 
-    // Hapus token dan timestamp
     fun removeToken() {
         sharedPreferences.edit()
             .remove(TOKEN_KEY)
             .remove(TOKEN_TIMESTAMP_KEY)
+            .remove(ROLE_KEY)
+            .apply()
+    }
+
+    fun saveUserRole(role: String) {
+        sharedPreferences.edit()
+            .putString(ROLE_KEY, role)
+            .apply()
+    }
+
+    fun getUserRole(): String? {
+        return sharedPreferences.getString(ROLE_KEY, null)
+    }
+
+    fun removeUserRole() {
+        sharedPreferences.edit()
+            .remove(ROLE_KEY)
             .apply()
     }
 }

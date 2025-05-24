@@ -5,6 +5,7 @@ import com.project.rekapatrol.data.request.LoginRequest
 import com.project.rekapatrol.data.response.CriteriaResponse
 import com.project.rekapatrol.data.response.DashboardNotifyResponse
 import com.project.rekapatrol.data.response.DetailInspeksiResponse
+import com.project.rekapatrol.data.response.DetailSafetyPatrolResponse
 import com.project.rekapatrol.data.response.InputInspeksiResponse
 import com.project.rekapatrol.data.response.InputSafetyPatrolsResponse
 import com.project.rekapatrol.data.response.ListDocumentResponse
@@ -29,12 +30,16 @@ import retrofit2.http.Query
 
 interface ApiService {
 
+    //Autentikasi
     @POST("login")
     suspend fun authLogin(@Body request: LoginRequest): Response<LoginResponse>
 
     @POST("logout")
     suspend fun authLogout(): Response<LogoutResponse>
+    //End of autentikasi
 
+    //Safety-patrol
+    //input safety-patrol
     @Multipart
     @POST("safety-patrols")
     suspend fun inputSafetyPatrols(
@@ -46,6 +51,7 @@ interface ApiService {
         @Part finding_paths: List<MultipartBody.Part>
     ): Response<InputSafetyPatrolsResponse>
 
+    //get list safety-patrol
     @GET("safety-patrols")
     suspend fun getInputSafetyPatrolsList(
         @Query("relations[]") relations: List<String> = listOf("pic"),
@@ -53,6 +59,16 @@ interface ApiService {
         @Query("page") page: Int = 2
     ): Response<ListSafetyPatrolsResponse>
 
+    //get safety-patrol by id
+    @GET("safety-patrols/{id}")
+    suspend fun getDetailSafetyPatrol(
+        @Path("id") id: Int,
+        @Query("relations[]") relationsWorker: String = "worker",
+        @Query("relations[]") relationsPic: String = "pic",
+        @Query("relations[]") relationsFindings: String = "findings",
+    ): Response<DetailSafetyPatrolResponse>
+
+    //input tindak lanjut safety-patrol
     @Multipart
     @POST("safety-patrols/{id}")
     suspend fun updateSafetyPatrol(
@@ -62,6 +78,7 @@ interface ApiService {
         @Part("action_description") actionDescription: RequestBody,
         @Part actionPath: MultipartBody.Part
     ): Response<TindakLanjutSafetyPatrolsResponse>
+    //End of safety-patrol
 
     @Multipart
     @POST("inspections")
