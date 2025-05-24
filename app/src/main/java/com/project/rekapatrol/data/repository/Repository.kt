@@ -5,8 +5,9 @@ import com.project.rekapatrol.data.pagingSource.CriteriasPagingSource
 import com.project.rekapatrol.data.pagingSource.DocumentsPagingSource
 import com.project.rekapatrol.data.pagingSource.InspeksiPagingSource
 import com.project.rekapatrol.data.pagingSource.SafetyPatrolPagingSource
+import com.project.rekapatrol.data.request.DateRangeRequest
 import com.project.rekapatrol.data.request.LoginRequest
-import com.project.rekapatrol.data.response.CriteriaResponse
+import com.project.rekapatrol.data.response.DashboardNotifyResponse
 import com.project.rekapatrol.data.response.DataItemCriterias
 import com.project.rekapatrol.data.response.DataItemDocuments
 import com.project.rekapatrol.data.response.DataItemInspeksi
@@ -14,7 +15,6 @@ import com.project.rekapatrol.data.response.DataItemSafetyPatrols
 import com.project.rekapatrol.data.response.DetailInspeksiResponse
 import com.project.rekapatrol.data.response.InputInspeksiResponse
 import com.project.rekapatrol.data.response.InputSafetyPatrolsResponse
-import com.project.rekapatrol.data.response.ListSafetyPatrolsResponse
 import com.project.rekapatrol.data.response.LoginResponse
 import com.project.rekapatrol.data.response.LogoutResponse
 import com.project.rekapatrol.data.response.TindakLanjutInspeksiResponse
@@ -22,12 +22,9 @@ import com.project.rekapatrol.data.response.TindakLanjutSafetyPatrolsResponse
 import com.project.rekapatrol.network.ApiService
 import com.project.rekapatrol.support.toIntPlainPart
 import com.project.rekapatrol.support.toPlainPart
-import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
-import okhttp3.RequestBody.Companion.asRequestBody
 import okhttp3.ResponseBody
 import retrofit2.Response
-import java.io.File
 
 class Repository(private val apiService: ApiService) {
     suspend fun authLogin(nip: String, password: String): Response<LoginResponse>{
@@ -125,6 +122,24 @@ class Repository(private val apiService: ApiService) {
 
     suspend fun downloadDocument(id: Int): Response<ResponseBody> {
         return apiService.downloadDocument(id)
+    }
+
+    suspend fun getNotifyDashboard(): Response<DashboardNotifyResponse> {
+        return apiService.getNotifyDashboard()
+    }
+
+    suspend fun downloadSafetyPatrolRecapExcel(
+        fromDate: String,
+        toDate: String
+    ): Response<ResponseBody> {
+        val dateRangeRequest = DateRangeRequest(
+            from_date = fromDate,
+            to_date = toDate
+        )
+        return apiService.downloadSafetyPatrolRecap(
+            download = 1,
+            dateRange = dateRangeRequest
+        )
     }
 
 }

@@ -1,7 +1,9 @@
 package com.project.rekapatrol.network
 
+import com.project.rekapatrol.data.request.DateRangeRequest
 import com.project.rekapatrol.data.request.LoginRequest
 import com.project.rekapatrol.data.response.CriteriaResponse
+import com.project.rekapatrol.data.response.DashboardNotifyResponse
 import com.project.rekapatrol.data.response.DetailInspeksiResponse
 import com.project.rekapatrol.data.response.InputInspeksiResponse
 import com.project.rekapatrol.data.response.InputSafetyPatrolsResponse
@@ -115,6 +117,15 @@ interface ApiService {
     suspend fun downloadDocument(
         @Path("id") id: Int,
         @Query("download") download: Int = 1
+    ): Response<ResponseBody>
+
+    @GET("dashboards")
+    suspend fun getNotifyDashboard(): Response<DashboardNotifyResponse>
+
+    @POST("safety-patrol-recaps")
+    suspend fun downloadSafetyPatrolRecap(
+        @Query("download") download: Int = 1,
+        @Body dateRange: DateRangeRequest
     ): Response<ResponseBody>
 
 }

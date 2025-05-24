@@ -18,15 +18,16 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.project.rekapatrol.R
-import com.project.rekapatrol.data.viewModel.AuthViewModel
 import com.project.rekapatrol.data.viewModel.GeneralViewModel
-import com.project.rekapatrol.data.viewModelFactory.AuthViewModelFactory
 import com.project.rekapatrol.data.viewModelFactory.GeneralViewModelFactory
 import com.project.rekapatrol.support.TokenHandler
 import com.project.rekapatrol.ui.theme.cream
@@ -40,6 +41,11 @@ fun MainMenuScreen(
     val generalViewModel: GeneralViewModel = viewModel(factory = GeneralViewModelFactory(context))
 
     val logoutResult by generalViewModel.authLogoutResult.observeAsState()
+    val totalUnsolved by generalViewModel.totalUnsolved.observeAsState(0)
+
+    LaunchedEffect(Unit) {
+        generalViewModel.getInformationDashboard()
+    }
 
     LaunchedEffect(logoutResult) {
         logoutResult?.let {
@@ -47,10 +53,9 @@ fun MainMenuScreen(
             tokenHandler.removeToken()
 
             Toast.makeText(context, "Logout berhasil!", Toast.LENGTH_SHORT).show()
-            onLogoutSuccess() // Navigasi ke login
+            onLogoutSuccess()
         }
     }
-
 
     Box(
         modifier = Modifier
@@ -67,7 +72,7 @@ fun MainMenuScreen(
                 .align(Alignment.TopCenter)
         )
 
-        Image( //bug aga keatas
+        Image(
             painter = painterResource(id = R.drawable.bg_vector3),
             contentDescription = "Vector Gelombang Bawah",
             modifier = Modifier
@@ -93,12 +98,16 @@ fun MainMenuScreen(
             )
 
             Text(
-                text = "Temuan belum ditutup : 10",
+                buildAnnotatedString {
+                    append("Temuan belum ditutup: ")
+                    withStyle(style = SpanStyle(color = Color.Red)) {
+                        append(totalUnsolved.toString())
+                    }
+                },
                 fontSize = 15.sp,
                 style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Medium),
-                modifier = Modifier
-                    .align(Alignment.Start),
-                color = Color.Black
+                modifier = Modifier.align(Alignment.Start),
+                color = Color.Black // default untuk teks utama
             )
 
             Box(
@@ -176,7 +185,6 @@ fun MenuButton(iconId: Int, label: String, onClick: () -> Unit) {
     Column(
         modifier = Modifier
             .size(150.dp)
-            .size(150.dp)
             .clickable { onClick() },
         verticalArrangement = Arrangement.Center
     ) {
@@ -190,8 +198,7 @@ fun MenuButton(iconId: Int, label: String, onClick: () -> Unit) {
             Image(
                 painter = painterResource(id = iconId),
                 contentDescription = label,
-                modifier = Modifier
-                    .fillMaxSize(),
+                modifier = Modifier.fillMaxSize(),
                 contentScale = ContentScale.FillWidth
             )
         }
@@ -205,8 +212,6 @@ fun MenuButton(iconId: Int, label: String, onClick: () -> Unit) {
     }
 }
 
-
-
 @Preview(showSystemUi = true)
 @Composable
 fun MainMenuPreview() {
@@ -215,4 +220,3 @@ fun MainMenuPreview() {
         onLogoutSuccess = {}
     )
 }
-

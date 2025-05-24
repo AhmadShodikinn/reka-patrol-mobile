@@ -49,8 +49,7 @@ data class InspectionResult(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HasilSafetyPatrolScreen(
-    navController: NavController,
-    onAddClick: () -> Unit = {}
+    navController: NavController
 ) {
     val context = LocalContext.current
     val generalViewModel: GeneralViewModel = viewModel(factory = GeneralViewModelFactory(context))
@@ -81,7 +80,7 @@ fun HasilSafetyPatrolScreen(
         },
         floatingActionButton = {
             FloatingActionButton(
-                onClick = { onAddClick() },
+                onClick = { generalViewModel.downloadSafetyPatrolRecapExcel() },
                 containerColor = cream,
                 contentColor = Color.White,
                 shape = RoundedCornerShape(16.dp)
