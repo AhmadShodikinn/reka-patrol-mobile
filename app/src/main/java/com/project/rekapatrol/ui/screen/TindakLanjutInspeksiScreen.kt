@@ -53,6 +53,8 @@ import com.project.rekapatrol.R
 import com.project.rekapatrol.data.viewModel.GeneralViewModel
 import com.project.rekapatrol.data.viewModelFactory.GeneralViewModelFactory
 import com.project.rekapatrol.ui.helper.FullscreenImageView
+import com.project.rekapatrol.ui.helper.ImageDialogs
+import com.project.rekapatrol.ui.helper.ImagePickerSection
 import com.project.rekapatrol.ui.helper.uriToMultipartAction
 import com.project.rekapatrol.ui.theme.cream
 import com.project.rekapatrol.ui.theme.skyblue
@@ -175,8 +177,7 @@ fun TindakLanjutInspeksiScreen(navController: NavController, inspectionId: Int) 
                 )
                 Spacer(modifier = Modifier.height(2.dp))
 
-                // Gambar
-                ImagePickerSectionForTindakLanjutInspeksi(
+                ImagePickerSection(
                     imageUris = imageUris,
                     onImageClick = { uri ->
                         selectedImageUri = uri
@@ -246,51 +247,6 @@ fun TindakLanjutInspeksiScreen(navController: NavController, inspectionId: Int) 
                 ) {
                     Text("Submit", fontSize = 16.sp, fontWeight = FontWeight.Medium)
                 }
-            }
-        }
-    }
-}
-
-@OptIn(ExperimentalGlideComposeApi::class)
-@Composable
-fun ImagePickerSectionForTindakLanjutInspeksi(
-    imageUris: List<Uri>,
-    onImageClick: (Uri) -> Unit,
-    onAddImageClick: () -> Unit
-) {
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(200.dp)
-            .background(Color(0xFFEFEFEF), shape = RoundedCornerShape(8.dp))
-            .border(BorderStroke(1.dp, Color.Gray), shape = RoundedCornerShape(8.dp))
-            .clickable {
-                if (imageUris.isNotEmpty()) {
-                    onImageClick(imageUris[0])
-                } else {
-                    onAddImageClick()
-                }
-            },
-        contentAlignment = Alignment.Center
-    ) {
-        if (imageUris.isNotEmpty()) {
-            GlideImage(
-                model = imageUris[0],
-                contentDescription = "Gambar terpilih",
-                modifier = Modifier
-                    .fillMaxSize()
-                    .clip(RoundedCornerShape(8.dp))
-            )
-        } else {
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Image(
-                    painter = painterResource(id = R.drawable.imagesmode),
-                    contentDescription = "Tambah Gambar",
-                    modifier = Modifier.size(120.dp)
-                )
-                Text("Tambah Gambar", color = Color.Gray)
             }
         }
     }

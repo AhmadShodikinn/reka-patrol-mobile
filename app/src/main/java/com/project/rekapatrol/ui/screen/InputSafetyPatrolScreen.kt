@@ -44,7 +44,8 @@ import com.project.rekapatrol.R
 import com.project.rekapatrol.data.viewModel.GeneralViewModel
 import com.project.rekapatrol.data.viewModelFactory.GeneralViewModelFactory
 import com.project.rekapatrol.ui.helper.FullscreenImageView
-import com.project.rekapatrol.ui.helper.uriToMultipartAction
+import com.project.rekapatrol.ui.helper.ImageDialogs
+import com.project.rekapatrol.ui.helper.ImagePickerSection
 import com.project.rekapatrol.ui.helper.uriToMultipartFinding
 import com.project.rekapatrol.ui.theme.cream
 import com.project.rekapatrol.ui.theme.skyblue
@@ -179,7 +180,7 @@ fun InputSafetyPatrolScreen(navController: NavController) {
                     modifier = Modifier.fillMaxWidth()
                 )
 
-                ImagePickerSectionForInputSafetyPatrol(
+                ImagePickerSection(
                     imageUris = imageUris,
                     onImageClick = { uri ->
                         selectedImageUri = uri
@@ -323,121 +324,6 @@ fun InputSafetyPatrolScreen(navController: NavController) {
                 }
             }
         }
-    }
-}
-
-//uji without lazyrow
-@OptIn(ExperimentalGlideComposeApi::class)
-@Composable
-fun ImagePickerSectionForInputSafetyPatrol(
-    imageUris: List<Uri>,
-    onImageClick: (Uri) -> Unit,
-    onAddImageClick: () -> Unit
-) {
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(200.dp)
-            .background(Color(0xFFEFEFEF), shape = RoundedCornerShape(8.dp))
-            .border(BorderStroke(1.dp, Color.Gray), shape = RoundedCornerShape(8.dp))
-            .clickable {
-                if (imageUris.isNotEmpty()) {
-                    onImageClick(imageUris[0])
-                } else {
-                    onAddImageClick()
-                }
-            },
-        contentAlignment = Alignment.Center
-    ) {
-        if (imageUris.isNotEmpty()) {
-            GlideImage(
-                model = imageUris[0],
-                contentDescription = "Gambar terpilih",
-                modifier = Modifier
-                    .fillMaxSize()
-                    .clip(RoundedCornerShape(8.dp))
-            )
-        } else {
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Image(
-                    painter = painterResource(id = R.drawable.imagesmode),
-                    contentDescription = "Tambah Gambar",
-                    modifier = Modifier.size(120.dp)
-                )
-                Text("Tambah Gambar", color = Color.Gray)
-            }
-        }
-    }
-}
-
-@Composable
-fun ImageDialogs(
-    selectedImageUri: Uri?,
-    showImageOptionsDialog: Boolean,
-    onDismissImageOptions: () -> Unit,
-    onViewImage: () -> Unit,
-    onChangeImage: () -> Unit,
-    showSourceDialog: Boolean,
-    onDismissSourceDialog: () -> Unit,
-    onSelectCamera: () -> Unit,
-    onSelectGallery: () -> Unit,
-    showViewImageDialog: Boolean,
-    onDismissViewImageDialog: () -> Unit
-) {
-    if (showImageOptionsDialog && selectedImageUri != null) {
-        AlertDialog(
-            onDismissRequest = onDismissImageOptions,
-            title = { Text("Gambar") },
-            text = { Text("Pilih aksi untuk gambar ini:") },
-            confirmButton = {
-                TextButton(onClick = {
-                    onDismissImageOptions()
-                    onViewImage()
-                }) {
-                    Text("Lihat Gambar")
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = {
-                    onDismissImageOptions()
-                    onChangeImage()
-                }) {
-                    Text("Ubah Gambar")
-                }
-            }
-        )
-    }
-
-    if (showSourceDialog) {
-        AlertDialog(
-            onDismissRequest = onDismissSourceDialog,
-            title = { Text("Pilih sumber gambar") },
-            confirmButton = {
-                TextButton(onClick = {
-                    onDismissSourceDialog()
-                    onSelectCamera()
-                }) {
-                    Text("Kamera")
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = {
-                    onDismissSourceDialog()
-                    onSelectGallery()
-                }) {
-                    Text("Galeri")
-                }
-            }
-        )
-    }
-
-    if (showViewImageDialog && selectedImageUri != null) {
-        FullscreenImageView(
-            imageUri = selectedImageUri,
-            onClose = onDismissViewImageDialog
-        )
     }
 }
 
