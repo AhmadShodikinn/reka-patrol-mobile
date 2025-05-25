@@ -69,11 +69,8 @@ fun InputSafetyPatrolScreen(navController: NavController) {
     var expandedResiko by remember { mutableStateOf(false) }
 
     // Image picker states
-    var showDialog by remember { mutableStateOf(false) }
     var bitmap by remember { mutableStateOf<Bitmap?>(null) }
     var imageUris by remember { mutableStateOf<List<Uri>>(emptyList()) }
-
-    // Camera preview state
     var isCameraActive by remember { mutableStateOf(false) }
 
     // Date picker
@@ -97,7 +94,6 @@ fun InputSafetyPatrolScreen(navController: NavController) {
         imageUris = uris
     }
 
-    //uji gambar
     var showImageOptionsDialog by remember { mutableStateOf(false) }
     var selectedImageUri by remember { mutableStateOf<Uri?>(null) }
     var showSourceDialog by remember { mutableStateOf(false) }

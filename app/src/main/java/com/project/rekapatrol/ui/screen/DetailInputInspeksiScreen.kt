@@ -2,6 +2,7 @@ package com.project.rekapatrol.ui.screen
 
 import CameraPreviewScreen
 import android.app.DatePickerDialog
+import android.graphics.Bitmap
 import android.net.Uri
 import android.provider.MediaStore
 import android.widget.DatePicker
@@ -26,6 +27,7 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.platform.LocalContext
@@ -39,10 +41,13 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
+import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
+import com.bumptech.glide.integration.compose.GlideImage
 import com.project.rekapatrol.R
 import com.project.rekapatrol.data.response.DataItemCriterias
 import com.project.rekapatrol.data.viewModel.GeneralViewModel
 import com.project.rekapatrol.data.viewModelFactory.GeneralViewModelFactory
+import com.project.rekapatrol.ui.helper.FullscreenImageView
 import com.project.rekapatrol.ui.helper.uriToMultipartFinding
 import com.project.rekapatrol.ui.theme.cream
 import com.project.rekapatrol.ui.theme.skyblue
@@ -64,8 +69,7 @@ fun DetailInputInspeksiScreen(
     var sustainability by remember { mutableStateOf<Boolean?>(null) }
     var tanggal by remember { mutableStateOf("") }
 
-    // Gambar
-    var showDialog by remember { mutableStateOf(false) }
+    var bitmap by remember { mutableStateOf<Bitmap?>(null) }
     var imageUris by remember { mutableStateOf<List<Uri>>(emptyList()) }
     var isCameraActive by remember { mutableStateOf(false) }
 
@@ -102,6 +106,11 @@ fun DetailInputInspeksiScreen(
         imageUris = uris
     }
 
+    var showImageOptionsDialog by remember { mutableStateOf(false) }
+    var selectedImageUri by remember { mutableStateOf<Uri?>(null) }
+    var showSourceDialog by remember { mutableStateOf(false) }
+    var isImageFullscreen by remember { mutableStateOf(false) }
+
     val currentCriteriaType by rememberUpdatedState(newValue = criteriaType)
     val currentLocationId = lokasiToId[lokasi] ?: 0
     val criteriaPagingItems = remember(currentCriteriaType, currentLocationId) {
@@ -132,10 +141,18 @@ fun DetailInputInspeksiScreen(
             }
         }
     ) { paddingValues ->
-        if (isCameraActive) {
+        if (isImageFullscreen && selectedImageUri != null) {
+            //Showing image
+            FullscreenImageView(
+                imageUri = selectedImageUri!!,
+                onClose = { isImageFullscreen = false }
+            )
+        }
+        else if (isCameraActive) {
             CameraPreviewScreen(
                 onImageCaptured = { uri ->
                     imageUris = listOf(uri)
+                    bitmap = MediaStore.Images.Media.getBitmap(context.contentResolver, uri)
                     isCameraActive = false
                 },
                 onError = {
@@ -215,37 +232,42 @@ fun DetailInputInspeksiScreen(
                                     )
                                 }
                             }
+                            }
 
                         }
                     }
                 }
 
                 // Gambar
-                ImagePickerSectionForInputInspeksi(imageUris = imageUris) { showDialog = true }
-
-                if (showDialog) {
-                    AlertDialog(
-                        onDismissRequest = { showDialog = false },
-                        title = { Text("Pilih Gambar") },
-                        text = { Text("Pilih sumber gambar:") },
-                        confirmButton = {
-                            TextButton(onClick = {
-                                showDialog = false
-                                isCameraActive = true
-                            }) {
-                                Text("Kamera")
-                            }
-                        },
-                        dismissButton = {
-                            TextButton(onClick = {
-                                showDialog = false
-                                galleryLauncher.launch("image/*")
-                            }) {
-                                Text("Galeri")
-                            }
+                ImagePickerSectionForInputInspeksi(
+                    imageUris = imageUris,
+                    onImageClick = { uri ->
+                        selectedImageUri = uri
+                        showImageOptionsDialog = true
+                    },
+                    onAddImageClick = {
+                        if (imageUris.isEmpty()) {
+                            showSourceDialog = true
+                        } else {
+                            showImageOptionsDialog = true
+                            selectedImageUri = imageUris.firstOrNull()
                         }
-                    )
-                }
+                    }
+                )
+
+                ImageDialogs(
+                    selectedImageUri = selectedImageUri,
+                    showImageOptionsDialog = showImageOptionsDialog,
+                    onDismissImageOptions = { showImageOptionsDialog = false },
+                    onViewImage = { isImageFullscreen = true },
+                    onChangeImage = { showSourceDialog = true },
+                    showSourceDialog = showSourceDialog,
+                    onDismissSourceDialog = { showSourceDialog = false },
+                    onSelectCamera = { isCameraActive = true },
+                    onSelectGallery = { galleryLauncher.launch("image/*") },
+                    showViewImageDialog = isImageFullscreen,
+                    onDismissViewImageDialog = { isImageFullscreen = false }
+                )
 
                 // Keterangan
                 OutlinedTextField(
@@ -329,7 +351,7 @@ fun DetailInputInspeksiScreen(
                                 findingsDescription = keteranganTemuan,
                                 inspectionLocation = lokasi,
                                 value = value,
-                                suitability = sustainability == true, //default,
+                                suitability = sustainability == true,
                                 checkupDate = tanggal
                             )
                         } else {
@@ -349,36 +371,47 @@ fun DetailInputInspeksiScreen(
     }
 }
 
+@OptIn(ExperimentalGlideComposeApi::class)
 @Composable
-fun ImagePickerSectionForInputInspeksi(imageUris: List<Uri>, onClick: () -> Unit) {
+fun ImagePickerSectionForInputInspeksi(
+    imageUris: List<Uri>,
+    onImageClick: (Uri) -> Unit,
+    onAddImageClick: () -> Unit
+) {
     Box(
         modifier = Modifier
             .fillMaxWidth()
             .height(200.dp)
             .background(Color(0xFFEFEFEF), shape = RoundedCornerShape(8.dp))
             .border(BorderStroke(1.dp, Color.Gray), shape = RoundedCornerShape(8.dp))
-            .clickable(onClick = onClick),
+            .clickable {
+                if (imageUris.isNotEmpty()) {
+                    onImageClick(imageUris[0])
+                } else {
+                    onAddImageClick()
+                }
+            },
         contentAlignment = Alignment.Center
     ) {
         if (imageUris.isNotEmpty()) {
-            LazyRow {
-                items(imageUris) { uri ->
-                    val bitmap = MediaStore.Images.Media.getBitmap(LocalContext.current.contentResolver, uri)
-                    Image(
-                        bitmap = bitmap.asImageBitmap(),
-                        contentDescription = "Gambar",
-                        modifier = Modifier
-                            .fillMaxHeight()
-                            .aspectRatio(16 / 9f)
-                    )
-                }
-            }
-        } else {
-            Image(
-                painter = painterResource(id = R.drawable.imagesmode),
-                contentDescription = "Placeholder",
-                modifier = Modifier.size(120.dp)
+            GlideImage(
+                model = imageUris[0],
+                contentDescription = "Gambar terpilih",
+                modifier = Modifier
+                    .fillMaxSize()
+                    .clip(RoundedCornerShape(8.dp))
             )
+        } else {
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Image(
+                    painter = painterResource(id = R.drawable.imagesmode),
+                    contentDescription = "Tambah Gambar",
+                    modifier = Modifier.size(120.dp)
+                )
+                Text("Tambah Gambar", color = Color.Gray)
+            }
         }
     }
 }

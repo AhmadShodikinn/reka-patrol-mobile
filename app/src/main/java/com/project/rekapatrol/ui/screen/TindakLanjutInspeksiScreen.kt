@@ -45,10 +45,14 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.asImageBitmap
+import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
+import com.bumptech.glide.integration.compose.GlideImage
 import com.project.rekapatrol.R
 import com.project.rekapatrol.data.viewModel.GeneralViewModel
 import com.project.rekapatrol.data.viewModelFactory.GeneralViewModelFactory
+import com.project.rekapatrol.ui.helper.FullscreenImageView
 import com.project.rekapatrol.ui.helper.uriToMultipartAction
 import com.project.rekapatrol.ui.theme.cream
 import com.project.rekapatrol.ui.theme.skyblue
@@ -67,10 +71,10 @@ fun TindakLanjutInspeksiScreen(navController: NavController, inspectionId: Int) 
 
     // State untuk input dan gambar
     var tindakLanjut by remember { mutableStateOf("") }
-    var showDialog by remember { mutableStateOf(false) }
+
+    var bitmap by remember { mutableStateOf<Bitmap?>(null) }
     var imageUris by remember { mutableStateOf<List<Uri>>(emptyList()) }
     var isCameraActive by remember { mutableStateOf(false) }
-    var bitmap by remember { mutableStateOf<Bitmap?>(null) }
 
     val result by generalViewModel.updateInspectionResponse.observeAsState()
 
@@ -79,6 +83,11 @@ fun TindakLanjutInspeksiScreen(navController: NavController, inspectionId: Int) 
     ) { uris ->
         imageUris = uris
     }
+
+    var showImageOptionsDialog by remember { mutableStateOf(false) }
+    var selectedImageUri by remember { mutableStateOf<Uri?>(null) }
+    var showSourceDialog by remember { mutableStateOf(false) }
+    var isImageFullscreen by remember { mutableStateOf(false) }
 
     // Pastikan data inspeksi diambil saat komponen dimuat
     LaunchedEffect(inspectionId) {
@@ -127,7 +136,13 @@ fun TindakLanjutInspeksiScreen(navController: NavController, inspectionId: Int) 
         },
         containerColor = Color.White
     ) { paddingValues ->
-        if (isCameraActive) {
+         if (isImageFullscreen && selectedImageUri != null) {
+             FullscreenImageView(
+                 imageUri = selectedImageUri!!,
+                 onClose = { isImageFullscreen = false }
+             )
+         }
+         else if (isCameraActive) {
             CameraPreviewScreen(
                 onImageCaptured = { uri ->
                     imageUris = listOf(uri)
@@ -163,32 +178,33 @@ fun TindakLanjutInspeksiScreen(navController: NavController, inspectionId: Int) 
                 // Gambar
                 ImagePickerSectionForTindakLanjutInspeksi(
                     imageUris = imageUris,
-                    onClick = { showDialog = true }
+                    onImageClick = { uri ->
+                        selectedImageUri = uri
+                        showImageOptionsDialog = true
+                    },
+                    onAddImageClick = {
+                        if (imageUris.isEmpty()) {
+                            showSourceDialog = true
+                        } else {
+                            showImageOptionsDialog = true
+                            selectedImageUri = imageUris.firstOrNull()
+                        }
+                    }
                 )
 
-                if (showDialog) {
-                    AlertDialog(
-                        onDismissRequest = { showDialog = false },
-                        title = { Text("Pilih Gambar") },
-                        text = { Text("Pilih sumber gambar:") },
-                        confirmButton = {
-                            TextButton(onClick = {
-                                showDialog = false
-                                isCameraActive = true
-                            }) {
-                                Text("Kamera")
-                            }
-                        },
-                        dismissButton = {
-                            TextButton(onClick = {
-                                showDialog = false
-                                galleryLauncher.launch("image/*")
-                            }) {
-                                Text("Galeri")
-                            }
-                        }
-                    )
-                }
+                ImageDialogs(
+                    selectedImageUri = selectedImageUri,
+                    showImageOptionsDialog = showImageOptionsDialog,
+                    onDismissImageOptions = { showImageOptionsDialog = false },
+                    onViewImage = { isImageFullscreen = true },
+                    onChangeImage = { showSourceDialog = true },
+                    showSourceDialog = showSourceDialog,
+                    onDismissSourceDialog = { showSourceDialog = false },
+                    onSelectCamera = { isCameraActive = true },
+                    onSelectGallery = { galleryLauncher.launch("image/*") },
+                    showViewImageDialog = isImageFullscreen,
+                    onDismissViewImageDialog = { isImageFullscreen = false }
+                )
 
                 Spacer(modifier = Modifier.height(8.dp))
 
@@ -235,36 +251,47 @@ fun TindakLanjutInspeksiScreen(navController: NavController, inspectionId: Int) 
     }
 }
 
+@OptIn(ExperimentalGlideComposeApi::class)
 @Composable
-fun ImagePickerSectionForTindakLanjutInspeksi(imageUris: List<Uri>, onClick: () -> Unit) {
+fun ImagePickerSectionForTindakLanjutInspeksi(
+    imageUris: List<Uri>,
+    onImageClick: (Uri) -> Unit,
+    onAddImageClick: () -> Unit
+) {
     Box(
         modifier = Modifier
             .fillMaxWidth()
             .height(200.dp)
             .background(Color(0xFFEFEFEF), shape = RoundedCornerShape(8.dp))
             .border(BorderStroke(1.dp, Color.Gray), shape = RoundedCornerShape(8.dp))
-            .clickable(onClick = onClick),
+            .clickable {
+                if (imageUris.isNotEmpty()) {
+                    onImageClick(imageUris[0])
+                } else {
+                    onAddImageClick()
+                }
+            },
         contentAlignment = Alignment.Center
     ) {
         if (imageUris.isNotEmpty()) {
-            LazyRow {
-                items(imageUris) { uri ->
-                    val bitmap = MediaStore.Images.Media.getBitmap(LocalContext.current.contentResolver, uri)
-                    Image(
-                        bitmap = bitmap.asImageBitmap(),
-                        contentDescription = "Gambar",
-                        modifier = Modifier
-                            .fillMaxHeight()
-                            .aspectRatio(16 / 9f)
-                    )
-                }
-            }
-        } else {
-            Image(
-                painter = painterResource(id = R.drawable.imagesmode),
-                contentDescription = "Placeholder",
-                modifier = Modifier.size(120.dp)
+            GlideImage(
+                model = imageUris[0],
+                contentDescription = "Gambar terpilih",
+                modifier = Modifier
+                    .fillMaxSize()
+                    .clip(RoundedCornerShape(8.dp))
             )
+        } else {
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Image(
+                    painter = painterResource(id = R.drawable.imagesmode),
+                    contentDescription = "Tambah Gambar",
+                    modifier = Modifier.size(120.dp)
+                )
+                Text("Tambah Gambar", color = Color.Gray)
+            }
         }
     }
 }
