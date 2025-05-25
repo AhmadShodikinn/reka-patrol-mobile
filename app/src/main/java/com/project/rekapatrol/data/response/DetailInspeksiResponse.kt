@@ -1,42 +1,99 @@
 package com.project.rekapatrol.data.response
 
+import com.google.gson.annotations.SerializedName
+
 data class DetailInspeksiResponse(
+
+	@field:SerializedName("data")
 	val data: DataDetailInspeksi? = null
 )
 
-data class DataDetailInspeksi(
-	val checkupDate: String? = null,
-	val picId: Any? = null,
-	val suitability: Int? = null,
-	val criteria: CriteriaDetailInspeksi? = null,
-	val findings: List<FindingsItemDetailInspeksi?>? = null,
-	val criteriaId: Int? = null,
-	val createdAt: String? = null,
-	val actionPath: Any? = null,
-	val workerId: Int? = null,
-	val inspectionLocation: String? = null,
-	val actionDescription: Any? = null,
-	val updatedAt: String? = null,
-	val id: Int? = null,
-	val findingsDescription: String? = null,
-	val value: String? = null
-)
-
 data class CriteriaDetailInspeksi(
+
+	@field:SerializedName("updated_at")
 	val updatedAt: String? = null,
+
+	@field:SerializedName("created_at")
 	val createdAt: String? = null,
+
+	@field:SerializedName("id")
 	val id: Int? = null,
+
+	@field:SerializedName("criteria_type")
 	val criteriaType: String? = null,
+
+	@field:SerializedName("location_id")
 	val locationId: Int? = null,
+
+	@field:SerializedName("criteria_name")
 	val criteriaName: String? = null
 )
 
-data class FindingsItemDetailInspeksi(
-	val findableId: Int? = null,
-	val updatedAt: String? = null,
-	val findableType: String? = null,
-	val imagePath: String? = null,
+data class DataDetailInspeksi(
+
+	@field:SerializedName("checkup_date")
+	val checkupDate: String? = null,
+
+	@field:SerializedName("pic_id")
+	val picId: Any? = null,
+
+	@field:SerializedName("suitability")
+	val suitability: Int? = null,
+
+	@field:SerializedName("criteria")
+	val criteria: CriteriaDetailInspeksi? = null,
+
+	@field:SerializedName("findings")
+	val findings: List<FindingsItemDetailInspeksi?>? = null,
+
+	@field:SerializedName("criteria_id")
+	val criteriaId: Int? = null,
+
+	@field:SerializedName("created_at")
 	val createdAt: String? = null,
-	val id: Int? = null
+
+	@field:SerializedName("action_path")
+	val actionPath: Any? = null,
+
+	@field:SerializedName("worker_id")
+	val workerId: Int? = null,
+
+	@field:SerializedName("inspection_location")
+	val inspectionLocation: String? = null,
+
+	@field:SerializedName("action_description")
+	val actionDescription: Any? = null,
+
+	@field:SerializedName("updated_at")
+	val updatedAt: String? = null,
+
+	@field:SerializedName("id")
+	val id: Int? = null,
+
+	@field:SerializedName("findings_description")
+	val findingsDescription: String? = null,
+
+	@field:SerializedName("value")
+	val value: String? = null
 )
 
+data class FindingsItemDetailInspeksi(
+
+	@field:SerializedName("findable_id")
+	val findableId: Int? = null,
+
+	@field:SerializedName("updated_at")
+	val updatedAt: String? = null,
+
+	@field:SerializedName("findable_type")
+	val findableType: String? = null,
+
+	@field:SerializedName("image_path")
+	val imagePath: String? = null,
+
+	@field:SerializedName("created_at")
+	val createdAt: String? = null,
+
+	@field:SerializedName("id")
+	val id: Int? = null
+)

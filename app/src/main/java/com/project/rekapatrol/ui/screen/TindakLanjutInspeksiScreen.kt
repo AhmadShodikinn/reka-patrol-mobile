@@ -91,6 +91,8 @@ fun TindakLanjutInspeksiScreen(navController: NavController, inspectionId: Int) 
     var showSourceDialog by remember { mutableStateOf(false) }
     var isImageFullscreen by remember { mutableStateOf(false) }
 
+    var imageUrl by remember { mutableStateOf<String?>(null) }
+
     // Pastikan data inspeksi diambil saat komponen dimuat
     LaunchedEffect(inspectionId) {
         Log.d("TindakLanjutInspeksi", "panggil detailInspeksi")
@@ -179,9 +181,12 @@ fun TindakLanjutInspeksiScreen(navController: NavController, inspectionId: Int) 
 
                 ImagePickerSection(
                     imageUris = imageUris,
-                    onImageClick = { uri ->
-                        selectedImageUri = uri
-                        showImageOptionsDialog = true
+                    imageUrl = imageUrl,
+                    onImageClick = { uriOrNull ->
+                        uriOrNull.let {
+                            selectedImageUri = it
+                            showImageOptionsDialog = true
+                        }
                     },
                     onAddImageClick = {
                         if (imageUris.isEmpty()) {

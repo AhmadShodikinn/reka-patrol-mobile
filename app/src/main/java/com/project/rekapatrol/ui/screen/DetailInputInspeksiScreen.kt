@@ -5,6 +5,7 @@ import android.app.DatePickerDialog
 import android.graphics.Bitmap
 import android.net.Uri
 import android.provider.MediaStore
+import android.util.Log
 import android.widget.DatePicker
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -132,6 +133,7 @@ fun DetailInputInspeksiScreen(
     LaunchedEffect(inspeksiId) {
         if (inspeksiId != null) {
             viewModel.getDetailInspection(inspeksiId)
+            Log.d("Bla", inspeksiId.toString())
         }
     }
 

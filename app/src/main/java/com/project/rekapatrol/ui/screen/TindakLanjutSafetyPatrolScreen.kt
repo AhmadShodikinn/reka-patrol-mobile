@@ -73,6 +73,8 @@ fun TindakLanjutSafetyPatrolScreen(navController: NavController, safetyPatrolId:
     var showSourceDialog by remember { mutableStateOf(false) }
     var isImageFullscreen by remember { mutableStateOf(false) }
 
+    val imageUrl by remember { mutableStateOf<String?>(null) }
+
     // Gallery launcher
     val galleryLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetMultipleContents()
@@ -146,9 +148,12 @@ fun TindakLanjutSafetyPatrolScreen(navController: NavController, safetyPatrolId:
             ) {
                 ImagePickerSection(
                     imageUris = imageUris,
-                    onImageClick = { uri ->
-                        selectedImageUri = uri
-                        showImageOptionsDialog = true
+                    imageUrl = imageUrl,
+                    onImageClick = { uriOrNull ->
+                        uriOrNull.let {
+                            selectedImageUri = it
+                            showImageOptionsDialog = true
+                        }
                     },
                     onAddImageClick = {
                         if (imageUris.isEmpty()) {
