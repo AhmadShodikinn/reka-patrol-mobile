@@ -5,10 +5,10 @@ import com.google.gson.annotations.SerializedName
 data class TindakLanjutInspeksiResponse(
 
 	@field:SerializedName("data")
-	val data: Data? = null
+	val data: DataTindakLanjut? = null
 )
 
-data class FindingsItem(
+data class FindingsItemTindakLanjut(
 
 	@field:SerializedName("findable_id")
 	val findableId: Int? = null,
@@ -29,7 +29,7 @@ data class FindingsItem(
 	val id: Int? = null
 )
 
-data class Data(
+data class DataTindakLanjut(
 
 	@field:SerializedName("checkup_date")
 	val checkupDate: String? = null,
@@ -41,10 +41,10 @@ data class Data(
 	val suitability: Int? = null,
 
 	@field:SerializedName("criteria")
-	val criteria: Criteria? = null,
+	val criteria: CriteriaTindakLanjut? = null,
 
 	@field:SerializedName("findings")
-	val findings: List<FindingsItem?>? = null,
+	val findings: List<FindingsItemTindakLanjut?>? = null,
 
 	@field:SerializedName("criteria_id")
 	val criteriaId: Int? = null,
@@ -77,7 +77,7 @@ data class Data(
 	val value: String? = null
 )
 
-data class Criteria(
+data class CriteriaTindakLanjut(
 
 	@field:SerializedName("updated_at")
 	val updatedAt: String? = null,

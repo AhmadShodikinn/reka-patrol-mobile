@@ -1,7 +1,7 @@
 package com.project.rekapatrol.data.response
 
 data class DetailInspeksiResponse(
-	val data: Data? = null
+	val data: DataDetailInspeksi? = null
 )
 
 data class DataDetailInspeksi(

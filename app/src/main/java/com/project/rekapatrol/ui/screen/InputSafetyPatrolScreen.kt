@@ -5,6 +5,7 @@ import android.app.DatePickerDialog
 import android.graphics.Bitmap
 import android.net.Uri
 import android.provider.MediaStore
+import android.util.Log
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -53,9 +54,13 @@ import java.util.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun InputSafetyPatrolScreen(navController: NavController) {
+fun InputSafetyPatrolScreen(
+    navController: NavController,
+    safetyPatrolId: Int? = null,
+    viewModel: GeneralViewModel = viewModel(factory = GeneralViewModelFactory(LocalContext.current))
+) {
     val context = LocalContext.current
-    val generalViewModel: GeneralViewModel = viewModel(factory = GeneralViewModelFactory(context))
+    val isEditMode = safetyPatrolId != null
 
     // Form states
     var temuan by remember { mutableStateOf("") }
@@ -100,11 +105,44 @@ fun InputSafetyPatrolScreen(navController: NavController) {
     var showSourceDialog by remember { mutableStateOf(false) }
     var isImageFullscreen by remember { mutableStateOf(false) }
 
-    val result by generalViewModel.inputSafetyPatrolsResponse.observeAsState()
+    var imageUrl by remember { mutableStateOf<String?>(null) }
 
-    LaunchedEffect(result) {
-        result?.let {
+    val inputResult by viewModel.inputSafetyPatrolsResponse.observeAsState()
+    val updateResult by viewModel.updateSafetyPatrolResponse.observeAsState()
+
+    val detail by viewModel.safetyPatrolDetailResponse.observeAsState()
+
+    LaunchedEffect(safetyPatrolId) {
+        if (safetyPatrolId != null) {
+            viewModel.getDetailSafetyPatrol(safetyPatrolId)
+        }
+    }
+
+    LaunchedEffect(detail) {
+        detail?.data?.let {
+            temuan = it.findingsDescription.toString()
+            lokasi = it.location.toString()
+            kategori = it.category.toString()
+            resiko = it.risk.toString()
+            tanggal = it.checkupDate.toString()
+            val baseUrl = "http://192.168.18.5:8001/storage/"
+            imageUrl = it.findings?.get(0)?.imagePath?.let { path -> "$baseUrl$path" }
+        }
+
+        Log.d("InputsafetyPatrol", detail.toString())
+    }
+
+
+    LaunchedEffect(inputResult) {
+        inputResult?.let {
             Toast.makeText(context, "Berhasil submit data!", Toast.LENGTH_SHORT).show()
+            navController.popBackStack()
+        }
+    }
+
+    LaunchedEffect(updateResult) {
+        updateResult?.let {
+            Toast.makeText(context, "Berhasil update inspeksi!", Toast.LENGTH_SHORT).show()
             navController.popBackStack()
         }
     }
@@ -115,7 +153,7 @@ fun InputSafetyPatrolScreen(navController: NavController) {
                 CenterAlignedTopAppBar(
                     title = {
                         Text(
-                            "Input Safety Patrol",
+                            if (isEditMode) "Update Safety Patrol" else "Input Safety Patrol",
                             fontSize = 20.sp,
                             fontWeight = FontWeight.Medium,
                             color = Color.White
@@ -182,9 +220,12 @@ fun InputSafetyPatrolScreen(navController: NavController) {
 
                 ImagePickerSection(
                     imageUris = imageUris,
-                    onImageClick = { uri ->
-                        selectedImageUri = uri
-                        showImageOptionsDialog = true
+                    imageUrl = imageUrl,
+                    onImageClick = { uriOrNull ->
+                        uriOrNull?.let {
+                            selectedImageUri = it
+                            showImageOptionsDialog = true
+                        }
                     },
                     onAddImageClick = {
                         if (imageUris.isEmpty()) {
@@ -221,7 +262,9 @@ fun InputSafetyPatrolScreen(navController: NavController) {
                         readOnly = true,
                         label = { Text("Kategori") },
                         trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedKategori) },
-                        modifier = Modifier.menuAnchor().fillMaxWidth()
+                        modifier = Modifier
+                            .menuAnchor()
+                            .fillMaxWidth()
                     )
                     ExposedDropdownMenu(
                         expanded = expandedKategori,
@@ -250,7 +293,9 @@ fun InputSafetyPatrolScreen(navController: NavController) {
                         readOnly = true,
                         label = { Text("Resiko") },
                         trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedResiko) },
-                        modifier = Modifier.menuAnchor().fillMaxWidth()
+                        modifier = Modifier
+                            .menuAnchor()
+                            .fillMaxWidth()
                     )
                     ExposedDropdownMenu(
                         expanded = expandedResiko,
@@ -297,14 +342,26 @@ fun InputSafetyPatrolScreen(navController: NavController) {
                                 uriToMultipartFinding(context, uri)
                             }
 
-                            generalViewModel.inputSafetyPatrol(
-                                findingPaths = multipartFiles,
-                                findingDescription = temuan,
-                                location = lokasi,
-                                category = kategori,
-                                risk = resiko,
-                                checkupDate = tanggal
-                            )
+                            if (isEditMode) {
+                                viewModel.updateSafetyPatrol(
+                                    safetyPatrolId = safetyPatrolId!!,
+                                    findingPaths = multipartFiles,
+                                    findingDescription = temuan,
+                                    location = lokasi,
+                                    category = kategori,
+                                    risk = resiko,
+                                    checkupDate = tanggal
+                                )
+                            } else {
+                                viewModel.inputSafetyPatrol(
+                                    findingPaths = multipartFiles,
+                                    findingDescription = temuan,
+                                    location = lokasi,
+                                    category = kategori,
+                                    risk = resiko,
+                                    checkupDate = tanggal
+                                )
+                            }
                         } else {
                             Toast.makeText(context, "Mohon lengkapi semua data", Toast.LENGTH_SHORT).show()
                         }
@@ -316,7 +373,7 @@ fun InputSafetyPatrolScreen(navController: NavController) {
                     colors = ButtonDefaults.buttonColors(containerColor = skyblue)
                 ) {
                     Text(
-                        text = "Submit",
+                        if (isEditMode) "Update" else "Submit",
                         fontSize = 16.sp,
                         fontWeight = FontWeight.Medium,
                         color = Color.White

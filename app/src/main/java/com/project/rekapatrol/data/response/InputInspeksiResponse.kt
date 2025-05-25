@@ -41,7 +41,7 @@ data class DataInspection(
 	val suitability: String? = null,
 
 	@field:SerializedName("criteria")
-	val criteria: Criteria? = null,
+	val criteria: CriteriaInspection? = null,
 
 	@field:SerializedName("findings")
 	val findings: List<FindingsItemInspection?>? = null,

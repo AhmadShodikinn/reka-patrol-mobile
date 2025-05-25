@@ -22,6 +22,9 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -123,61 +126,49 @@ fun HasilSafetyPatrolScreen(
 @Composable
 fun InspectionCard(result: SafetyPatrolResult, navController: NavController) {
     val context = LocalContext.current
-
-    val cardModifier = if (result.isSolved)
-    {
-        Modifier
-            .fillMaxWidth()
-            .clickable {
-                Toast
-                    .makeText(context, "Patrol ini sudah ditindak", Toast.LENGTH_SHORT)
-                    .show()
-            }
-            .padding(8.dp)
-    } else {
-        Modifier
-            .fillMaxWidth()
-            .clickable {
-                navController.navigate("tindakLanjutSafetyPatrol/${result.id}")
-            }
-            .padding(8.dp)
-    }
+    var showOptionsDialog by remember { mutableStateOf(false) }
 
     Card(
-        modifier = cardModifier,
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable {
+                if (result.isSolved) {
+                    Toast.makeText(context, "Patroli ini sudah ditindak", Toast.LENGTH_SHORT).show()
+                } else {
+                    showOptionsDialog = true
+                }
+            }
+            .padding(8.dp),
         shape = RoundedCornerShape(2.dp),
         colors = CardDefaults.cardColors(
             containerColor = if (result.isSolved) disabled else Color.White
         ),
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
     ) {
-        Column(
-            modifier = Modifier.padding(8.dp)
-        ) {
-            // Risk
+        Column(modifier = Modifier.padding(8.dp)) {
+            // Keterangan Risiko
             Text(
                 text = "Risk: ${result.risk}",
                 fontSize = 16.sp,
                 fontWeight = FontWeight.Bold
             )
 
-            // Date
+            // Tanggal
             Text(
                 text = "Date: ${result.date}",
                 fontSize = 14.sp
             )
 
-            // Category
+            // Kategori
             Text(
                 text = "Cat: ${result.category}",
                 fontSize = 14.sp
             )
 
-            // Location
+            // Lokasi
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.End,
-                verticalAlignment = Alignment.CenterVertically
+                horizontalArrangement = Arrangement.End
             ) {
                 Text(
                     text = "Lokasi: ${result.location}",
@@ -186,7 +177,33 @@ fun InspectionCard(result: SafetyPatrolResult, navController: NavController) {
             }
         }
     }
+
+    // Dialog Pilihan Aksi
+    if (showOptionsDialog) {
+        AlertDialog(
+            onDismissRequest = { showOptionsDialog = false },
+            title = { Text("Pilih Aksi") },
+            text = { Text("Ingin mengedit atau menindaklanjuti patroli ini?") },
+            confirmButton = {
+                TextButton(onClick = {
+                    showOptionsDialog = false
+                    navController.navigate("updateSafetyPatrol/${result.id}")
+                }) {
+                    Text("Edit")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = {
+                    showOptionsDialog = false
+                    navController.navigate("tindakLanjutSafetyPatrol/${result.id}")
+                }) {
+                    Text("Tindak Lanjut")
+                }
+            }
+        )
+    }
 }
+
 
 
 //@Preview(showSystemUi = true)

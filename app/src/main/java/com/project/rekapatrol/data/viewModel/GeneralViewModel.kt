@@ -25,6 +25,7 @@ import com.project.rekapatrol.data.response.LogoutResponse
 import com.project.rekapatrol.data.response.TindakLanjutInspeksiResponse
 import com.project.rekapatrol.data.response.TindakLanjutSafetyPatrolsResponse
 import com.project.rekapatrol.data.response.UpdateInspeksiResponse
+import com.project.rekapatrol.data.response.UpdateSafetyPatrolResponse
 import com.project.rekapatrol.ui.helper.savePdfToDownloads
 import com.project.rekapatrol.ui.helper.savePdftoDownloadUnder
 import com.project.rekapatrol.ui.helper.getCurrentMonthDateRange
@@ -50,11 +51,14 @@ class GeneralViewModel(
     private val _safetyPatrolList = MutableLiveData<List<DataItemSafetyPatrols>>()
     val safetyPatrolList: LiveData<List<DataItemSafetyPatrols>> = _safetyPatrolList
 
-    private val _updateSafetyPatrolsResults = MutableLiveData<TindakLanjutSafetyPatrolsResponse>()
-    val updateSafetyPatrolsResponse: LiveData<TindakLanjutSafetyPatrolsResponse> = _updateSafetyPatrolsResults
+    private val _updateSafetyPatrolsActionResults = MutableLiveData<TindakLanjutSafetyPatrolsResponse>()
+    val updateSafetyPatrolsActionResponse: LiveData<TindakLanjutSafetyPatrolsResponse> = _updateSafetyPatrolsActionResults
+
+    private val _updateSafetyPatrolResults = MutableLiveData<UpdateSafetyPatrolResponse>()
+    val updateSafetyPatrolResponse: LiveData<UpdateSafetyPatrolResponse> = _updateSafetyPatrolResults
 
     private val _safetyPatrolDetailResult = MutableLiveData<DetailSafetyPatrolResponse>()
-    val safetyPatrolResponse: LiveData<DetailSafetyPatrolResponse> = _safetyPatrolDetailResult
+    val safetyPatrolDetailResponse: LiveData<DetailSafetyPatrolResponse> = _safetyPatrolDetailResult
 
     private val _inputInspeksiResult = MutableLiveData<InputInspeksiResponse>()
     val inputInspeksiResponse: LiveData<InputInspeksiResponse> = _inputInspeksiResult
@@ -142,19 +146,54 @@ class GeneralViewModel(
         }
     }
 
-    fun updateSafetyPatrol(
+    fun TindakLanjutSafetyPatrol(
         safetyPatrolId: Int,
         actionDescription: String,
         actionImagePath: MultipartBody.Part
     ) {
         viewModelScope.launch {
             try {
-                val response = repository.updateSafetyPatrols(
+                val response = repository.TindakLanjutSafetyPatrol(
                     safetyPatrolId, actionDescription, actionImagePath
                 )
 
                 if (response.isSuccessful) {
-                    _updateSafetyPatrolsResults.value = response.body()
+                    _updateSafetyPatrolsActionResults.value = response.body()
+                } else {
+                    val errorBody = response.errorBody()?.string()
+                    val message = JSONObject(errorBody).getString("message")
+                    Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+                }
+            } catch (e: Exception) {
+                Log.e("GeneralViewModel", "Server Error: ${e.message}", e)
+                Toast.makeText(context, "Server Error!", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
+    fun updateSafetyPatrol(
+        safetyPatrolId: Int,
+        findingPaths: List<MultipartBody.Part>,
+        findingDescription: String,
+        location: String,
+        category: String,
+        risk: String,
+        checkupDate: String
+    ) {
+        viewModelScope.launch {
+            try {
+                val response = repository.updateSafetyPatrol(
+                    safetyPatrolId,
+                    findingPaths,
+                    findingDescription,
+                    location,
+                    category,
+                    risk,
+                    checkupDate
+                )
+
+                if (response.isSuccessful) {
+                    _updateSafetyPatrolResults.value = response.body()
                 } else {
                     val errorBody = response.errorBody()?.string()
                     val message = JSONObject(errorBody).getString("message")

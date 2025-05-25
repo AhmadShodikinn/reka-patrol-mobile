@@ -80,7 +80,7 @@ fun TindakLanjutSafetyPatrolScreen(navController: NavController, safetyPatrolId:
         -> imageUris = uris
     }
 
-    val result by generalViewModel.updateSafetyPatrolsResponse.observeAsState()
+    val result by generalViewModel.updateSafetyPatrolsActionResponse.observeAsState()
 
     // Displaying Toast when the screen is composed
     LaunchedEffect(result) {
@@ -202,7 +202,7 @@ fun TindakLanjutSafetyPatrolScreen(navController: NavController, safetyPatrolId:
                         if (tindaklanjut.isNotBlank() && imageUris.isNotEmpty()) {
                             val multipartFile = uriToMultipartAction(context, imageUris.first())
 
-                            generalViewModel.updateSafetyPatrol(
+                            generalViewModel.TindakLanjutSafetyPatrol(
                                 safetyPatrolId = safetyPatrolId,
                                 actionDescription = tindaklanjut,
                                 actionImagePath = multipartFile

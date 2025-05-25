@@ -16,6 +16,7 @@ import com.project.rekapatrol.data.response.LogoutResponse
 import com.project.rekapatrol.data.response.TindakLanjutInspeksiResponse
 import com.project.rekapatrol.data.response.TindakLanjutSafetyPatrolsResponse
 import com.project.rekapatrol.data.response.UpdateInspeksiResponse
+import com.project.rekapatrol.data.response.UpdateSafetyPatrolResponse
 import okhttp3.MultipartBody
 import okhttp3.RequestBody
 import okhttp3.ResponseBody
@@ -72,13 +73,27 @@ interface ApiService {
     //input tindak lanjut safety-patrol
     @Multipart
     @POST("safety-patrols/{id}")
-    suspend fun updateSafetyPatrol(
+    suspend fun TindakLanjutSafetyPatrol(
         @Path("id") safetyPatrolId: Int,
         @Query("_method") _method:String,
         @Query("relations[]") relations: List<String> = listOf("findings"),
         @Part("action_description") actionDescription: RequestBody,
         @Part actionPath: MultipartBody.Part
     ): Response<TindakLanjutSafetyPatrolsResponse>
+
+    //update safety-patrol
+    @Multipart
+    @POST("safety-patrols/{id}")
+    suspend fun updateSafetyPatrol(
+        @Path("id") safetyPatrolId: Int,
+        @Query("_method") _method:String,
+        @Part("findings_description") findingsDescription: RequestBody,
+        @Part("location") location: RequestBody,
+        @Part("category") category: RequestBody,
+        @Part("risk") risk: RequestBody,
+        @Part("checkup_date") checkupDate: RequestBody,
+        @Part finding_paths: List<MultipartBody.Part>
+    ): Response<UpdateSafetyPatrolResponse>
     //End of safety-patrol
 
     //inspection

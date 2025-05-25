@@ -21,6 +21,7 @@ import com.project.rekapatrol.data.response.LogoutResponse
 import com.project.rekapatrol.data.response.TindakLanjutInspeksiResponse
 import com.project.rekapatrol.data.response.TindakLanjutSafetyPatrolsResponse
 import com.project.rekapatrol.data.response.UpdateInspeksiResponse
+import com.project.rekapatrol.data.response.UpdateSafetyPatrolResponse
 import com.project.rekapatrol.network.ApiService
 import com.project.rekapatrol.support.toIntPlainPart
 import com.project.rekapatrol.support.toPlainPart
@@ -64,16 +65,37 @@ class Repository(private val apiService: ApiService) {
         return apiService.getDetailSafetyPatrol(safetyPatrolId)
     }
 
-    suspend fun updateSafetyPatrols(
+    suspend fun TindakLanjutSafetyPatrol(
         safetyPatrolId: Int,
         actionDescription: String,
         actionImagePath: MultipartBody.Part
     ): Response<TindakLanjutSafetyPatrolsResponse> {
-        return apiService.updateSafetyPatrol(
+        return apiService.TindakLanjutSafetyPatrol(
             safetyPatrolId = safetyPatrolId,
             _method = "PUT",
             actionDescription = actionDescription.toPlainPart(),
             actionPath = actionImagePath
+        )
+    }
+
+    suspend fun updateSafetyPatrol(
+        safetyPatrolId: Int,
+        findingPaths: List<MultipartBody.Part>,
+        findingsDescription: String,
+        location: String,
+        category: String,
+        risk: String,
+        checkupDate: String
+    ): Response<UpdateSafetyPatrolResponse> {
+        return apiService.updateSafetyPatrol(
+            safetyPatrolId = safetyPatrolId,
+            _method = "PUT",
+            findingsDescription = findingsDescription.toPlainPart(),
+            location = location.toPlainPart(),
+            category = category.toPlainPart(),
+            risk = risk.toPlainPart(),
+            checkupDate = checkupDate.toPlainPart(),
+            finding_paths = findingPaths
         )
     }
 

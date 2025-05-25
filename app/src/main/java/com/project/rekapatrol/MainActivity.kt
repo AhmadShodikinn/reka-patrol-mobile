@@ -171,6 +171,20 @@ class MainActivity : ComponentActivity() {
                     navController = navController
                 )
             }
+
+            composable(
+                route = "updateSafetyPatrol/{safetyPatrolId}",
+                arguments = listOf(
+                    navArgument("safetyPatrolId") { type = NavType.IntType }
+                )
+            ) { backStackEntry ->
+                val safetyPatrolId = backStackEntry.arguments?.getInt("safetyPatrolId") ?: -1
+
+                InputSafetyPatrolScreen(
+                    safetyPatrolId = if (safetyPatrolId == -1) null else safetyPatrolId,
+                    navController = navController
+                )
+            }
         }
     }
 }

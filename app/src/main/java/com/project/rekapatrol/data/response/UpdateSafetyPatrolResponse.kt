@@ -2,37 +2,13 @@ package com.project.rekapatrol.data.response
 
 import com.google.gson.annotations.SerializedName
 
-data class DetailSafetyPatrolResponse(
+data class UpdateSafetyPatrolResponse(
 
 	@field:SerializedName("data")
-	val data: DataDetailSafetyPatrol? = null
+	val data: Data? = null
 )
 
-data class WorkerDetailSafetyPatrol(
-
-	@field:SerializedName("nip")
-	val nip: String? = null,
-
-	@field:SerializedName("updated_at")
-	val updatedAt: String? = null,
-
-	@field:SerializedName("name")
-	val name: String? = null,
-
-	@field:SerializedName("created_at")
-	val createdAt: String? = null,
-
-	@field:SerializedName("id")
-	val id: Int? = null,
-
-	@field:SerializedName("email")
-	val email: String? = null,
-
-	@field:SerializedName("position_id")
-	val positionId: Int? = null
-)
-
-data class FindingsItemDetailSafetyPatrol(
+data class FindingsItem(
 
 	@field:SerializedName("findable_id")
 	val findableId: Int? = null,
@@ -53,7 +29,7 @@ data class FindingsItemDetailSafetyPatrol(
 	val id: Int? = null
 )
 
-data class DataDetailSafetyPatrol(
+data class Data(
 
 	@field:SerializedName("checkup_date")
 	val checkupDate: String? = null,
@@ -62,22 +38,19 @@ data class DataDetailSafetyPatrol(
 	val picId: Any? = null,
 
 	@field:SerializedName("findings")
-	val findings: List<FindingsItemDetailSafetyPatrol?>? = null,
+	val findings: List<FindingsItem?>? = null,
 
 	@field:SerializedName("created_at")
 	val createdAt: String? = null,
 
 	@field:SerializedName("action_path")
-	val actionPath: Any? = null,
-
-	@field:SerializedName("pic")
-	val pic: Any? = null,
+	val actionPath: String? = null,
 
 	@field:SerializedName("worker_id")
 	val workerId: Int? = null,
 
 	@field:SerializedName("action_description")
-	val actionDescription: Any? = null,
+	val actionDescription: String? = null,
 
 	@field:SerializedName("updated_at")
 	val updatedAt: String? = null,
@@ -93,9 +66,6 @@ data class DataDetailSafetyPatrol(
 
 	@field:SerializedName("findings_description")
 	val findingsDescription: String? = null,
-
-	@field:SerializedName("worker")
-	val worker: WorkerDetailSafetyPatrol? = null,
 
 	@field:SerializedName("category")
 	val category: String? = null
