@@ -178,12 +178,12 @@ fun MainMenuScreen(
                         ) {
                             MenuButton(
                                 iconId = R.drawable.ic_patrol1,
-                                label = "Input Inspeksi Patrol",
+                                label = "Input Safety Patrol",
                                 onClick = { onNavigate("inputSafetyPatrol") }
                             )
                             MenuButton(
                                 iconId = R.drawable.ic_patrol2,
-                                label = "Hasil Inspeksi Patrol",
+                                label = "Hasil Safety Patrol",
                                 onClick = { onNavigate("hasilSafetyPatrol") }
                             )
                             MenuButton(

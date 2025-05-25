@@ -18,9 +18,11 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.window.Dialog
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import com.project.rekapatrol.support.TokenHandler
 import com.project.rekapatrol.ui.screen.*
 import com.project.rekapatrol.ui.theme.RekapatrolTheme
@@ -151,6 +153,23 @@ class MainActivity : ComponentActivity() {
                 kriteria?.let {
                     DetailInputInspeksiScreen(criteriaType = it, navController = navController)
                 }
+            }
+
+            composable(
+                route = "updateInspeksi/{kriteria}/{inspeksiId}",
+                arguments = listOf(
+                    navArgument("kriteria") { type = NavType.StringType },
+                    navArgument("inspeksiId") { type = NavType.IntType }
+                )
+            ) { backStackEntry ->
+                val kriteria = backStackEntry.arguments?.getString("kriteria") ?: ""
+                val inspeksiId = backStackEntry.arguments?.getInt("inspeksiId") ?: -1
+
+                DetailInputInspeksiScreen(
+                    criteriaType = kriteria,
+                    inspeksiId = if (inspeksiId == -1) null else inspeksiId,
+                    navController = navController
+                )
             }
         }
     }

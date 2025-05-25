@@ -20,6 +20,7 @@ import com.project.rekapatrol.data.response.LoginResponse
 import com.project.rekapatrol.data.response.LogoutResponse
 import com.project.rekapatrol.data.response.TindakLanjutInspeksiResponse
 import com.project.rekapatrol.data.response.TindakLanjutSafetyPatrolsResponse
+import com.project.rekapatrol.data.response.UpdateInspeksiResponse
 import com.project.rekapatrol.network.ApiService
 import com.project.rekapatrol.support.toIntPlainPart
 import com.project.rekapatrol.support.toPlainPart
@@ -96,6 +97,28 @@ class Repository(private val apiService: ApiService) {
         )
     }
 
+    suspend fun updateInspection(
+        safetyPatrolId: Int,
+        findingPaths: List<MultipartBody.Part>,
+        findings_description: String,
+        inspection_location: String,
+        value: String,
+        suitability: Boolean,
+        checkupDate: String
+    ): Response<UpdateInspeksiResponse> {
+        return apiService.updateInspection(
+            safetyPatrolId = safetyPatrolId,
+            _method = "PUT",
+            findingsDescription = findings_description.toPlainPart(),
+            inspection_location = inspection_location.toPlainPart(),
+            value = value.toPlainPart(),
+            suitability = suitability.toIntPlainPart(),
+            checkupDate = checkupDate.toPlainPart(),
+            finding_paths = findingPaths
+        )
+    }
+
+
     fun fetchCriteriasSource(criteriaType: String, locationId: Int): PagingSource<Int, DataItemCriterias> {
         return CriteriasPagingSource(apiService, criteriaType, locationId)
     }
@@ -104,12 +127,12 @@ class Repository(private val apiService: ApiService) {
         return InspeksiPagingSource(apiService)
     }
 
-    suspend fun updateInspection(
+    suspend fun TindakLanjutInspection(
         safetyPatrolId: Int,
         actionDescription: String,
         actionImagePath: MultipartBody.Part
     ): Response<TindakLanjutInspeksiResponse> {
-        return apiService.updateInspection(
+        return apiService.TindakLanjutInspection(
             safetyPatrolId = safetyPatrolId,
             _method = "PUT",
             actionDescription = actionDescription.toPlainPart(),

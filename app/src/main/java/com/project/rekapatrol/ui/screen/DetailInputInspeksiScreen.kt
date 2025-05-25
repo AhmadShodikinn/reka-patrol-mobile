@@ -60,9 +60,11 @@ import java.util.*
 fun DetailInputInspeksiScreen(
     navController: NavController,
     criteriaType: String,
+    inspeksiId: Int? = null,
     viewModel: GeneralViewModel = viewModel(factory = GeneralViewModelFactory(LocalContext.current))
 ) {
     val context = LocalContext.current
+    val isEditMode = inspeksiId != null
 
     // Form state
     var lokasi by remember { mutableStateOf("") }
@@ -113,17 +115,55 @@ fun DetailInputInspeksiScreen(
     var showSourceDialog by remember { mutableStateOf(false) }
     var isImageFullscreen by remember { mutableStateOf(false) }
 
+    var imageUrl by remember { mutableStateOf<String?>(null) }
+
     val currentCriteriaType by rememberUpdatedState(newValue = criteriaType)
     val currentLocationId = lokasiToId[lokasi] ?: 0
+
     val criteriaPagingItems = remember(currentCriteriaType, currentLocationId) {
         viewModel.getCriteriasPaging(currentCriteriaType, currentLocationId)
     }.collectAsLazyPagingItems()
-    val result by viewModel.inputInspeksiResponse.observeAsState()
 
+    val inputResult by viewModel.inputInspeksiResponse.observeAsState()
+    val updateResult by viewModel.updateInspectionResponse.observeAsState()
 
-    LaunchedEffect(result) {
-        result?.let {
+    val detail by viewModel.inspectionDetailResposne.observeAsState()
+
+    LaunchedEffect(inspeksiId) {
+        if (inspeksiId != null) {
+            viewModel.getDetailInspection(inspeksiId)
+        }
+    }
+
+    LaunchedEffect(detail) {
+        detail?.data?.let {
+            lokasi = it.inspectionLocation.toString()
+            keteranganTemuan = it.findingsDescription.toString()
+            value = it.value.toString()
+            sustainability = when (it.suitability) {
+                1 -> true
+                0 -> false
+                else -> null
+            }
+
+            tanggal = it.checkupDate.toString()
+            selectedCriteriaId = it.criteriaId
+            selectedCriteriaName = it.criteria?.criteriaName.toString()
+            val baseUrl = "http://192.168.18.5:8001/storage/"
+            imageUrl = it.findings?.get(0)?.imagePath?.let { path -> "$baseUrl$path" }
+        }
+    }
+
+    LaunchedEffect(inputResult) {
+        inputResult?.let {
             Toast.makeText(context, "Berhasil input inspeksi!", Toast.LENGTH_SHORT).show()
+            navController.popBackStack()
+        }
+    }
+
+    LaunchedEffect(updateResult) {
+        updateResult?.let {
+            Toast.makeText(context, "Berhasil update inspeksi!", Toast.LENGTH_SHORT).show()
             navController.popBackStack()
         }
     }
@@ -132,11 +172,22 @@ fun DetailInputInspeksiScreen(
         topBar = {
             if (!isCameraActive) {
                 CenterAlignedTopAppBar(
-                    title = { Text("Input Inspeksi", fontSize = 20.sp, fontWeight = FontWeight.Medium, color = Color.White) },
+                    title = {
+                        Text(
+                            if (isEditMode) "Update Inspeksi 5R" else "Input Inspeksi 5R",
+                            fontSize = 20.sp,
+                            fontWeight = FontWeight.Medium,
+                            color = Color.White
+                        )
+                    },
                     colors = TopAppBarDefaults.centerAlignedTopAppBarColors(containerColor = skyblue),
                     navigationIcon = {
                         IconButton(onClick = { navController.popBackStack() }) {
-                            Icon(Icons.Default.ArrowBack, contentDescription = "Back", tint = Color.White)
+                            Icon(
+                                Icons.Default.ArrowBack,
+                                contentDescription = "Back",
+                                tint = Color.White
+                            )
                         }
                     }
                 )
@@ -149,8 +200,7 @@ fun DetailInputInspeksiScreen(
                 imageUri = selectedImageUri!!,
                 onClose = { isImageFullscreen = false }
             )
-        }
-        else if (isCameraActive) {
+        } else if (isCameraActive) {
             CameraPreviewScreen(
                 onImageCaptured = { uri ->
                     imageUris = listOf(uri)
@@ -171,52 +221,71 @@ fun DetailInputInspeksiScreen(
                     .verticalScroll(rememberScrollState()),
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                ExposedDropdownMenuBox(expanded = expandedLokasi, onExpandedChange = { expandedLokasi = !expandedLokasi }) {
+                ExposedDropdownMenuBox(
+                    expanded = expandedLokasi,
+                    onExpandedChange = {
+                        if (!isEditMode) {
+                            expandedLokasi = !expandedLokasi
+                        }
+                    }
+                ) {
                     OutlinedTextField(
                         value = lokasi,
                         onValueChange = {},
                         readOnly = true,
+                        enabled = !isEditMode,
                         label = { Text("Lokasi") },
-                        trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expandedLokasi) },
+                        trailingIcon = {
+                            if (!isEditMode) ExposedDropdownMenuDefaults.TrailingIcon(expandedLokasi)
+                        },
                         modifier = Modifier
                             .menuAnchor()
                             .fillMaxWidth()
                     )
-                    ExposedDropdownMenu(expanded = expandedLokasi, onDismissRequest = { expandedLokasi = false }) {
-                        lokasiOptions.forEach {
-                            DropdownMenuItem(text = { Text(it) }, onClick = {
-                                lokasi = it
-                                expandedLokasi = false
-                            })
+
+                    if (!isEditMode) {
+                        ExposedDropdownMenu(
+                            expanded = expandedLokasi,
+                            onDismissRequest = { expandedLokasi = false }
+                        ) {
+                            lokasiOptions.forEach {
+                                DropdownMenuItem(
+                                    text = { Text(it) },
+                                    onClick = {
+                                        lokasi = it
+                                        expandedLokasi = false
+                                    }
+                                )
+                            }
                         }
                     }
                 }
 
+
                 //kriteria dropdown
                 ExposedDropdownMenuBox(
                     expanded = expandedCriteria,
-                    onExpandedChange = { expandedCriteria = !expandedCriteria }
+                    onExpandedChange = {
+                        if (!isEditMode) {
+                            expandedCriteria = !expandedCriteria
+                        }
+                    }
                 ) {
                     OutlinedTextField(
                         value = selectedCriteriaName,
                         onValueChange = {},
                         readOnly = true,
+                        enabled = !isEditMode,
                         label = { Text("Kriteria") },
-                        trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expandedCriteria) },
-                        modifier = Modifier.menuAnchor().fillMaxWidth()
+                        trailingIcon = {
+                            if (!isEditMode) ExposedDropdownMenuDefaults.TrailingIcon(expandedCriteria)
+                        },
+                        modifier = Modifier
+                            .menuAnchor()
+                            .fillMaxWidth()
                     )
-                    ExposedDropdownMenuBox(
-                        expanded = expandedCriteria,
-                        onExpandedChange = { expandedCriteria = !expandedCriteria }
-                    ) {
-                        OutlinedTextField(
-                            value = selectedCriteriaName,
-                            onValueChange = {},
-                            readOnly = true,
-                            label = { Text("Kriteria") },
-                            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expandedCriteria) },
-                            modifier = Modifier.menuAnchor().fillMaxWidth()
-                        )
+
+                    if (!isEditMode) {
                         ExposedDropdownMenu(
                             expanded = expandedCriteria,
                             onDismissRequest = { expandedCriteria = false }
@@ -234,18 +303,20 @@ fun DetailInputInspeksiScreen(
                                     )
                                 }
                             }
-                            }
-
                         }
                     }
                 }
 
+
                 // Gambar
                 ImagePickerSection(
                     imageUris = imageUris,
-                    onImageClick = { uri ->
-                        selectedImageUri = uri
-                        showImageOptionsDialog = true
+                    imageUrl = imageUrl,
+                    onImageClick = { uriOrNull ->
+                        uriOrNull?.let {
+                            selectedImageUri = it
+                            showImageOptionsDialog = true
+                        }
                     },
                     onAddImageClick = {
                         if (imageUris.isEmpty()) {
@@ -341,23 +412,41 @@ fun DetailInputInspeksiScreen(
                     onClick = {
                         if (
                             selectedCriteriaId != null &&
-                            lokasi.isNotBlank() && keteranganTemuan.isNotBlank() &&
+                            lokasi.isNotBlank() &&
+                            keteranganTemuan.isNotBlank() &&
                             value.isNotBlank() &&
-                            tanggal.isNotBlank() && imageUris.isNotEmpty()
+                            tanggal.isNotBlank() &&
+                            imageUris.isNotEmpty()
                         ) {
                             val multipartFiles = imageUris.map { uriToMultipartFinding(context, it) }
 
-                            viewModel.inputInspeksi(
-                                criteriaId = selectedCriteriaId!!,
-                                findingPaths = multipartFiles,
-                                findingsDescription = keteranganTemuan,
-                                inspectionLocation = lokasi,
-                                value = value,
-                                suitability = sustainability == true,
-                                checkupDate = tanggal
-                            )
+                            if (isEditMode) {
+                                viewModel.updateInspection(
+                                    inspectionId = inspeksiId!!,
+                                    findingPaths = multipartFiles,
+                                    findingsDescription = keteranganTemuan,
+                                    inspectionLocation = lokasi,
+                                    value = value,
+                                    suitability = sustainability == true,
+                                    checkupDate = tanggal
+                                )
+                            } else {
+                                viewModel.inputInspeksi(
+                                    criteriaId = selectedCriteriaId!!,
+                                    findingPaths = multipartFiles,
+                                    findingsDescription = keteranganTemuan,
+                                    inspectionLocation = lokasi,
+                                    value = value,
+                                    suitability = sustainability == true,
+                                    checkupDate = tanggal
+                                )
+                            }
                         } else {
-                            Toast.makeText(context, "Lengkapi semua data terlebih dahulu", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(
+                                context,
+                                "Lengkapi semua data terlebih dahulu",
+                                Toast.LENGTH_SHORT
+                            ).show()
                         }
                     },
                     modifier = Modifier
@@ -366,11 +455,16 @@ fun DetailInputInspeksiScreen(
                     colors = ButtonDefaults.buttonColors(containerColor = skyblue),
                     shape = RoundedCornerShape(8.dp)
                 ) {
-                    Text("Submit", color = Color.White, fontSize = 16.sp)
+                    Text(
+                        if (isEditMode) "Update" else "Submit",
+                        color = Color.White,
+                        fontSize = 16.sp
+                    )
                 }
             }
         }
     }
+}
 
 @Preview(showSystemUi = true)
 @Composable

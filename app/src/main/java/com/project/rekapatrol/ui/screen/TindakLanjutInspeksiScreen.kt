@@ -78,7 +78,7 @@ fun TindakLanjutInspeksiScreen(navController: NavController, inspectionId: Int) 
     var imageUris by remember { mutableStateOf<List<Uri>>(emptyList()) }
     var isCameraActive by remember { mutableStateOf(false) }
 
-    val result by generalViewModel.updateInspectionResponse.observeAsState()
+    val result by generalViewModel.updateInspectionActionResponse.observeAsState()
 
     val galleryLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetMultipleContents()
@@ -227,7 +227,7 @@ fun TindakLanjutInspeksiScreen(navController: NavController, inspectionId: Int) 
                     onClick = {
                         if (tindakLanjut.isNotBlank() && imageUris.isNotEmpty()) {
                             val imagePart = uriToMultipartAction(context, imageUris.first())
-                            generalViewModel.updateInspection(
+                            generalViewModel.TindakLanjutInspection(
                                 inspectionId = inspectionId,
                                 actionDescription = tindakLanjut,
                                 actionImagePath = imagePart

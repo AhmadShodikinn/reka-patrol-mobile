@@ -11,6 +11,10 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -33,6 +37,7 @@ import com.project.rekapatrol.ui.theme.skyblue
 
 data class InspeksiResult(
     val id: Int,
+    val criteriaId: Int,
     val keterangan: String,
     val lokasi: String,
     val isSolved: Boolean
@@ -52,7 +57,7 @@ fun HasilInspeksiScreen(
             CenterAlignedTopAppBar(
                 title = {
                     Text(
-                        text = "Hasil Inspeksi",
+                        text = "Hasil Inspeksi 5R",
                         fontSize = 20.sp,
                         fontWeight = FontWeight.Medium,
                         color = Color.White
@@ -93,6 +98,7 @@ fun HasilInspeksiScreen(
                 item?.let {
                     val inspeksiResult = InspeksiResult(
                         id = it.id ?: -1,
+                        criteriaId = it.criteriaId ?: -1,
                         keterangan = it.findingsDescription ?: "-",
                         lokasi = it.inspectionLocation ?: "-",
                         isSolved = !it.actionDescription.isNullOrBlank()
@@ -108,38 +114,26 @@ fun HasilInspeksiScreen(
 @Composable
 fun InspeksiCard(item: InspeksiResult, navController: NavController) {
     val context = LocalContext.current
-
-    val cardModifier = if (item.isSolved)
-    {
-        Modifier
-            .fillMaxWidth()
-            .clickable {
-                Toast
-                    .makeText(context, "Inspeksi ini sudah ditindak", Toast.LENGTH_SHORT)
-                    .show()
-            }
-            .padding(8.dp)
-    } else {
-        Modifier
-            .fillMaxWidth()
-            .clickable {
-                navController.navigate("tindakLanjutInspeksi/${item.id}")
-            }
-            .padding(8.dp)
-    }
+    var showOptionsDialog by remember { mutableStateOf(false) }
 
     Card(
-        modifier = cardModifier,
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable {
+                if (item.isSolved) {
+                    Toast.makeText(context, "Inspeksi ini sudah ditindak", Toast.LENGTH_SHORT).show()
+                } else {
+                    showOptionsDialog = true
+                }
+            }
+            .padding(8.dp),
         shape = RoundedCornerShape(2.dp),
         colors = CardDefaults.cardColors(
             containerColor = if (item.isSolved) disabled else Color.White
         ),
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
     ) {
-        Column(
-            modifier = Modifier
-                .padding(8.dp)
-        ) {
+        Column(modifier = Modifier.padding(8.dp)) {
             Text(
                 text = item.keterangan,
                 fontSize = 14.sp,
@@ -156,6 +150,31 @@ fun InspeksiCard(item: InspeksiResult, navController: NavController) {
                 )
             }
         }
+    }
+
+    // Dialog Pilihan
+    if (showOptionsDialog) {
+        AlertDialog(
+            onDismissRequest = { showOptionsDialog = false },
+            title = { Text("Pilih Aksi") },
+            text = { Text("Ingin mengedit atau menindaklanjuti inspeksi ini?") },
+            confirmButton = {
+                TextButton(onClick = {
+                    showOptionsDialog = false
+                    navController.navigate("updateInspeksi/${item.criteriaId}/${item.id}")
+                }) {
+                    Text("Edit")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = {
+                    showOptionsDialog = false
+                    navController.navigate("tindakLanjutInspeksi/${item.id}")
+                }) {
+                    Text("Tindak Lanjut")
+                }
+            }
+        )
     }
 }
 

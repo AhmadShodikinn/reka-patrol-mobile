@@ -15,6 +15,7 @@ import com.project.rekapatrol.data.response.LoginResponse
 import com.project.rekapatrol.data.response.LogoutResponse
 import com.project.rekapatrol.data.response.TindakLanjutInspeksiResponse
 import com.project.rekapatrol.data.response.TindakLanjutSafetyPatrolsResponse
+import com.project.rekapatrol.data.response.UpdateInspeksiResponse
 import okhttp3.MultipartBody
 import okhttp3.RequestBody
 import okhttp3.ResponseBody
@@ -80,6 +81,8 @@ interface ApiService {
     ): Response<TindakLanjutSafetyPatrolsResponse>
     //End of safety-patrol
 
+    //inspection
+    //input inspection
     @Multipart
     @POST("inspections")
     suspend fun inputInspeksi(
@@ -92,6 +95,7 @@ interface ApiService {
         @Part finding_paths: List<MultipartBody.Part>
     ): Response<InputInspeksiResponse>
 
+    //get criterias
     @GET("criterias")
     suspend fun getCriterias(
         @Query("relations[]") relations: String = "location",
@@ -101,27 +105,45 @@ interface ApiService {
         @Query("location_id") locationId: Int
     ): Response<CriteriaResponse>
 
+    //get inspections list
     @GET("inspections")
     suspend fun getInspectionsList(
         @Query("per_page") perPage: Int = 10,
         @Query("page") page: Int = 1
     ): Response<ListInspeksiResponse>
 
+    //tindak lanjut inspection
     @Multipart
     @POST("inspections/{id}")
-    suspend fun updateInspection(
+    suspend fun TindakLanjutInspection(
         @Path("id") safetyPatrolId: Int,
         @Query("_method") _method:String,
         @Part("action_description") actionDescription: RequestBody,
         @Part actionPath: MultipartBody.Part
     ): Response<TindakLanjutInspeksiResponse>
 
+    @Multipart
+    @POST("inspections/{id}")
+    suspend fun updateInspection(
+        @Path("id") safetyPatrolId: Int,
+        @Query("_method") _method:String,
+        @Part("findings_description") findingsDescription: RequestBody,
+        @Part("inspection_location") inspection_location: RequestBody,
+        @Part("value") value: RequestBody,
+        @Part("suitability") suitability: RequestBody,
+        @Part("checkup_date") checkupDate: RequestBody,
+        @Part finding_paths: List<MultipartBody.Part>
+    ): Response<UpdateInspeksiResponse>
+
+    //get detail inspection
     @GET("inspections/{id}")
     suspend fun getDetailInspection(
         @Path("id") id: Int,
         @Query("relations[]") relationsCriteria: String = "criteria",
         @Query("relations[]") relationsFindings: String = "findings",
     ): Response<DetailInspeksiResponse>
+    //end of inspection
+
 
     @GET("documents")
     suspend fun getDocuments(

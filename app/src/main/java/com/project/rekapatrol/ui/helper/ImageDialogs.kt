@@ -100,6 +100,7 @@ fun ImageDialogs(
 @Composable
 fun ImagePickerSection(
     imageUris: List<Uri>,
+    imageUrl: String? = null,
     onImageClick: (Uri) -> Unit,
     onAddImageClick: () -> Unit
 ) {
@@ -110,32 +111,44 @@ fun ImagePickerSection(
             .background(Color(0xFFEFEFEF), shape = RoundedCornerShape(8.dp))
             .border(BorderStroke(1.dp, Color.Gray), shape = RoundedCornerShape(8.dp))
             .clickable {
-                if (imageUris.isNotEmpty()) {
-                    onImageClick(imageUris[0])
-                } else {
-                    onAddImageClick()
+                when {
+                    imageUris.isNotEmpty() -> onImageClick(imageUris[0])
+                    !imageUrl.isNullOrEmpty() -> onImageClick(Uri.parse(imageUrl))
+                    else -> onAddImageClick()
                 }
             },
         contentAlignment = Alignment.Center
     ) {
-        if (imageUris.isNotEmpty()) {
-            GlideImage(
-                model = imageUris[0],
-                contentDescription = "Gambar terpilih",
-                modifier = Modifier
-                    .fillMaxSize()
-                    .clip(RoundedCornerShape(8.dp))
-            )
-        } else {
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Image(
-                    painter = painterResource(id = R.drawable.imagesmode),
-                    contentDescription = "Tambah Gambar",
-                    modifier = Modifier.size(120.dp)
+        when {
+            imageUris.isNotEmpty() -> {
+                GlideImage(
+                    model = imageUris[0],
+                    contentDescription = "Gambar terpilih",
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .clip(RoundedCornerShape(8.dp))
                 )
-                Text("Tambah Gambar", color = Color.Gray)
+            }
+            !imageUrl.isNullOrEmpty() -> {
+                GlideImage(
+                    model = imageUrl,
+                    contentDescription = "Gambar dari server",
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .clip(RoundedCornerShape(8.dp))
+                )
+            }
+            else -> {
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Image(
+                        painter = painterResource(id = R.drawable.imagesmode),
+                        contentDescription = "Tambah Gambar",
+                        modifier = Modifier.size(120.dp)
+                    )
+                    Text("Tambah Gambar", color = Color.Gray)
+                }
             }
         }
     }

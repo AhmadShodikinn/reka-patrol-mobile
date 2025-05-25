@@ -24,6 +24,7 @@ import com.project.rekapatrol.data.response.InputSafetyPatrolsResponse
 import com.project.rekapatrol.data.response.LogoutResponse
 import com.project.rekapatrol.data.response.TindakLanjutInspeksiResponse
 import com.project.rekapatrol.data.response.TindakLanjutSafetyPatrolsResponse
+import com.project.rekapatrol.data.response.UpdateInspeksiResponse
 import com.project.rekapatrol.ui.helper.savePdfToDownloads
 import com.project.rekapatrol.ui.helper.savePdftoDownloadUnder
 import com.project.rekapatrol.ui.helper.getCurrentMonthDateRange
@@ -61,8 +62,11 @@ class GeneralViewModel(
     private val _listCriteriaResult = MutableStateFlow<List<DataItemCriterias>>(emptyList())
     val listCriteriaResult: StateFlow<List<DataItemCriterias>> = _listCriteriaResult
 
-    private val _updateInspectionResults = MutableLiveData<TindakLanjutInspeksiResponse>()
-    val updateInspectionResponse: LiveData<TindakLanjutInspeksiResponse> =_updateInspectionResults
+    private val _updateInspectionResults = MutableLiveData<UpdateInspeksiResponse>()
+    val updateInspectionResponse: LiveData<UpdateInspeksiResponse> = _updateInspectionResults
+
+    private val _updateInspectionActionResults = MutableLiveData<TindakLanjutInspeksiResponse>()
+    val updateInspectionActionResponse: LiveData<TindakLanjutInspeksiResponse> =_updateInspectionActionResults
 
     private val _inspectionDetailResuls = MutableLiveData<DetailInspeksiResponse>()
     val inspectionDetailResposne: LiveData<DetailInspeksiResponse> = _inspectionDetailResuls
@@ -226,18 +230,53 @@ class GeneralViewModel(
         pagingSourceFactory = { repository.getInspeksiPagingSource() }
     ).flow.cachedIn(viewModelScope)
 
-    fun updateInspection(
+    fun TindakLanjutInspection(
         inspectionId: Int,
         actionDescription: String,
         actionImagePath: MultipartBody.Part
     ) {
         viewModelScope.launch {
             try {
-                val response = repository.updateInspection(
+                val response = repository.TindakLanjutInspection(
                     inspectionId, actionDescription, actionImagePath
                 )
 
                 if (response.isSuccessful) {
+                    _updateInspectionActionResults.value = response.body()
+                } else {
+                    val errorBody = response.errorBody()?.string()
+                    val message = JSONObject(errorBody).getString("message")
+                    Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+                }
+            } catch (e: Exception) {
+                Log.e("GeneralViewModel", "Server Error: ${e.message}", e)
+                Toast.makeText(context, "Server Error!", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
+    fun updateInspection(
+        inspectionId: Int,
+        findingPaths: List<MultipartBody.Part>,
+        findingsDescription: String,
+        inspectionLocation: String,
+        value: String,
+        suitability: Boolean,
+        checkupDate: String
+    ) {
+        viewModelScope.launch {
+            try {
+                val response = repository.updateInspection(
+                    safetyPatrolId = inspectionId,
+                    findingPaths = findingPaths,
+                    findings_description = findingsDescription,
+                    inspection_location = inspectionLocation,
+                    value = value,
+                    suitability = suitability,
+                    checkupDate = checkupDate
+                )
+
+                if (response.isSuccessful){
                     _updateInspectionResults.value = response.body()
                 } else {
                     val errorBody = response.errorBody()?.string()
