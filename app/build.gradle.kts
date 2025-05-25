@@ -70,7 +70,7 @@ dependencies {
     implementation (libs.androidx.camera.view)
     implementation (libs.androidx.paging.runtime)
     implementation (libs.androidx.paging.compose)
-    implementation(libs.accompanist.glide)
+    implementation ("com.github.bumptech.glide:compose:1.0.0-alpha.1")
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

@@ -9,7 +9,8 @@ import java.util.concurrent.TimeUnit
 
 object ApiConfig {
 
-    private const val BASE_URL = "http://10.0.2.2:8001/api/"
+//    private const val BASE_URL = "http://10.0.2.2:8001/api/"
+    private const val BASE_URL = "http://192.168.18.5:8001/api/"
 //    private const val BASE_URL = "https://sipatka.ptrekaindo.co.id/api/"
 
     fun getApiService(token: String): ApiService {

@@ -26,6 +26,7 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.platform.LocalContext
@@ -37,9 +38,12 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
+import com.bumptech.glide.integration.compose.GlideImage
 import com.project.rekapatrol.R
 import com.project.rekapatrol.data.viewModel.GeneralViewModel
 import com.project.rekapatrol.data.viewModelFactory.GeneralViewModelFactory
+import com.project.rekapatrol.ui.helper.FullscreenImageView
 import com.project.rekapatrol.ui.helper.uriToMultipartAction
 import com.project.rekapatrol.ui.helper.uriToMultipartFinding
 import com.project.rekapatrol.ui.theme.cream
@@ -96,6 +100,8 @@ fun InputSafetyPatrolScreen(navController: NavController) {
     //uji gambar
     var showImageOptionsDialog by remember { mutableStateOf(false) }
     var selectedImageUri by remember { mutableStateOf<Uri?>(null) }
+    var showSourceDialog by remember { mutableStateOf(false) }
+    var isImageFullscreen by remember { mutableStateOf(false) }
 
     val result by generalViewModel.inputSafetyPatrolsResponse.observeAsState()
 
@@ -133,8 +139,15 @@ fun InputSafetyPatrolScreen(navController: NavController) {
         },
         containerColor = Color.White
     ) { paddingValues ->
-        if (isCameraActive) {
-            // Tampilkan layar kamera
+        if (isImageFullscreen && selectedImageUri != null) {
+            //Showing image
+            FullscreenImageView(
+                imageUri = selectedImageUri!!,
+                onClose = { isImageFullscreen = false }
+            )
+        }
+        else if (isCameraActive) {
+            // CameraX
             CameraPreviewScreen(
                 onImageCaptured = { uri ->
                     imageUris = listOf(uri)
@@ -170,12 +183,6 @@ fun InputSafetyPatrolScreen(navController: NavController) {
                     modifier = Modifier.fillMaxWidth()
                 )
 
-//                ImagePickerSectionForInputSafetyPatrol(
-//                    imageUris = imageUris,
-//                    onClick = { showDialog = true }
-//                )
-
-                //uji gambar ada lihat
                 ImagePickerSectionForInputSafetyPatrol(
                     imageUris = imageUris,
                     onImageClick = { uri ->
@@ -183,62 +190,28 @@ fun InputSafetyPatrolScreen(navController: NavController) {
                         showImageOptionsDialog = true
                     },
                     onAddImageClick = {
-                        showDialog = true
+                        if (imageUris.isEmpty()) {
+                            showSourceDialog = true
+                        } else {
+                            showImageOptionsDialog = true
+                            selectedImageUri = imageUris.firstOrNull()
+                        }
                     }
                 )
 
-                if (showDialog) {
-//                    AlertDialog(
-//                        onDismissRequest = { showDialog = false },
-//                        title = { Text("Pilih Gambar") },
-//                        text = { Text("Pilih sumber gambar:") },
-//                        confirmButton = {
-//                            TextButton(onClick = {
-//                                showDialog = false
-//                                isCameraActive = true
-//                            }) {
-//                                Text("Kamera")
-//                            }
-//                        },
-//                        dismissButton = {
-//                            TextButton(onClick = {
-//                                showDialog = false
-//                                galleryLauncher.launch("image/*")
-//                            }) {
-//                                Text("Galeri")
-//                            }
-//                        }
-//                    )
-
-                    //uji gambar
-                    if (showImageOptionsDialog && selectedImageUri != null) {
-                        AlertDialog(
-                            onDismissRequest = { showImageOptionsDialog = false },
-                            title = { Text("Gambar") },
-                            text = {
-                                Column {
-                                    Text("Pilih aksi untuk gambar ini:")
-                                }
-                            },
-                            confirmButton = {
-                                TextButton(onClick = {
-                                    showImageOptionsDialog = false
-                                    Toast.makeText(context, "Lihat gambar belum diimplementasikan", Toast.LENGTH_SHORT).show()
-                                }) {
-                                    Text("Lihat Gambar")
-                                }
-                            },
-                            dismissButton = {
-                                TextButton(onClick = {
-                                    showImageOptionsDialog = false
-                                    showDialog = true // Ganti gambar
-                                }) {
-                                    Text("Ganti Gambar")
-                                }
-                            }
-                        )
-                    }
-                }
+                ImageDialogs(
+                    selectedImageUri = selectedImageUri,
+                    showImageOptionsDialog = showImageOptionsDialog,
+                    onDismissImageOptions = { showImageOptionsDialog = false },
+                    onViewImage = { isImageFullscreen = true },
+                    onChangeImage = { showSourceDialog = true },
+                    showSourceDialog = showSourceDialog,
+                    onDismissSourceDialog = { showSourceDialog = false },
+                    onSelectCamera = { isCameraActive = true },
+                    onSelectGallery = { galleryLauncher.launch("image/*") },
+                    showViewImageDialog = isImageFullscreen,
+                    onDismissViewImageDialog = { isImageFullscreen = false }
+                )
 
                 // Dropdown Kategori
                 ExposedDropdownMenuBox(
@@ -357,44 +330,8 @@ fun InputSafetyPatrolScreen(navController: NavController) {
     }
 }
 
-//@Composable
-//fun ImagePickerSectionForInputSafetyPatrol(imageUris: List<Uri>, onClick: () -> Unit) {
-//    Box(
-//        modifier = Modifier
-//            .fillMaxWidth()
-//            .height(200.dp)
-//            .background(Color(0xFFEFEFEF), shape = RoundedCornerShape(8.dp))
-//            .border(BorderStroke(1.dp, Color.Gray), shape = RoundedCornerShape(8.dp))
-//            .clickable(onClick = onClick),
-//        contentAlignment = Alignment.Center
-//    ) {
-//        if (imageUris.isNotEmpty()) {
-//            LazyRow {
-//                items(imageUris) { uri ->
-//                    val bitmap = MediaStore.Images.Media.getBitmap(LocalContext.current.contentResolver, uri)
-//                    Image(
-//                        bitmap = bitmap.asImageBitmap(),
-//                        contentDescription = "Gambar terpilih",
-//                        modifier = Modifier
-//                            .fillMaxHeight()
-//                            .fillMaxWidth()
-//                            .aspectRatio(16 / 9f, matchHeightConstraintsFirst = true) // Menjaga rasio
-//                    )
-//                }
-//            }
-//        } else {
-//            Image(
-//                painter = painterResource(id = R.drawable.imagesmode),
-//                contentDescription = "Placeholder Gambar",
-//                modifier = Modifier
-//                    .size(120.dp)
-//                    .align(Alignment.Center)
-//            )
-//        }
-//    }
-//}
-
-//uji gambar ada lihat
+//uji without lazyrow
+@OptIn(ExperimentalGlideComposeApi::class)
 @Composable
 fun ImagePickerSectionForInputSafetyPatrol(
     imageUris: List<Uri>,
@@ -406,27 +343,27 @@ fun ImagePickerSectionForInputSafetyPatrol(
             .fillMaxWidth()
             .height(200.dp)
             .background(Color(0xFFEFEFEF), shape = RoundedCornerShape(8.dp))
-            .border(BorderStroke(1.dp, Color.Gray), shape = RoundedCornerShape(8.dp)),
+            .border(BorderStroke(1.dp, Color.Gray), shape = RoundedCornerShape(8.dp))
+            .clickable {
+                if (imageUris.isNotEmpty()) {
+                    onImageClick(imageUris[0])
+                } else {
+                    onAddImageClick()
+                }
+            },
         contentAlignment = Alignment.Center
     ) {
         if (imageUris.isNotEmpty()) {
-            LazyRow {
-                items(imageUris) { uri ->
-                    val bitmap = MediaStore.Images.Media.getBitmap(LocalContext.current.contentResolver, uri)
-                    Image(
-                        bitmap = bitmap.asImageBitmap(),
-                        contentDescription = "Gambar terpilih",
-                        modifier = Modifier
-                            .padding(8.dp)
-                            .size(160.dp)
-                            .clickable { onImageClick(uri) }
-                    )
-                }
-            }
+            GlideImage(
+                model = imageUris[0],
+                contentDescription = "Gambar terpilih",
+                modifier = Modifier
+                    .fillMaxSize()
+                    .clip(RoundedCornerShape(8.dp))
+            )
         } else {
             Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-                modifier = Modifier.clickable(onClick = onAddImageClick)
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Image(
                     painter = painterResource(id = R.drawable.imagesmode),
@@ -439,6 +376,74 @@ fun ImagePickerSectionForInputSafetyPatrol(
     }
 }
 
+@Composable
+fun ImageDialogs(
+    selectedImageUri: Uri?,
+    showImageOptionsDialog: Boolean,
+    onDismissImageOptions: () -> Unit,
+    onViewImage: () -> Unit,
+    onChangeImage: () -> Unit,
+    showSourceDialog: Boolean,
+    onDismissSourceDialog: () -> Unit,
+    onSelectCamera: () -> Unit,
+    onSelectGallery: () -> Unit,
+    showViewImageDialog: Boolean,
+    onDismissViewImageDialog: () -> Unit
+) {
+    if (showImageOptionsDialog && selectedImageUri != null) {
+        AlertDialog(
+            onDismissRequest = onDismissImageOptions,
+            title = { Text("Gambar") },
+            text = { Text("Pilih aksi untuk gambar ini:") },
+            confirmButton = {
+                TextButton(onClick = {
+                    onDismissImageOptions()
+                    onViewImage()
+                }) {
+                    Text("Lihat Gambar")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = {
+                    onDismissImageOptions()
+                    onChangeImage()
+                }) {
+                    Text("Ubah Gambar")
+                }
+            }
+        )
+    }
+
+    if (showSourceDialog) {
+        AlertDialog(
+            onDismissRequest = onDismissSourceDialog,
+            title = { Text("Pilih sumber gambar") },
+            confirmButton = {
+                TextButton(onClick = {
+                    onDismissSourceDialog()
+                    onSelectCamera()
+                }) {
+                    Text("Kamera")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = {
+                    onDismissSourceDialog()
+                    onSelectGallery()
+                }) {
+                    Text("Galeri")
+                }
+            }
+        )
+    }
+
+    if (showViewImageDialog && selectedImageUri != null) {
+        FullscreenImageView(
+            imageUri = selectedImageUri,
+            onClose = onDismissViewImageDialog
+        )
+    }
+}
 
 @Preview(showSystemUi = true)
 @Composable
