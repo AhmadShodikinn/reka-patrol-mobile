@@ -156,6 +156,26 @@ class MainActivity : ComponentActivity() {
             }
 
             composable(
+                route = "detailInspeksi/{kriteria}/{inspeksiId}/{tindakLanjut}",
+                arguments = listOf(
+                    navArgument("kriteria") { type = NavType.StringType },
+                    navArgument("inspeksiId") { type = NavType.IntType },
+                    navArgument("tindakLanjut") { type = NavType.BoolType }
+                )
+            ) { backStackEntry ->
+                val kriteria = backStackEntry.arguments?.getString("kriteria") ?: ""
+                val inspeksiId = backStackEntry.arguments?.getInt("inspeksiId") ?: -1
+                val tindakLanjut = backStackEntry.arguments?.getBoolean("tindakLanjut") ?: false
+
+                DetailInputInspeksiScreen(
+                    criteriaType = kriteria,
+                    inspeksiId = if (inspeksiId == -1) null else inspeksiId,
+                    isTindakLanjut = tindakLanjut,
+                    navController = navController
+                )
+            }
+
+            composable(
                 route = "updateInspeksi/{kriteria}/{inspeksiId}",
                 arguments = listOf(
                     navArgument("kriteria") { type = NavType.StringType },

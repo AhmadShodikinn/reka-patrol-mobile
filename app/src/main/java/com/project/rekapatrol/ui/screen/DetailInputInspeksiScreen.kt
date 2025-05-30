@@ -62,10 +62,11 @@ fun DetailInputInspeksiScreen(
     navController: NavController,
     criteriaType: String,
     inspeksiId: Int? = null,
+    isTindakLanjut: Boolean = false,
     viewModel: GeneralViewModel = viewModel(factory = GeneralViewModelFactory(LocalContext.current))
 ) {
     val context = LocalContext.current
-    val isEditMode = inspeksiId != null
+    val isEditMode = inspeksiId != null && !isTindakLanjut
 
     // Form state
     var lokasi by remember { mutableStateOf("") }
@@ -176,7 +177,7 @@ fun DetailInputInspeksiScreen(
                 CenterAlignedTopAppBar(
                     title = {
                         Text(
-                            if (isEditMode) "Update Inspeksi 5R" else "Input Inspeksi 5R",
+                            text = if (isTindakLanjut) "Tindak Lanjut Inspeksi 5R" else if (isEditMode) "Update Inspeksi 5R" else "Input Inspeksi 5R",
                             fontSize = 20.sp,
                             fontWeight = FontWeight.Medium,
                             color = Color.White
@@ -262,7 +263,6 @@ fun DetailInputInspeksiScreen(
                         }
                     }
                 }
-
 
                 //kriteria dropdown
                 ExposedDropdownMenuBox(
@@ -412,43 +412,47 @@ fun DetailInputInspeksiScreen(
                 // Submit
                 Button(
                     onClick = {
-                        if (
-                            selectedCriteriaId != null &&
-                            lokasi.isNotBlank() &&
-                            keteranganTemuan.isNotBlank() &&
-                            value.isNotBlank() &&
-                            tanggal.isNotBlank() &&
-                            imageUris.isNotEmpty()
-                        ) {
-                            val multipartFiles = imageUris.map { uriToMultipartFinding(context, it) }
-
-                            if (isEditMode) {
-                                viewModel.updateInspection(
-                                    inspectionId = inspeksiId!!,
-                                    findingPaths = multipartFiles,
-                                    findingsDescription = keteranganTemuan,
-                                    inspectionLocation = lokasi,
-                                    value = value,
-                                    suitability = sustainability == true,
-                                    checkupDate = tanggal
-                                )
-                            } else {
-                                viewModel.inputInspeksi(
-                                    criteriaId = selectedCriteriaId!!,
-                                    findingPaths = multipartFiles,
-                                    findingsDescription = keteranganTemuan,
-                                    inspectionLocation = lokasi,
-                                    value = value,
-                                    suitability = sustainability == true,
-                                    checkupDate = tanggal
-                                )
-                            }
+                        if (isTindakLanjut) {
+                            navController.navigate("tindakLanjutInspeksi/${inspeksiId}")
                         } else {
-                            Toast.makeText(
-                                context,
-                                "Lengkapi semua data terlebih dahulu",
-                                Toast.LENGTH_SHORT
-                            ).show()
+                            if (
+                                selectedCriteriaId != null &&
+                                lokasi.isNotBlank() &&
+                                keteranganTemuan.isNotBlank() &&
+                                value.isNotBlank() &&
+                                tanggal.isNotBlank() &&
+                                (imageUris.isNotEmpty() || !imageUrl.isNullOrBlank())
+                            ) {
+                                val multipartFiles = imageUris.map { uriToMultipartFinding(context, it) }
+
+                                if (isEditMode) {
+                                    viewModel.updateInspection(
+                                        inspectionId = inspeksiId!!,
+                                        findingPaths = multipartFiles,
+                                        findingsDescription = keteranganTemuan,
+                                        inspectionLocation = lokasi,
+                                        value = value,
+                                        suitability = sustainability == true,
+                                        checkupDate = tanggal
+                                    )
+                                } else {
+                                    viewModel.inputInspeksi(
+                                        criteriaId = selectedCriteriaId!!,
+                                        findingPaths = multipartFiles,
+                                        findingsDescription = keteranganTemuan,
+                                        inspectionLocation = lokasi,
+                                        value = value,
+                                        suitability = sustainability == true,
+                                        checkupDate = tanggal
+                                    )
+                                }
+                            } else {
+                                Toast.makeText(
+                                    context,
+                                    "Lengkapi semua data terlebih dahulu",
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                            }
                         }
                     },
                     modifier = Modifier
@@ -458,7 +462,11 @@ fun DetailInputInspeksiScreen(
                     shape = RoundedCornerShape(8.dp)
                 ) {
                     Text(
-                        if (isEditMode) "Update" else "Submit",
+                        when {
+                            isTindakLanjut -> "Selanjutnya"
+                            isEditMode -> "Update"
+                            else -> "Submit"
+                        },
                         color = Color.White,
                         fontSize = 16.sp
                     )

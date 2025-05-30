@@ -34,6 +34,8 @@ import com.project.rekapatrol.data.viewModelFactory.GeneralViewModelFactory
 import com.project.rekapatrol.ui.theme.cream
 import com.project.rekapatrol.ui.theme.disabled
 import com.project.rekapatrol.ui.theme.skyblue
+import androidx.compose.material.icons.filled.MoreVert
+import com.project.rekapatrol.support.TokenHandler
 
 data class InspeksiResult(
     val id: Int,
@@ -114,18 +116,13 @@ fun HasilInspeksiScreen(
 @Composable
 fun InspeksiCard(item: InspeksiResult, navController: NavController) {
     val context = LocalContext.current
-    var showOptionsDialog by remember { mutableStateOf(false) }
+    val tokenHandler = remember { TokenHandler(context) }
+    val userRole = tokenHandler.getUserRole()
+    var expanded by remember { mutableStateOf(false) }
 
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable {
-                if (item.isSolved) {
-                    Toast.makeText(context, "Inspeksi ini sudah ditindak", Toast.LENGTH_SHORT).show()
-                } else {
-                    showOptionsDialog = true
-                }
-            }
             .padding(8.dp),
         shape = RoundedCornerShape(2.dp),
         colors = CardDefaults.cardColors(
@@ -134,47 +131,66 @@ fun InspeksiCard(item: InspeksiResult, navController: NavController) {
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
     ) {
         Column(modifier = Modifier.padding(8.dp)) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.Top
+            ) {
+                Text(
+                    text = item.keterangan,
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Medium,
+                    modifier = Modifier.weight(1f)
+                )
+
+                Box {
+                    IconButton(
+                        onClick = { if (!item.isSolved) expanded = true },
+                        enabled = !item.isSolved
+                    ) {
+                        Icon(Icons.Default.MoreVert, contentDescription = "Menu")
+                    }
+
+                    DropdownMenu(
+                        expanded = expanded,
+                        onDismissRequest = { expanded = false }
+                    ) {
+                        if (userRole == "SHE") {
+                            DropdownMenuItem(
+                                text = { Text("Edit Temuan") },
+                                onClick = {
+                                    expanded = false
+                                    navController.navigate("updateInspeksi/${item.criteriaId}/${item.id}")
+                                }
+                            )
+                            DropdownMenuItem(
+                                text = { Text("Tindak Lanjut") },
+                                onClick = {
+                                    expanded = false
+                                    navController.navigate("detailInspeksi/${item.criteriaId}/${item.id}/true")
+                                }
+                            )
+                        } else {
+                            DropdownMenuItem(
+                                text = { Text("Tindak Lanjut") },
+                                onClick = {
+                                    expanded = false
+                                    navController.navigate("detailInspeksi/${item.criteriaId}/${item.id}/true")
+                                }
+                            )
+                        }
+
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(4.dp))
             Text(
-                text = item.keterangan,
+                text = "Lokasi: ${item.lokasi}",
                 fontSize = 14.sp,
                 fontWeight = FontWeight.Medium
             )
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.End
-            ) {
-                Text(
-                    text = "Lokasi: ${item.lokasi}",
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.Medium
-                )
-            }
         }
-    }
-
-    // Dialog Pilihan
-    if (showOptionsDialog) {
-        AlertDialog(
-            onDismissRequest = { showOptionsDialog = false },
-            title = { Text("Pilih Aksi") },
-            text = { Text("Ingin mengedit atau menindaklanjuti inspeksi ini?") },
-            confirmButton = {
-                TextButton(onClick = {
-                    showOptionsDialog = false
-                    navController.navigate("updateInspeksi/${item.criteriaId}/${item.id}")
-                }) {
-                    Text("Edit")
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = {
-                    showOptionsDialog = false
-                    navController.navigate("tindakLanjutInspeksi/${item.id}")
-                }) {
-                    Text("Tindak Lanjut")
-                }
-            }
-        )
     }
 }
 
