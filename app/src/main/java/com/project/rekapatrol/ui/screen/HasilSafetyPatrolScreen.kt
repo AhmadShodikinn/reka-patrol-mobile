@@ -181,7 +181,7 @@ fun InspectionCard(result: SafetyPatrolResult, navController: NavController) {
                         expanded = expanded,
                         onDismissRequest = { expanded = false }
                     ) {
-                        if (userRole == "5R") {
+                        if (userRole == "SHE") {
                             DropdownMenuItem(
                                 text = { Text("Edit") },
                                 onClick = {
@@ -196,12 +196,34 @@ fun InspectionCard(result: SafetyPatrolResult, navController: NavController) {
                                     navController.navigate("detailSafetyPatrol/${result.id}/true")
                                 }
                             )
-                        } else {
+                            DropdownMenuItem(
+                                text = { Text("Evaluasi") },
+                                onClick = {
+                                    expanded = false
+                                    navController.navigate("#")
+                                }
+                            )
+                        } else if (userRole == "PIC") {
                             DropdownMenuItem(
                                 text = { Text("Tindak Lanjut") },
                                 onClick = {
                                     expanded = false
                                     navController.navigate("detailSafetyPatrol/${result.id}/true")
+                                }
+                            )
+                            DropdownMenuItem(
+                                text = { Text("Evaluasi") },
+                                onClick = {
+                                    expanded = false
+                                    navController.navigate("#")
+                                }
+                            )
+                        } else if (userRole == "Manajemen") {
+                            DropdownMenuItem(
+                                text = { Text("Evaluasi") },
+                                onClick = {
+                                    expanded = false
+                                    navController.navigate("#")
                                 }
                             )
                         }

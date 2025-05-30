@@ -155,7 +155,7 @@ fun InspeksiCard(item: InspeksiResult, navController: NavController) {
                         expanded = expanded,
                         onDismissRequest = { expanded = false }
                     ) {
-                        if (userRole == "SHE") {
+                        if (userRole == "SHE" || userRole == "5R") {
                             DropdownMenuItem(
                                 text = { Text("Edit Temuan") },
                                 onClick = {
@@ -170,12 +170,34 @@ fun InspeksiCard(item: InspeksiResult, navController: NavController) {
                                     navController.navigate("detailInspeksi/${item.criteriaId}/${item.id}/true")
                                 }
                             )
-                        } else {
+                            DropdownMenuItem(
+                                text = { Text("Evaluasi Temuan") },
+                                onClick = {
+                                    expanded = false
+                                    navController.navigate("#") // route evaluasi nanti
+                                }
+                            )
+                        } else if (userRole == "PIC") {
+                            DropdownMenuItem(
+                                text = { Text("Evaluasi Temuan") },
+                                onClick = {
+                                    expanded = false
+                                    navController.navigate("#") // route evaluasi
+                                }
+                            )
                             DropdownMenuItem(
                                 text = { Text("Tindak Lanjut") },
                                 onClick = {
                                     expanded = false
                                     navController.navigate("detailInspeksi/${item.criteriaId}/${item.id}/true")
+                                }
+                            )
+                        } else if (userRole == "Manajemen") {
+                            DropdownMenuItem(
+                                text = { Text("Evaluasi Temuan") },
+                                onClick = {
+                                    expanded = false
+                                    navController.navigate("#") // route evaluasi
                                 }
                             )
                         }
