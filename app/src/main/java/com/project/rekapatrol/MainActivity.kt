@@ -205,6 +205,23 @@ class MainActivity : ComponentActivity() {
                     navController = navController
                 )
             }
+
+            composable(
+                route = "detailSafetyPatrol/{safetyPatrolId}/{tindakLanjut}",
+                arguments = listOf(
+                    navArgument("safetyPatrolId") { type = NavType.IntType },
+                    navArgument("tindakLanjut") { type = NavType.BoolType }
+                )
+            ) { backStackEntry ->
+                val safetyPatrolId = backStackEntry.arguments?.getInt("safetyPatrolId") ?: -1
+                val tindakLanjut = backStackEntry.arguments?.getBoolean("tindakLanjut") ?: false
+
+                InputSafetyPatrolScreen(
+                    navController = navController,
+                    safetyPatrolId = if (safetyPatrolId == -1) null else safetyPatrolId,
+                    isTindakLanjut = tindakLanjut
+                )
+            }
         }
     }
 }

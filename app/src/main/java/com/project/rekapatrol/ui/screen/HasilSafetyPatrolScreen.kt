@@ -1,5 +1,6 @@
 package com.project.rekapatrol.ui.screen
 
+import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -30,15 +31,14 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-import androidx.navigation.compose.rememberNavController
 import androidx.paging.compose.collectAsLazyPagingItems
 import com.project.rekapatrol.R
 import com.project.rekapatrol.data.viewModel.GeneralViewModel
 import com.project.rekapatrol.data.viewModelFactory.GeneralViewModelFactory
 import com.project.rekapatrol.ui.theme.cream
 import com.project.rekapatrol.ui.theme.disabled
-import com.project.rekapatrol.ui.theme.skyblue
-import com.project.rekapatrol.ui.theme.whiteblue
+import androidx.compose.material.icons.filled.MoreVert
+import com.project.rekapatrol.support.TokenHandler
 
 data class SafetyPatrolResult(
     val id: Int,
@@ -126,18 +126,15 @@ fun HasilSafetyPatrolScreen(
 @Composable
 fun InspectionCard(result: SafetyPatrolResult, navController: NavController) {
     val context = LocalContext.current
-    var showOptionsDialog by remember { mutableStateOf(false) }
+    val tokenHandler = remember { TokenHandler(context) }
+    val userRole = tokenHandler.getUserRole()
+    var expanded by remember { mutableStateOf(false) }
+
+
 
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable {
-                if (result.isSolved) {
-                    Toast.makeText(context, "Patroli ini sudah ditindak", Toast.LENGTH_SHORT).show()
-                } else {
-                    showOptionsDialog = true
-                }
-            }
             .padding(8.dp),
         shape = RoundedCornerShape(2.dp),
         colors = CardDefaults.cardColors(
@@ -146,26 +143,75 @@ fun InspectionCard(result: SafetyPatrolResult, navController: NavController) {
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
     ) {
         Column(modifier = Modifier.padding(8.dp)) {
-            // Keterangan Risiko
-            Text(
-                text = "Risk: ${result.risk}",
-                fontSize = 16.sp,
-                fontWeight = FontWeight.Bold
-            )
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.Top
+            ) {
+                Column(modifier = Modifier.weight(1f)) {
+                    // Keterangan Risiko
+                    Text(
+                        text = "Risk: ${result.risk}",
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Bold
+                    )
 
-            // Tanggal
-            Text(
-                text = "Date: ${result.date}",
-                fontSize = 14.sp
-            )
+                    // Tanggal
+                    Text(
+                        text = "Date: ${result.date}",
+                        fontSize = 14.sp
+                    )
 
-            // Kategori
-            Text(
-                text = "Cat: ${result.category}",
-                fontSize = 14.sp
-            )
+                    // Kategori
+                    Text(
+                        text = "Cat: ${result.category}",
+                        fontSize = 14.sp
+                    )
+                }
 
-            // Lokasi
+                Box {
+                    IconButton(
+                        onClick = { if (!result.isSolved) expanded = true },
+                        enabled = !result.isSolved
+                    ) {
+                        Icon(Icons.Default.MoreVert, contentDescription = "Menu")
+                    }
+
+                    DropdownMenu(
+                        expanded = expanded,
+                        onDismissRequest = { expanded = false }
+                    ) {
+                        if (userRole == "5R") {
+                            DropdownMenuItem(
+                                text = { Text("Edit") },
+                                onClick = {
+                                    expanded = false
+                                    navController.navigate("updateSafetyPatrol/${result.id}")
+                                }
+                            )
+                            DropdownMenuItem(
+                                text = { Text("Tindak Lanjut") },
+                                onClick = {
+                                    expanded = false
+                                    navController.navigate("detailSafetyPatrol/${result.id}/true")
+                                }
+                            )
+                        } else {
+                            DropdownMenuItem(
+                                text = { Text("Tindak Lanjut") },
+                                onClick = {
+                                    expanded = false
+                                    navController.navigate("detailSafetyPatrol/${result.id}/true")
+                                }
+                            )
+                        }
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(4.dp))
+
+            // Lokasi, posisikan di bawah row header
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.End
@@ -177,32 +223,8 @@ fun InspectionCard(result: SafetyPatrolResult, navController: NavController) {
             }
         }
     }
-
-    // Dialog Pilihan Aksi
-    if (showOptionsDialog) {
-        AlertDialog(
-            onDismissRequest = { showOptionsDialog = false },
-            title = { Text("Pilih Aksi") },
-            text = { Text("Ingin mengedit atau menindaklanjuti patroli ini?") },
-            confirmButton = {
-                TextButton(onClick = {
-                    showOptionsDialog = false
-                    navController.navigate("updateSafetyPatrol/${result.id}")
-                }) {
-                    Text("Edit")
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = {
-                    showOptionsDialog = false
-                    navController.navigate("tindakLanjutSafetyPatrol/${result.id}")
-                }) {
-                    Text("Tindak Lanjut")
-                }
-            }
-        )
-    }
 }
+
 
 
 

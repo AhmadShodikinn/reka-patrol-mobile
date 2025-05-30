@@ -57,10 +57,11 @@ import java.util.*
 fun InputSafetyPatrolScreen(
     navController: NavController,
     safetyPatrolId: Int? = null,
+    isTindakLanjut: Boolean = false,
     viewModel: GeneralViewModel = viewModel(factory = GeneralViewModelFactory(LocalContext.current))
 ) {
     val context = LocalContext.current
-    val isEditMode = safetyPatrolId != null
+    val isEditMode = safetyPatrolId != null && !isTindakLanjut
 
     // Form states
     var temuan by remember { mutableStateOf("") }
@@ -153,7 +154,7 @@ fun InputSafetyPatrolScreen(
                 CenterAlignedTopAppBar(
                     title = {
                         Text(
-                            if (isEditMode) "Update Safety Patrol" else "Input Safety Patrol",
+                            if (isTindakLanjut) "Tindak Lanjut Safety Patrol" else if (isEditMode) "Update Safety Patrol" else "Input Safety Patrol",
                             fontSize = 20.sp,
                             fontWeight = FontWeight.Medium,
                             color = Color.White
@@ -335,35 +336,40 @@ fun InputSafetyPatrolScreen(
 
                 Button(
                     onClick = {
-                        if (temuan.isNotBlank() && lokasi.isNotBlank() && kategori.isNotBlank() &&
-                            resiko.isNotBlank() && imageUris.isNotEmpty() && tanggal.isNotEmpty()
-                        ) {
-                            val multipartFiles = imageUris.map { uri ->
-                                uriToMultipartFinding(context, uri)
-                            }
-
-                            if (isEditMode) {
-                                viewModel.updateSafetyPatrol(
-                                    safetyPatrolId = safetyPatrolId!!,
-                                    findingPaths = multipartFiles,
-                                    findingDescription = temuan,
-                                    location = lokasi,
-                                    category = kategori,
-                                    risk = resiko,
-                                    checkupDate = tanggal
-                                )
-                            } else {
-                                viewModel.inputSafetyPatrol(
-                                    findingPaths = multipartFiles,
-                                    findingDescription = temuan,
-                                    location = lokasi,
-                                    category = kategori,
-                                    risk = resiko,
-                                    checkupDate = tanggal
-                                )
-                            }
+                        if (isTindakLanjut) {
+                            navController.navigate("tindakLanjutSafetyPatrol/${safetyPatrolId}")
                         } else {
-                            Toast.makeText(context, "Mohon lengkapi semua data", Toast.LENGTH_SHORT).show()
+                            if (
+                                temuan.isNotBlank() && lokasi.isNotBlank() && kategori.isNotBlank() &&
+                                resiko.isNotBlank() && (imageUris.isNotEmpty() || !imageUrl.isNullOrBlank()) && tanggal.isNotEmpty()
+                            ) {
+                                val multipartFiles = imageUris.map { uri ->
+                                    uriToMultipartFinding(context, uri)
+                                }
+
+                                if (isEditMode) {
+                                    viewModel.updateSafetyPatrol(
+                                        safetyPatrolId = safetyPatrolId!!,
+                                        findingPaths = multipartFiles,
+                                        findingDescription = temuan,
+                                        location = lokasi,
+                                        category = kategori,
+                                        risk = resiko,
+                                        checkupDate = tanggal
+                                    )
+                                } else {
+                                    viewModel.inputSafetyPatrol(
+                                        findingPaths = multipartFiles,
+                                        findingDescription = temuan,
+                                        location = lokasi,
+                                        category = kategori,
+                                        risk = resiko,
+                                        checkupDate = tanggal
+                                    )
+                                }
+                            } else {
+                                Toast.makeText(context, "Mohon lengkapi semua data", Toast.LENGTH_SHORT).show()
+                            }
                         }
                     },
                     modifier = Modifier
@@ -373,7 +379,11 @@ fun InputSafetyPatrolScreen(
                     colors = ButtonDefaults.buttonColors(containerColor = skyblue)
                 ) {
                     Text(
-                        if (isEditMode) "Update" else "Submit",
+                        when {
+                            isTindakLanjut -> "Selanjutnya"
+                            isEditMode -> "Update"
+                            else -> "Submit"
+                        },
                         fontSize = 16.sp,
                         fontWeight = FontWeight.Medium,
                         color = Color.White

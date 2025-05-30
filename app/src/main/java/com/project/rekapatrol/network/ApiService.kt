@@ -34,7 +34,10 @@ interface ApiService {
 
     //Autentikasi
     @POST("login")
-    suspend fun authLogin(@Body request: LoginRequest): Response<LoginResponse>
+    suspend fun authLogin(
+        @Body request: LoginRequest,
+        @Query("relations") relations: String = "position"
+    ): Response<LoginResponse>
 
     @POST("logout")
     suspend fun authLogout(): Response<LogoutResponse>

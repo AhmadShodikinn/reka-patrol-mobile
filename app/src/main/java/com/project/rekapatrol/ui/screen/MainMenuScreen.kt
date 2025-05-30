@@ -47,6 +47,10 @@ fun MainMenuScreen(
 
     LaunchedEffect(Unit) {
         generalViewModel.getInformationDashboard()
+
+        val tokenHandler = TokenHandler(context)
+        val userRole = tokenHandler.getUserRole()
+        Toast.makeText(context, "Selamat datang, $userRole", Toast.LENGTH_SHORT).show()
     }
 
     LaunchedEffect(logoutResult) {
