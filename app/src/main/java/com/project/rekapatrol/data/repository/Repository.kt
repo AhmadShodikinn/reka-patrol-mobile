@@ -22,6 +22,7 @@ import com.project.rekapatrol.data.response.TindakLanjutInspeksiResponse
 import com.project.rekapatrol.data.response.TindakLanjutSafetyPatrolsResponse
 import com.project.rekapatrol.data.response.UpdateInspeksiResponse
 import com.project.rekapatrol.data.response.UpdateSafetyPatrolResponse
+import com.project.rekapatrol.data.response.UploadMemosResponse
 import com.project.rekapatrol.network.ApiService
 import com.project.rekapatrol.support.toIntPlainPart
 import com.project.rekapatrol.support.toPlainPart
@@ -203,6 +204,16 @@ class Repository(private val apiService: ApiService) {
         return apiService.downloadInspectionRecap(
             download = 1,
             dateRange = dateRangeRequest
+        )
+    }
+
+    suspend fun uploadMemos(
+        filePart: MultipartBody.Part,
+        documentType: String
+    ): Response<UploadMemosResponse> {
+        return apiService.uploadMemos(
+            file = filePart,
+            type = documentType.toPlainPart()
         )
     }
 

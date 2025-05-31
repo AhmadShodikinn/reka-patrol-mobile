@@ -1,44 +1,36 @@
 package com.project.rekapatrol.ui.screen
 
-import android.util.Log
+import android.net.Uri
 import android.widget.Toast
-import androidx.compose.foundation.clickable
+import androidx.activity.compose.ManagedActivityResultLauncher
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import androidx.compose.material3.Card
-import androidx.compose.material3.Text
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.livedata.observeAsState
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.paging.compose.collectAsLazyPagingItems
 import com.project.rekapatrol.R
 import com.project.rekapatrol.data.viewModel.GeneralViewModel
 import com.project.rekapatrol.data.viewModelFactory.GeneralViewModelFactory
+import com.project.rekapatrol.support.TokenHandler
+import com.project.rekapatrol.ui.helper.createPdfMultipart
 import com.project.rekapatrol.ui.theme.cream
 import com.project.rekapatrol.ui.theme.disabled
-import androidx.compose.material.icons.filled.MoreVert
-import com.project.rekapatrol.support.TokenHandler
 
 data class SafetyPatrolResult(
     val id: Int,
@@ -57,6 +49,21 @@ fun HasilSafetyPatrolScreen(
     val context = LocalContext.current
     val generalViewModel: GeneralViewModel = viewModel(factory = GeneralViewModelFactory(context))
     val safetyPatrolItems = generalViewModel.safetyPatrolFlow.collectAsLazyPagingItems()
+
+    val launcher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent()
+    ) { uri: Uri? ->
+        if (uri != null) {
+            val filePart = createPdfMultipart(context, uri)
+            if (filePart != null) {
+                generalViewModel.uploadMemos(filePart)
+            } else {
+                Toast.makeText(context, "Gagal memuat file", Toast.LENGTH_SHORT).show()
+            }
+        } else {
+            Toast.makeText(context, "Tidak ada file yang dipilih", Toast.LENGTH_SHORT).show()
+        }
+    }
 
     Scaffold(
         topBar = {
@@ -115,7 +122,11 @@ fun HasilSafetyPatrolScreen(
                         location = it.location ?: "-",
                         isSolved = !it.actionDescription.isNullOrBlank()
                     )
-                    InspectionCard(inspectionResult, navController = navController)
+                    InspectionCard(
+                        result = inspectionResult,
+                        navController = navController,
+                        launcher = launcher
+                    )
                     Spacer(modifier = Modifier.height(8.dp))
                 }
             }
@@ -124,13 +135,23 @@ fun HasilSafetyPatrolScreen(
 }
 
 @Composable
-fun InspectionCard(result: SafetyPatrolResult, navController: NavController) {
+fun InspectionCard(
+    result: SafetyPatrolResult,
+    navController: NavController,
+    launcher: ManagedActivityResultLauncher<String, Uri?>
+) {
     val context = LocalContext.current
     val tokenHandler = remember { TokenHandler(context) }
     val userRole = tokenHandler.getUserRole()
     var expanded by remember { mutableStateOf(false) }
+    var shouldLaunchPicker by remember { mutableStateOf(false) }
 
-
+    LaunchedEffect(shouldLaunchPicker) {
+        if (shouldLaunchPicker) {
+            launcher.launch("application/pdf")
+            shouldLaunchPicker = false
+        }
+    }
 
     Card(
         modifier = Modifier
@@ -149,20 +170,15 @@ fun InspectionCard(result: SafetyPatrolResult, navController: NavController) {
                 verticalAlignment = Alignment.Top
             ) {
                 Column(modifier = Modifier.weight(1f)) {
-                    // Keterangan Risiko
                     Text(
                         text = "Risk: ${result.risk}",
                         fontSize = 16.sp,
                         fontWeight = FontWeight.Bold
                     )
-
-                    // Tanggal
                     Text(
                         text = "Date: ${result.date}",
                         fontSize = 14.sp
                     )
-
-                    // Kategori
                     Text(
                         text = "Cat: ${result.category}",
                         fontSize = 14.sp
@@ -200,7 +216,7 @@ fun InspectionCard(result: SafetyPatrolResult, navController: NavController) {
                                 text = { Text("Evaluasi") },
                                 onClick = {
                                     expanded = false
-                                    navController.navigate("#")
+                                    launcher.launch("application/pdf")
                                 }
                             )
                         } else if (userRole == "PIC") {
@@ -215,7 +231,7 @@ fun InspectionCard(result: SafetyPatrolResult, navController: NavController) {
                                 text = { Text("Evaluasi") },
                                 onClick = {
                                     expanded = false
-                                    navController.navigate("#")
+                                    launcher.launch("application/pdf")
                                 }
                             )
                         } else if (userRole == "Manajemen") {
@@ -223,7 +239,7 @@ fun InspectionCard(result: SafetyPatrolResult, navController: NavController) {
                                 text = { Text("Evaluasi") },
                                 onClick = {
                                     expanded = false
-                                    navController.navigate("#")
+                                    launcher.launch("application/pdf")
                                 }
                             )
                         }
@@ -233,7 +249,6 @@ fun InspectionCard(result: SafetyPatrolResult, navController: NavController) {
 
             Spacer(modifier = Modifier.height(4.dp))
 
-            // Lokasi, posisikan di bawah row header
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.End
@@ -246,12 +261,3 @@ fun InspectionCard(result: SafetyPatrolResult, navController: NavController) {
         }
     }
 }
-
-
-
-
-//@Preview(showSystemUi = true)
-//@Composable
-//fun HasilSafetyPatrolScreenPreview() {
-//    HasilSafetyPatrolScreen(navController = rememberNavController())
-//}

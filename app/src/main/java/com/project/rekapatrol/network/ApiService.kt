@@ -17,6 +17,7 @@ import com.project.rekapatrol.data.response.TindakLanjutInspeksiResponse
 import com.project.rekapatrol.data.response.TindakLanjutSafetyPatrolsResponse
 import com.project.rekapatrol.data.response.UpdateInspeksiResponse
 import com.project.rekapatrol.data.response.UpdateSafetyPatrolResponse
+import com.project.rekapatrol.data.response.UploadMemosResponse
 import okhttp3.MultipartBody
 import okhttp3.RequestBody
 import okhttp3.ResponseBody
@@ -191,5 +192,12 @@ interface ApiService {
         @Query("download") download: Int = 1,
         @Body dateRange: DateRangeRequest
     ): Response<ResponseBody>
+
+    @Multipart
+    @POST("documents")
+    suspend fun uploadMemos(
+        @Part file: MultipartBody.Part,
+        @Part("type") type: RequestBody
+    ): Response<UploadMemosResponse>
 
 }

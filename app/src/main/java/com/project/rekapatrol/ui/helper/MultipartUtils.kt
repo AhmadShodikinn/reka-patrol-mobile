@@ -24,5 +24,20 @@ fun uriToMultipartAction(context: Context, uri: Uri, maxSizeKB: Int = 2048): Mul
     return MultipartBody.Part.createFormData("action_path", compressedFile.name, requestBody)
 }
 
+fun createPdfMultipart(context: Context, uri: Uri): MultipartBody.Part? {
+    return try {
+        val inputStream = context.contentResolver.openInputStream(uri) ?: return null
+        val file = File(context.cacheDir, "temp_upload.pdf")
+        file.outputStream().use { inputStream.copyTo(it) }
+
+        val requestBody = file
+            .asRequestBody("application/pdf".toMediaTypeOrNull())
+        MultipartBody.Part.createFormData("file", file.name, requestBody)
+    } catch (e: Exception) {
+        e.printStackTrace()
+        null
+    }
+}
+
 
 

@@ -39,6 +39,16 @@ class MainActivity : ComponentActivity() {
             }
         }
 
+    private val requestStoragePermissionLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { isGranted: Boolean ->
+        if (isGranted) {
+            Toast.makeText(this, "Izin storage diberikan", Toast.LENGTH_SHORT).show()
+        } else {
+            Toast.makeText(this, "Izin storage ditolak", Toast.LENGTH_SHORT).show()
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -52,6 +62,8 @@ class MainActivity : ComponentActivity() {
             // Izin belum diberikan, kita meminta izin
             requestPermissionLauncher.launch(Manifest.permission.CAMERA)
         }
+
+        checkAndRequestStoragePermission()
 
         // ==== STORAGE PERMISSION (Android 9 dan di bawah) ====
         if (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.Q) {
@@ -97,6 +109,26 @@ class MainActivity : ComponentActivity() {
                         AppNavigator(tokenExists = true)
                     }
                 }
+            }
+        }
+    }
+
+    private fun checkAndRequestStoragePermission() {
+        when {
+            android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU -> {
+                // Android 13+
+                if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_MEDIA_IMAGES) != PackageManager.PERMISSION_GRANTED) {
+                    requestStoragePermissionLauncher.launch(Manifest.permission.READ_MEDIA_IMAGES)
+                }
+            }
+            android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M -> {
+                // Android 6 - 12
+                if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+                    requestStoragePermissionLauncher.launch(Manifest.permission.READ_EXTERNAL_STORAGE)
+                }
+            }
+            else -> {
+                // SDK < 23, permission sudah granted secara otomatis
             }
         }
     }

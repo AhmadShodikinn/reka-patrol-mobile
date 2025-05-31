@@ -26,6 +26,7 @@ import com.project.rekapatrol.data.response.TindakLanjutInspeksiResponse
 import com.project.rekapatrol.data.response.TindakLanjutSafetyPatrolsResponse
 import com.project.rekapatrol.data.response.UpdateInspeksiResponse
 import com.project.rekapatrol.data.response.UpdateSafetyPatrolResponse
+import com.project.rekapatrol.data.response.UploadMemosResponse
 import com.project.rekapatrol.ui.helper.savePdfToDownloads
 import com.project.rekapatrol.ui.helper.savePdftoDownloadUnder
 import com.project.rekapatrol.ui.helper.getCurrentMonthDateRange
@@ -77,6 +78,9 @@ class GeneralViewModel(
 
     private val _dashboardNotificationResult = MutableLiveData<DashboardNotifyResponse?>()
     val dashboardNotificationResponse: LiveData<DashboardNotifyResponse?> = _dashboardNotificationResult
+
+    private val _uploadMemosResult = MutableLiveData<UploadMemosResponse>()
+    val uploadMemosResult: LiveData<UploadMemosResponse> = _uploadMemosResult
 
     private val _totalUnsolved = MutableLiveData<Int>()
     val totalUnsolved: LiveData<Int> = _totalUnsolved
@@ -461,6 +465,24 @@ class GeneralViewModel(
                 }
             } catch (e: Exception) {
                 Toast.makeText(context, "Terjadi kesalahan saat download", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
+    fun uploadMemos(filePart: MultipartBody.Part) {
+        viewModelScope.launch {
+            try {
+                val response = repository.uploadMemos(filePart, "memo")
+                if (response.isSuccessful) {
+                    _uploadMemosResult.value = response.body()
+                } else {
+                    val errorBody = response.errorBody()?.string()
+                    val message = JSONObject(errorBody ?: "{}").optString("message", "Gagal upload dokumen memo")
+                    Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+                }
+            } catch (e: Exception) {
+                Log.e("GeneralViewModel", "uploadMemos error: ${e.message}", e)
+                Toast.makeText(context, "Terjadi kesalahan saat upload dokumen memo", Toast.LENGTH_SHORT).show()
             }
         }
     }

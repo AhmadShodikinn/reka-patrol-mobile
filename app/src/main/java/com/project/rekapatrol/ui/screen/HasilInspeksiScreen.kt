@@ -1,6 +1,10 @@
 package com.project.rekapatrol.ui.screen
 
+import android.net.Uri
 import android.widget.Toast
+import androidx.activity.compose.ManagedActivityResultLauncher
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -35,7 +39,9 @@ import com.project.rekapatrol.ui.theme.cream
 import com.project.rekapatrol.ui.theme.disabled
 import com.project.rekapatrol.ui.theme.skyblue
 import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.runtime.LaunchedEffect
 import com.project.rekapatrol.support.TokenHandler
+import com.project.rekapatrol.ui.helper.createPdfMultipart
 
 data class InspeksiResult(
     val id: Int,
@@ -53,6 +59,21 @@ fun HasilInspeksiScreen(
     val context = LocalContext.current
     val generalViewModel: GeneralViewModel = viewModel(factory = GeneralViewModelFactory(context))
     val inspeksiItems = generalViewModel.inspeksiFlow.collectAsLazyPagingItems()
+
+    val launcher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent()
+    ) { uri: Uri? ->
+        if (uri != null) {
+            val filePart = createPdfMultipart(context, uri)
+            if (filePart != null) {
+                generalViewModel.uploadMemos(filePart)
+            } else {
+                Toast.makeText(context, "Gagal memuat file", Toast.LENGTH_SHORT).show()
+            }
+        } else {
+            Toast.makeText(context, "Tidak ada file yang dipilih", Toast.LENGTH_SHORT).show()
+        }
+    }
 
     Scaffold(
         topBar = {
@@ -105,7 +126,11 @@ fun HasilInspeksiScreen(
                         lokasi = it.inspectionLocation ?: "-",
                         isSolved = !it.actionDescription.isNullOrBlank()
                     )
-                    InspeksiCard(item = inspeksiResult, navController = navController)
+                    InspeksiCard(
+                        item = inspeksiResult,
+                        navController = navController,
+                        launcher = launcher
+                    )
                     Spacer(modifier = Modifier.height(8.dp))
                 }
             }
@@ -114,11 +139,23 @@ fun HasilInspeksiScreen(
 }
 
 @Composable
-fun InspeksiCard(item: InspeksiResult, navController: NavController) {
+fun InspeksiCard(
+    item: InspeksiResult,
+    navController: NavController,
+    launcher: ManagedActivityResultLauncher<String, Uri?>
+) {
     val context = LocalContext.current
     val tokenHandler = remember { TokenHandler(context) }
     val userRole = tokenHandler.getUserRole()
     var expanded by remember { mutableStateOf(false) }
+    var shouldLaunchPicker by remember { mutableStateOf(false) }
+
+    LaunchedEffect(shouldLaunchPicker) {
+        if (shouldLaunchPicker) {
+            launcher.launch("application/pdf")
+            shouldLaunchPicker = false
+        }
+    }
 
     Card(
         modifier = Modifier
@@ -174,7 +211,7 @@ fun InspeksiCard(item: InspeksiResult, navController: NavController) {
                                 text = { Text("Evaluasi Temuan") },
                                 onClick = {
                                     expanded = false
-                                    navController.navigate("#") // route evaluasi nanti
+                                    launcher.launch("application/pdf")
                                 }
                             )
                         } else if (userRole == "PIC") {
@@ -182,7 +219,7 @@ fun InspeksiCard(item: InspeksiResult, navController: NavController) {
                                 text = { Text("Evaluasi Temuan") },
                                 onClick = {
                                     expanded = false
-                                    navController.navigate("#") // route evaluasi
+                                    launcher.launch("application/pdf")
                                 }
                             )
                             DropdownMenuItem(
@@ -197,7 +234,7 @@ fun InspeksiCard(item: InspeksiResult, navController: NavController) {
                                 text = { Text("Evaluasi Temuan") },
                                 onClick = {
                                     expanded = false
-                                    navController.navigate("#") // route evaluasi
+                                    launcher.launch("application/pdf")
                                 }
                             )
                         }
