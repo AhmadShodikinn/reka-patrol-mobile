@@ -2,13 +2,31 @@ package com.project.rekapatrol.ui.screen
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material3.*
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CenterAlignedTopAppBar
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -17,12 +35,10 @@ import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-import androidx.navigation.compose.rememberNavController
 import androidx.paging.compose.collectAsLazyPagingItems
 import com.project.rekapatrol.R
 import com.project.rekapatrol.data.response.DocumentItem
@@ -33,19 +49,19 @@ import com.project.rekapatrol.ui.theme.skyblue
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun JSAScreen(
+fun MemosScreen(
     navController: NavController
 ) {
     val context = LocalContext.current
     val generalViewModel: GeneralViewModel = viewModel(factory = GeneralViewModelFactory(context))
-    val documentItems = generalViewModel.getDocumentFlow("jsa").collectAsLazyPagingItems()
+    val documentItems = generalViewModel.getDocumentFlow("memo").collectAsLazyPagingItems()
 
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
                 title = {
                     Text(
-                        text = "Job Safety Analisis",
+                        text = "Memo",
                         fontSize = 20.sp,
                         fontWeight = FontWeight.Medium,
                         color = Color.White
@@ -78,15 +94,15 @@ fun JSAScreen(
                 item?.let {
                     val document = documentItems[index]
                     document?.let {
-                        JSACard(
+                        MemoCard(
                             item = DocumentItem(
                                 id = it.id ?: -1,
                                 title = it.fileName ?: "Tanpa Judul",
                                 date = it.createdAt ?: "Tanggal tidak tersedia",
                                 imageRes = R.drawable.baseline_source_24
                             ),
-                                onClick = {
-                                    generalViewModel.downloadDocument(context, id = it.id ?: -1)
+                            onClick = {
+                                generalViewModel.downloadDocument(context, id = it.id ?: -1)
                             }
                         )
                     }
@@ -97,7 +113,7 @@ fun JSAScreen(
 }
 
 @Composable
-fun JSACard(
+fun MemoCard(
     item: DocumentItem,
     onClick: () -> Unit
 ) {
@@ -147,9 +163,3 @@ fun JSACard(
     }
 }
 
-
-@Composable
-@Preview(showSystemUi = true)
-fun JSAScreenPreview() {
-    JSAScreen(navController = rememberNavController())
-}

@@ -157,6 +157,10 @@ class MainActivity : ComponentActivity() {
                 )
             }
 
+            composable("memos") {
+                MemosScreen(navController = navController)
+            }
+
             composable("inputSafetyPatrol") { InputSafetyPatrolScreen(navController = navController) }
 
             composable("hasilSafetyPatrol") { HasilSafetyPatrolScreen(navController = navController) }

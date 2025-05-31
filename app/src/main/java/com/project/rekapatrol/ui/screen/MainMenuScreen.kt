@@ -82,17 +82,32 @@ fun MainMenuScreen(
                     .align(Alignment.TopCenter)
             )
 
-            IconButton(
-                onClick = { generalViewModel.logout() },
+            Row(
                 modifier = Modifier
                     .align(Alignment.TopEnd)
                     .padding(20.dp)
             ) {
-                Icon(
-                    painter = painterResource(id = R.drawable.ic_logout),
-                    contentDescription = "Logout",
-                    tint = Color.Black
-                )
+                IconButton(
+                    onClick = { onNavigate("memos") }
+                ) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.ic_notifications),
+                        contentDescription = "Notifikasi",
+                        tint = Color.Black
+                    )
+                }
+
+                Spacer(modifier = Modifier.width(2.dp))
+
+                IconButton(
+                    onClick = { generalViewModel.logout() },
+                ) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.ic_logout),
+                        contentDescription = "Logout",
+                        tint = Color.Black
+                    )
+                }
             }
         }
 
