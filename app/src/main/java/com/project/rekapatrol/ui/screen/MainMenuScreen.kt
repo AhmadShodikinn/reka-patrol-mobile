@@ -50,7 +50,7 @@ fun MainMenuScreen(
 
         val tokenHandler = TokenHandler(context)
         val userRole = tokenHandler.getUserRole()
-        Toast.makeText(context, "Selamat datang, $userRole", Toast.LENGTH_SHORT).show()
+//        Toast.makeText(context, "Selamat datang, $userRole", Toast.LENGTH_SHORT).show()
     }
 
     LaunchedEffect(logoutResult) {

@@ -35,7 +35,11 @@ class AuthViewModel(
 
                     response.body()?.user?.position?.positionName?.let {
                         tokenHandler.saveUserRole(it)
+
+                        Toast.makeText(context, "Selamat datang, $it", Toast.LENGTH_SHORT).show()
                     }
+
+
 
                 } else {
                     val errorBody = response.errorBody()?.string()

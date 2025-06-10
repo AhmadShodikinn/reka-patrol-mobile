@@ -152,7 +152,7 @@ fun DetailInputInspeksiScreen(
             tanggal = it.checkupDate.toString()
             selectedCriteriaId = it.criteriaId
             selectedCriteriaName = it.criteria?.criteriaName.toString()
-            val baseUrl = "http://192.168.18.5:8001/storage/"
+            val baseUrl = "http://103.211.26.90/storage/"
             imageUrl = it.findings?.get(0)?.imagePath?.let { path -> "$baseUrl$path" }
         }
     }

@@ -70,7 +70,7 @@ fun InputSafetyPatrolScreen(
     var resiko by remember { mutableStateOf("") }
     var tanggal by remember { mutableStateOf("") }
 
-    val kategoriOptions = listOf("UC", "CA")
+    val kategoriOptions = listOf("Unsafe Condition", "Unsafe Action")
     val resikoOptions = listOf("Rendah", "Sedang", "Tinggi")
     var expandedKategori by remember { mutableStateOf(false) }
     var expandedResiko by remember { mutableStateOf(false) }
@@ -126,7 +126,7 @@ fun InputSafetyPatrolScreen(
             kategori = it.category.toString()
             resiko = it.risk.toString()
             tanggal = it.checkupDate.toString()
-            val baseUrl = "http://192.168.18.5:8001/storage/"
+            val baseUrl = "http://103.211.26.90/storage/"
             imageUrl = it.findings?.get(0)?.imagePath?.let { path -> "$baseUrl$path" }
         }
 
@@ -271,6 +271,7 @@ fun InputSafetyPatrolScreen(
                         expanded = expandedKategori,
                         onDismissRequest = { expandedKategori = false }
                     ) {
+                        //ganti UC UA
                         kategoriOptions.forEach {
                             DropdownMenuItem(
                                 text = { Text(it) },
