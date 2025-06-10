@@ -60,8 +60,8 @@ class Repository(private val apiService: ApiService) {
         )
     }
 
-    fun getSafetyPatrolsPagingSource(): PagingSource<Int, DataItemSafetyPatrols> {
-        return SafetyPatrolPagingSource(apiService)
+    fun getSafetyPatrolsPagingSource(fromYear: Int?, fromMonth: Int?): PagingSource<Int, DataItemSafetyPatrols> {
+        return SafetyPatrolPagingSource(apiService, fromYear, fromMonth)
     }
 
     suspend fun getSafetyPatrolDetail(safetyPatrolId: Int): Response<DetailSafetyPatrolResponse> {
@@ -169,8 +169,8 @@ class Repository(private val apiService: ApiService) {
         return CriteriasPagingSource(apiService, criteriaType, locationId)
     }
 
-    fun getInspeksiPagingSource(): PagingSource<Int, DataItemInspeksi> {
-        return InspeksiPagingSource(apiService)
+    fun getInspeksiPagingSource(fromYear: Int?, fromMonth: Int?): PagingSource<Int, DataItemInspeksi> {
+        return InspeksiPagingSource(apiService, fromYear, fromMonth)
     }
 
     suspend fun TindakLanjutInspection(

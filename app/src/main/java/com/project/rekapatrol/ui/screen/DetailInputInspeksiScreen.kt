@@ -227,7 +227,7 @@ fun DetailInputInspeksiScreen(
                 ExposedDropdownMenuBox(
                     expanded = expandedLokasi,
                     onExpandedChange = {
-                        if (!isEditMode) {
+                        if (!isEditMode) { // Jika bukan tindak lanjut, dropdown bisa dibuka/tutup
                             expandedLokasi = !expandedLokasi
                         }
                     }
@@ -239,14 +239,14 @@ fun DetailInputInspeksiScreen(
                         enabled = !isEditMode,
                         label = { Text("Lokasi") },
                         trailingIcon = {
-                            if (!isEditMode) ExposedDropdownMenuDefaults.TrailingIcon(expandedLokasi)
+                            if (!isTindakLanjut) ExposedDropdownMenuDefaults.TrailingIcon(expandedLokasi)
                         },
                         modifier = Modifier
                             .menuAnchor()
                             .fillMaxWidth()
                     )
 
-                    if (!isEditMode) {
+                    if (!isTindakLanjut) { // Dropdown hanya muncul jika bukan tindak lanjut
                         ExposedDropdownMenu(
                             expanded = expandedLokasi,
                             onDismissRequest = { expandedLokasi = false }

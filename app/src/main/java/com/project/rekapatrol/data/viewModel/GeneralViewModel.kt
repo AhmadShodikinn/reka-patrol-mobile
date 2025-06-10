@@ -16,6 +16,7 @@ import com.project.rekapatrol.data.repository.Repository
 import com.project.rekapatrol.data.response.DashboardNotifyResponse
 import com.project.rekapatrol.data.response.DataItemCriterias
 import com.project.rekapatrol.data.response.DataItemDocuments
+import com.project.rekapatrol.data.response.DataItemInspeksi
 import com.project.rekapatrol.data.response.DataItemSafetyPatrols
 import com.project.rekapatrol.data.response.DetailInspeksiResponse
 import com.project.rekapatrol.data.response.DetailSafetyPatrolResponse
@@ -231,13 +232,23 @@ class GeneralViewModel(
         }
     }
 
-    val safetyPatrolFlow = Pager(
-        config = PagingConfig(
-            pageSize = 10,
-            enablePlaceholders = false
-        ),
-        pagingSourceFactory = { repository.getSafetyPatrolsPagingSource() }
-    ).flow.cachedIn(viewModelScope)
+//    val safetyPatrolFlow = Pager(
+//        config = PagingConfig(
+//            pageSize = 10,
+//            enablePlaceholders = false
+//        ),
+//        pagingSourceFactory = { repository.getSafetyPatrolsPagingSource() }
+//    ).flow.cachedIn(viewModelScope)
+
+    fun getSafetyPatrolFlow(fromYear: Int?, fromMonth: Int?): Flow<PagingData<DataItemSafetyPatrols>> {
+        return Pager(
+            config = PagingConfig(
+                pageSize = 10,
+                enablePlaceholders = false
+            ),
+            pagingSourceFactory = { repository.getSafetyPatrolsPagingSource(fromYear, fromMonth) }
+        ).flow.cachedIn(viewModelScope)
+    }
 
     fun inputInspeksi(
         criteriaId: Int,
@@ -286,13 +297,15 @@ class GeneralViewModel(
         ).flow.cachedIn(viewModelScope)
     }
 
-    val inspeksiFlow = Pager(
-        config = PagingConfig(
-            pageSize = 10,
-            enablePlaceholders = false
-        ),
-        pagingSourceFactory = { repository.getInspeksiPagingSource() }
-    ).flow.cachedIn(viewModelScope)
+    fun getInspeksiFlow(fromYear: Int?, fromMonth: Int?): Flow<PagingData<DataItemInspeksi>> {
+        return Pager(
+            config = PagingConfig(
+                pageSize = 10,
+                enablePlaceholders = false
+            ),
+            pagingSourceFactory = {repository.getInspeksiPagingSource(fromYear, fromMonth)}
+        ).flow.cachedIn(viewModelScope)
+    }
 
     fun TindakLanjutInspection(
         inspectionId: Int,

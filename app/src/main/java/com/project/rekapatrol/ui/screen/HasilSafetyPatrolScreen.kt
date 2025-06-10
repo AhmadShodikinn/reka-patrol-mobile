@@ -28,6 +28,8 @@ import com.project.rekapatrol.R
 import com.project.rekapatrol.data.viewModel.GeneralViewModel
 import com.project.rekapatrol.data.viewModelFactory.GeneralViewModelFactory
 import com.project.rekapatrol.support.TokenHandler
+import com.project.rekapatrol.ui.helper.FilterDialog
+import com.project.rekapatrol.ui.helper.FilterIndicator
 import com.project.rekapatrol.ui.helper.createPdfMultipart
 import com.project.rekapatrol.ui.theme.cream
 import com.project.rekapatrol.ui.theme.disabled
@@ -48,7 +50,12 @@ fun HasilSafetyPatrolScreen(
 ) {
     val context = LocalContext.current
     val generalViewModel: GeneralViewModel = viewModel(factory = GeneralViewModelFactory(context))
-    val safetyPatrolItems = generalViewModel.safetyPatrolFlow.collectAsLazyPagingItems()
+
+    var showFilterDialog by remember { mutableStateOf(false) }
+    var selectedMonth by remember { mutableStateOf<Int?>(null) }
+    var selectedYear by remember { mutableStateOf<Int?>(null) }
+
+    val safetyPatrolItems = generalViewModel.getSafetyPatrolFlow(selectedYear, selectedMonth).collectAsLazyPagingItems()
 
     val deleteStatus by generalViewModel.deleteSafetyPatrolStatus.collectAsState()
 
@@ -99,6 +106,14 @@ fun HasilSafetyPatrolScreen(
                         Icon(Icons.Default.ArrowBack, contentDescription = "Kembali")
                     }
                 },
+                actions = {
+                    IconButton(onClick = { showFilterDialog = true }) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.date_range),
+                            contentDescription = "Filter"
+                        )
+                    }
+                }
             )
         },
         floatingActionButton = {
@@ -118,6 +133,17 @@ fun HasilSafetyPatrolScreen(
         },
         containerColor = Color.White
     ) { paddingValues ->
+        if (selectedMonth != null || selectedYear != null) {
+            FilterIndicator(
+                selectedMonth = selectedMonth,
+                selectedYear = selectedYear,
+                onClearFilter = {
+                    selectedMonth = null
+                    selectedYear = null
+                }
+            )
+        }
+
         LazyColumn(
             modifier = Modifier
                 .padding(paddingValues)
@@ -147,6 +173,28 @@ fun HasilSafetyPatrolScreen(
                 }
             }
         }
+
+        if (showFilterDialog) {
+            FilterDialog(
+                currentMonth = selectedMonth,
+                currentYear = selectedYear,
+                onDismiss = { showFilterDialog = false },
+                onApplyFilter = { month, year ->
+                    selectedMonth = month
+                    selectedYear = year
+                    showFilterDialog = false
+                }
+            )
+        }
+
+        FilterIndicator(
+            selectedMonth = selectedMonth,
+            selectedYear = selectedYear,
+            onClearFilter = {
+                selectedMonth = null
+                selectedYear = null
+            }
+        )
     }
 }
 
@@ -171,6 +219,7 @@ fun InspectionCard(
             shouldLaunchPicker = false
         }
     }
+
 
     if (showDeleteDialog) {
         AlertDialog(

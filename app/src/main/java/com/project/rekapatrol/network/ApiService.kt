@@ -63,8 +63,12 @@ interface ApiService {
     suspend fun getInputSafetyPatrolsList(
         @Query("relations[]") relations: List<String> = listOf("pic"),
         @Query("per_page") perPage: Int = 2,
-        @Query("page") page: Int = 2
+        @Query("page") page: Int = 2,
+        @Query("sort_date_by") sortDateBy: String,
+        @Query("from_year") fromYear: Int? = null,
+        @Query("from_month") fromMonth: Int? = null
     ): Response<ListSafetyPatrolsResponse>
+
 
     //get safety-patrol by id
     @GET("safety-patrols/{id}")
@@ -134,7 +138,10 @@ interface ApiService {
     @GET("inspections")
     suspend fun getInspectionsList(
         @Query("per_page") perPage: Int = 10,
-        @Query("page") page: Int = 1
+        @Query("page") page: Int = 1,
+        @Query("sort_date_by") sortDateBy: String,
+        @Query("from_year") fromYear: Int? = null,
+        @Query("from_month") fromMonth: Int? = null
     ): Response<ListInspeksiResponse>
 
     //tindak lanjut inspection
