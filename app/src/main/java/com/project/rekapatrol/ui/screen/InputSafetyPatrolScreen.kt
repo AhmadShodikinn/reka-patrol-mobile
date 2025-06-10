@@ -70,7 +70,13 @@ fun InputSafetyPatrolScreen(
     var resiko by remember { mutableStateOf("") }
     var tanggal by remember { mutableStateOf("") }
 
-    val kategoriOptions = listOf("Unsafe Condition", "Unsafe Action")
+    val kategoriOptions = listOf("UC", "CA")
+
+    val kategoriMap = mapOf(
+        "UC" to "Unsafe Condition",
+        "AC" to "Unsafe Action"
+    )
+
     val resikoOptions = listOf("Rendah", "Sedang", "Tinggi")
     var expandedKategori by remember { mutableStateOf(false) }
     var expandedResiko by remember { mutableStateOf(false) }
@@ -253,12 +259,14 @@ fun InputSafetyPatrolScreen(
                 )
 
                 // Dropdown Kategori
+                val reverseKategoriMap = kategoriMap.entries.associate { (key, value) -> value to key }
+
                 ExposedDropdownMenuBox(
                     expanded = expandedKategori,
                     onExpandedChange = { expandedKategori = !expandedKategori }
                 ) {
                     OutlinedTextField(
-                        value = kategori,
+                        value = kategoriMap[kategori] ?: kategori, // Tampilkan nama UI
                         onValueChange = {},
                         readOnly = true,
                         label = { Text("Kategori") },
@@ -271,12 +279,11 @@ fun InputSafetyPatrolScreen(
                         expanded = expandedKategori,
                         onDismissRequest = { expandedKategori = false }
                     ) {
-                        //ganti UC UA
-                        kategoriOptions.forEach {
+                        kategoriMap.values.forEach { displayName ->
                             DropdownMenuItem(
-                                text = { Text(it) },
+                                text = { Text(displayName) },
                                 onClick = {
-                                    kategori = it
+                                    kategori = reverseKategoriMap[displayName] ?: kategori // Simpan kode asli (UC/AC)
                                     expandedKategori = false
                                 }
                             )

@@ -35,6 +35,7 @@ import com.project.rekapatrol.ui.helper.saveExcelToDownloads
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import okhttp3.MultipartBody
 import org.json.JSONObject
@@ -58,6 +59,9 @@ class GeneralViewModel(
     private val _updateSafetyPatrolResults = MutableLiveData<UpdateSafetyPatrolResponse>()
     val updateSafetyPatrolResponse: LiveData<UpdateSafetyPatrolResponse> = _updateSafetyPatrolResults
 
+    private val _deleteSafetyPatrolStatus = MutableStateFlow<Boolean?>(null)
+    val deleteSafetyPatrolStatus: StateFlow<Boolean?> = _deleteSafetyPatrolStatus.asStateFlow()
+
     private val _safetyPatrolDetailResult = MutableLiveData<DetailSafetyPatrolResponse>()
     val safetyPatrolDetailResponse: LiveData<DetailSafetyPatrolResponse> = _safetyPatrolDetailResult
 
@@ -75,6 +79,9 @@ class GeneralViewModel(
 
     private val _inspectionDetailResuls = MutableLiveData<DetailInspeksiResponse>()
     val inspectionDetailResposne: LiveData<DetailInspeksiResponse> = _inspectionDetailResuls
+
+    private val _deleteInspectionStatus = MutableStateFlow<Boolean?>(null)
+    val deleteInspectionStatus: StateFlow<Boolean?> = _deleteInspectionStatus.asStateFlow()
 
     private val _dashboardNotificationResult = MutableLiveData<DashboardNotifyResponse?>()
     val dashboardNotificationResponse: LiveData<DashboardNotifyResponse?> = _dashboardNotificationResult
@@ -210,6 +217,20 @@ class GeneralViewModel(
         }
     }
 
+    fun deleteSafetyPatrol(safetyPatrolId: Int) {
+        viewModelScope.launch {
+            _deleteSafetyPatrolStatus.value = null
+            try {
+                val success = repository.deleteSafetyPatrol(safetyPatrolId)
+                _deleteSafetyPatrolStatus.value = success
+                Toast.makeText(context, if (success) "Safety Patrol berhasil dihapus!" else "Gagal menghapus Safety Patrol.", Toast.LENGTH_SHORT).show()
+            } catch (e: Exception) {
+                Log.e("GeneralViewModel", "Server Error: ${e.message}", e)
+                Toast.makeText(context, "Server error!", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
     val safetyPatrolFlow = Pager(
         config = PagingConfig(
             pageSize = 10,
@@ -329,6 +350,20 @@ class GeneralViewModel(
             } catch (e: Exception) {
                 Log.e("GeneralViewModel", "Server Error: ${e.message}", e)
                 Toast.makeText(context, "Server Error!", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
+    fun deleteInspection(inspectionId: Int) {
+        viewModelScope.launch {
+            _deleteInspectionStatus.value = null
+            try {
+                val success = repository.deleteInspection(inspectionId)
+                _deleteInspectionStatus.value = success
+                Toast.makeText(context, if (success) "Inspeksi berhasil dihapus!" else "Gagal menghapus Inspeksi.", Toast.LENGTH_SHORT).show()
+            } catch (e: Exception) {
+                Log.e("GeneralViewModel", "Server Error: ${e.message}", e)
+                Toast.makeText(context, "Server error!", Toast.LENGTH_SHORT).show()
             }
         }
     }

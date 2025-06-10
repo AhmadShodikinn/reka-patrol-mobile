@@ -1,5 +1,6 @@
 package com.project.rekapatrol.data.repository
 
+import android.util.Log
 import androidx.paging.PagingSource
 import com.project.rekapatrol.data.pagingSource.CriteriasPagingSource
 import com.project.rekapatrol.data.pagingSource.DocumentsPagingSource
@@ -28,6 +29,7 @@ import com.project.rekapatrol.support.toIntPlainPart
 import com.project.rekapatrol.support.toPlainPart
 import okhttp3.MultipartBody
 import okhttp3.ResponseBody
+import retrofit2.HttpException
 import retrofit2.Response
 
 class Repository(private val apiService: ApiService) {
@@ -100,6 +102,16 @@ class Repository(private val apiService: ApiService) {
         )
     }
 
+    suspend fun deleteSafetyPatrol(safetyPatrolId: Int): Boolean {
+        return try {
+            val response = apiService.deleteSafetyPatrol(safetyPatrolId)
+            response.isSuccessful
+        } catch (e: HttpException) {
+            Log.d("Repository", e.message())
+            false
+        }
+    }
+
     suspend fun inputInspeksi(
         criteria_id: Int,
         findingPaths: List<MultipartBody.Part>,
@@ -139,6 +151,17 @@ class Repository(private val apiService: ApiService) {
             checkupDate = checkupDate.toPlainPart(),
             finding_paths = findingPaths
         )
+    }
+
+    suspend fun deleteInspection(inspectionId: Int): Boolean {
+        return try {
+            val response = apiService.deleteInspection(inspectionId)
+            response.isSuccessful
+            true
+        } catch (e: HttpException) {
+            Log.d("Repository", e.message())
+            false
+        }
     }
 
 

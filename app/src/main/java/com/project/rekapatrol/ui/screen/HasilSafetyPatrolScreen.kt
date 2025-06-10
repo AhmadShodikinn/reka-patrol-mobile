@@ -50,6 +50,19 @@ fun HasilSafetyPatrolScreen(
     val generalViewModel: GeneralViewModel = viewModel(factory = GeneralViewModelFactory(context))
     val safetyPatrolItems = generalViewModel.safetyPatrolFlow.collectAsLazyPagingItems()
 
+    val deleteStatus by generalViewModel.deleteSafetyPatrolStatus.collectAsState()
+
+    LaunchedEffect(deleteStatus) {
+        deleteStatus?.let { success ->
+            if (success) {
+                Toast.makeText(context, "Penghapusan berhasil!", Toast.LENGTH_SHORT).show()
+                safetyPatrolItems.refresh()
+            } else {
+                Toast.makeText(context, "Penghapusan gagal!", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
     val launcher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
     ) { uri: Uri? ->
@@ -125,7 +138,10 @@ fun HasilSafetyPatrolScreen(
                     InspectionCard(
                         result = inspectionResult,
                         navController = navController,
-                        launcher = launcher
+                        launcher = launcher,
+                        onDeleteConfirmed = { safetyPatrolId ->
+                            generalViewModel.deleteSafetyPatrol(safetyPatrolId)
+                        }
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                 }
@@ -138,7 +154,8 @@ fun HasilSafetyPatrolScreen(
 fun InspectionCard(
     result: SafetyPatrolResult,
     navController: NavController,
-    launcher: ManagedActivityResultLauncher<String, Uri?>
+    launcher: ManagedActivityResultLauncher<String, Uri?>,
+    onDeleteConfirmed: (Int) -> Unit
 ) {
     val context = LocalContext.current
     val tokenHandler = remember { TokenHandler(context) }
@@ -146,11 +163,39 @@ fun InspectionCard(
     var expanded by remember { mutableStateOf(false) }
     var shouldLaunchPicker by remember { mutableStateOf(false) }
 
+    var showDeleteDialog by remember { mutableStateOf(false) }
+
     LaunchedEffect(shouldLaunchPicker) {
         if (shouldLaunchPicker) {
             launcher.launch("application/pdf")
             shouldLaunchPicker = false
         }
+    }
+
+    if (showDeleteDialog) {
+        AlertDialog(
+            onDismissRequest = { showDeleteDialog = false },
+            title = { Text("Konfirmasi Penghapusan") },
+            text = { Text("Apakah Anda yakin ingin menghapus temuan ini?") },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        onDeleteConfirmed(result.id)
+                        showDeleteDialog = false
+                        expanded = false
+                    }
+                ) {
+                    Text("Hapus")
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = { showDeleteDialog = false }
+                ) {
+                    Text("Batal")
+                }
+            }
+        )
     }
 
     Card(
@@ -217,6 +262,12 @@ fun InspectionCard(
                                 onClick = {
                                     expanded = false
                                     launcher.launch("application/pdf")
+                                }
+                            )
+                            DropdownMenuItem(
+                                text = { Text("Hapus Temuan") },
+                                onClick = {
+                                    showDeleteDialog = true
                                 }
                             )
                         } else if (userRole == "PIC") {

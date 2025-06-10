@@ -23,6 +23,7 @@ import okhttp3.RequestBody
 import okhttp3.ResponseBody
 import retrofit2.Response
 import retrofit2.http.Body
+import retrofit2.http.DELETE
 import retrofit2.http.GET
 import retrofit2.http.Multipart
 import retrofit2.http.POST
@@ -98,6 +99,11 @@ interface ApiService {
         @Part("checkup_date") checkupDate: RequestBody,
         @Part finding_paths: List<MultipartBody.Part>
     ): Response<UpdateSafetyPatrolResponse>
+
+    @DELETE("safety-patrols/{id}")
+    suspend fun deleteSafetyPatrol(
+        @Path("id") safetyPatrolId: Int
+    ): Response<Unit>
     //End of safety-patrol
 
     //inspection
@@ -153,6 +159,11 @@ interface ApiService {
         @Part("checkup_date") checkupDate: RequestBody,
         @Part finding_paths: List<MultipartBody.Part>
     ): Response<UpdateInspeksiResponse>
+
+    @DELETE("inspections/{id}")
+    suspend fun deleteInspection(
+        @Path("id") inspectionId: Int
+    ): Response<Unit>
 
     //get detail inspection
     @GET("inspections/{id}")

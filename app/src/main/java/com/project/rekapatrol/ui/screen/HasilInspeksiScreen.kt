@@ -42,6 +42,7 @@ import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.runtime.LaunchedEffect
 import com.project.rekapatrol.support.TokenHandler
 import com.project.rekapatrol.ui.helper.createPdfMultipart
+import java.util.Calendar
 
 data class InspeksiResult(
     val id: Int,
@@ -59,6 +60,10 @@ fun HasilInspeksiScreen(
     val context = LocalContext.current
     val generalViewModel: GeneralViewModel = viewModel(factory = GeneralViewModelFactory(context))
     val inspeksiItems = generalViewModel.inspeksiFlow.collectAsLazyPagingItems()
+
+    var showFilterDialog by remember { mutableStateOf(false) }
+    var selectedMonth by remember { mutableStateOf<Int?>(null) }
+    var selectedYear by remember { mutableStateOf<Int?>(null) }
 
     val launcher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
@@ -95,6 +100,11 @@ fun HasilInspeksiScreen(
                     IconButton(onClick = { navController.popBackStack() }) {
                         Icon(Icons.Default.ArrowBack, contentDescription = "Kembali")
                     }
+                },
+                actions = {
+                    IconButton(onClick = { showFilterDialog = true }) {
+                        Icon(Icons.Default.ArrowBack, contentDescription = "Filter")
+                    }
                 }
             )
         },
@@ -110,6 +120,17 @@ fun HasilInspeksiScreen(
         },
         containerColor = Color.White
     ) { paddingValues ->
+        if (selectedMonth != null || selectedYear != null) {
+            FilterIndicator(
+                selectedMonth = selectedMonth,
+                selectedYear = selectedYear,
+                onClearFilter = {
+                    selectedMonth = null
+                    selectedYear = null
+                }
+            )
+        }
+
         LazyColumn(
             modifier = Modifier
                 .padding(paddingValues)
@@ -129,20 +150,233 @@ fun HasilInspeksiScreen(
                     InspeksiCard(
                         item = inspeksiResult,
                         navController = navController,
-                        launcher = launcher
+                        launcher = launcher,
+                        onDeleteConfirmed = { inspectionId ->
+                            generalViewModel.deleteInspection(inspectionId)
+                        }
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                 }
             }
         }
+
+        if (showFilterDialog) {
+            FilterDialog(
+                currentMonth = selectedMonth,
+                currentYear = selectedYear,
+                onDismiss = { showFilterDialog = false },
+                onApplyFilter = { month, year ->
+                    selectedMonth = month
+                    selectedYear = year
+                    showFilterDialog = false
+                }
+            )
+        }
     }
 }
+
+@Composable
+fun FilterIndicator(
+    selectedMonth: Int?,
+    selectedYear: Int?,
+    onClearFilter: () -> Unit
+) {
+    val monthNames = listOf(
+        "Januari", "Februari", "Maret", "April", "Mei", "Juni",
+        "Juli", "Agustus", "September", "Oktober", "November", "Desember"
+    )
+
+    Surface(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 8.dp),
+        color = skyblue.copy(alpha = 0.1f),
+        shape = RoundedCornerShape(8.dp)
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(12.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Row {
+                Text(
+                    text = "Filter: ",
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Medium
+                )
+                Text(
+                    text = buildString {
+                        if (selectedMonth != null) {
+                            append(monthNames[selectedMonth - 1])
+                        }
+                        if (selectedMonth != null && selectedYear != null) {
+                            append(" ")
+                        }
+                        if (selectedYear != null) {
+                            append(selectedYear)
+                        }
+                    },
+                    fontSize = 14.sp,
+                    color = skyblue,
+                    fontWeight = FontWeight.Bold
+                )
+            }
+
+            TextButton(onClick = onClearFilter) {
+                Text(
+                    text = "Hapus",
+                    color = skyblue,
+                    fontSize = 12.sp
+                )
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun FilterDialog(
+    currentMonth: Int?,
+    currentYear: Int?,
+    onDismiss: () -> Unit,
+    onApplyFilter: (month: Int?, year: Int?) -> Unit
+) {
+    var selectedMonth by remember { mutableStateOf(currentMonth) }
+    var selectedYear by remember { mutableStateOf(currentYear) }
+    var showMonthDropdown by remember { mutableStateOf(false) }
+    var showYearDropdown by remember { mutableStateOf(false) }
+
+    val monthNames = listOf(
+        "Januari", "Februari", "Maret", "April", "Mei", "Juni",
+        "Juli", "Agustus", "September", "Oktober", "November", "Desember"
+    )
+
+    val currentCalendar = Calendar.getInstance()
+    val currentRealYear = currentCalendar.get(Calendar.YEAR)
+    val yearRange = (currentRealYear - 10)..(currentRealYear + 10)
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = {
+            Text(
+                text = "Filter Inspeksi",
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Bold
+            )
+        },
+        text = {
+            Column {
+                // Dropdown untuk memilih bulan
+                ExposedDropdownMenuBox(
+                    expanded = showMonthDropdown,
+                    onExpandedChange = { showMonthDropdown = !showMonthDropdown }
+                ) {
+                    OutlinedTextField(
+                        value = selectedMonth?.let { monthNames[it - 1] } ?: "Semua Bulan",
+                        onValueChange = { },
+                        readOnly = true,
+                        label = { Text("Bulan") },
+                        trailingIcon = {
+                            ExposedDropdownMenuDefaults.TrailingIcon(expanded = showMonthDropdown)
+                        },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .menuAnchor()
+                    )
+
+                    ExposedDropdownMenu(
+                        expanded = showMonthDropdown,
+                        onDismissRequest = { showMonthDropdown = false }
+                    ) {
+                        DropdownMenuItem(
+                            text = { Text("Semua Bulan") },
+                            onClick = {
+                                selectedMonth = null
+                                showMonthDropdown = false
+                            }
+                        )
+                        monthNames.forEachIndexed { index, month ->
+                            DropdownMenuItem(
+                                text = { Text(month) },
+                                onClick = {
+                                    selectedMonth = index + 1
+                                    showMonthDropdown = false
+                                }
+                            )
+                        }
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                ExposedDropdownMenuBox(
+                    expanded = showYearDropdown,
+                    onExpandedChange = { showYearDropdown = !showYearDropdown }
+                ) {
+                    OutlinedTextField(
+                        value = selectedYear?.toString() ?: "Semua Tahun",
+                        onValueChange = { },
+                        readOnly = true,
+                        label = { Text("Tahun") },
+                        trailingIcon = {
+                            ExposedDropdownMenuDefaults.TrailingIcon(expanded = showYearDropdown)
+                        },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .menuAnchor()
+                    )
+
+                    ExposedDropdownMenu(
+                        expanded = showYearDropdown,
+                        onDismissRequest = { showYearDropdown = false }
+                    ) {
+                        DropdownMenuItem(
+                            text = { Text("Semua Tahun") },
+                            onClick = {
+                                selectedYear = null
+                                showYearDropdown = false
+                            }
+                        )
+                        yearRange.forEach { year ->
+                            DropdownMenuItem(
+                                text = { Text(year.toString()) },
+                                onClick = {
+                                    selectedYear = year
+                                    showYearDropdown = false
+                                }
+                            )
+                        }
+                    }
+                }
+            }
+        },
+        confirmButton = {
+            Button(
+                onClick = { onApplyFilter(selectedMonth, selectedYear) },
+                colors = ButtonDefaults.buttonColors(containerColor = skyblue)
+            ) {
+                Text("Terapkan", color = Color.White)
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Batal", color = skyblue)
+            }
+        }
+    )
+}
+
+
+
 
 @Composable
 fun InspeksiCard(
     item: InspeksiResult,
     navController: NavController,
-    launcher: ManagedActivityResultLauncher<String, Uri?>
+    launcher: ManagedActivityResultLauncher<String, Uri?>,
+    onDeleteConfirmed: (Int) -> Unit
 ) {
     val context = LocalContext.current
     val tokenHandler = remember { TokenHandler(context) }
@@ -150,11 +384,40 @@ fun InspeksiCard(
     var expanded by remember { mutableStateOf(false) }
     var shouldLaunchPicker by remember { mutableStateOf(false) }
 
+
+    var showDeleteDialog by remember { mutableStateOf(false) }
+
     LaunchedEffect(shouldLaunchPicker) {
         if (shouldLaunchPicker) {
             launcher.launch("application/pdf")
             shouldLaunchPicker = false
         }
+    }
+
+    if (showDeleteDialog) {
+        AlertDialog(
+            onDismissRequest = { showDeleteDialog = false },
+            title = { Text("Konfirmasi Penghapusan") },
+            text = { Text("Apakah Anda yakin ingin menghapus temuan ini?") },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        onDeleteConfirmed(item.id)
+                        showDeleteDialog = false
+                        expanded = false
+                    }
+                ) {
+                    Text("Hapus")
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = { showDeleteDialog = false }
+                ) {
+                    Text("Batal")
+                }
+            }
+        )
     }
 
     Card(
@@ -192,7 +455,35 @@ fun InspeksiCard(
                         expanded = expanded,
                         onDismissRequest = { expanded = false }
                     ) {
-                        if (userRole == "SHE" || userRole == "5R") {
+                        if (userRole == "SHE") {
+                            DropdownMenuItem(
+                                text = { Text("Edit Temuan") },
+                                onClick = {
+                                    expanded = false
+                                    navController.navigate("updateInspeksi/${item.criteriaId}/${item.id}")
+                                }
+                            )
+                            DropdownMenuItem(
+                                text = { Text("Tindak Lanjut") },
+                                onClick = {
+                                    expanded = false
+                                    navController.navigate("detailInspeksi/${item.criteriaId}/${item.id}/true")
+                                }
+                            )
+                            DropdownMenuItem(
+                                text = { Text("Evaluasi Temuan") },
+                                onClick = {
+                                    expanded = false
+                                    launcher.launch("application/pdf")
+                                }
+                            )
+                            DropdownMenuItem(
+                                text = { Text("Hapus Temuan") },
+                                onClick = {
+                                    showDeleteDialog = true
+                                }
+                            )
+                        } else if (userRole == "5R") {
                             DropdownMenuItem(
                                 text = { Text("Edit Temuan") },
                                 onClick = {
