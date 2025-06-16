@@ -70,12 +70,7 @@ fun InputSafetyPatrolScreen(
     var resiko by remember { mutableStateOf("") }
     var tanggal by remember { mutableStateOf("") }
 
-    val kategoriOptions = listOf("UC", "CA")
-
-    val kategoriMap = mapOf(
-        "UC" to "Unsafe Condition",
-        "AC" to "Unsafe Action"
-    )
+    val kategoriOptions = listOf("Unsafe Condition", "Unsafe Action")
 
     val resikoOptions = listOf("Rendah", "Sedang", "Tinggi")
     var expandedKategori by remember { mutableStateOf(false) }
@@ -259,14 +254,12 @@ fun InputSafetyPatrolScreen(
                 )
 
                 // Dropdown Kategori
-                val reverseKategoriMap = kategoriMap.entries.associate { (key, value) -> value to key }
-
                 ExposedDropdownMenuBox(
                     expanded = expandedKategori,
                     onExpandedChange = { expandedKategori = !expandedKategori }
                 ) {
                     OutlinedTextField(
-                        value = kategoriMap[kategori] ?: kategori, // Tampilkan nama UI
+                        value = kategori,
                         onValueChange = {},
                         readOnly = true,
                         label = { Text("Kategori") },
@@ -279,11 +272,11 @@ fun InputSafetyPatrolScreen(
                         expanded = expandedKategori,
                         onDismissRequest = { expandedKategori = false }
                     ) {
-                        kategoriMap.values.forEach { displayName ->
+                        kategoriOptions.forEach { option ->
                             DropdownMenuItem(
-                                text = { Text(displayName) },
+                                text = { Text(option) },
                                 onClick = {
-                                    kategori = reverseKategoriMap[displayName] ?: kategori // Simpan kode asli (UC/AC)
+                                    kategori = option
                                     expandedKategori = false
                                 }
                             )

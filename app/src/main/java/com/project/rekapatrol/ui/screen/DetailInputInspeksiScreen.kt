@@ -100,6 +100,9 @@ fun DetailInputInspeksiScreen(
         "Tidak" to false
     )
 
+    val nilaiOptions = listOf("50 (Kurang Sesuai)", "70 (Sesuai)", "90 (Melebihi Standar)")
+    var expandedNilai by remember { mutableStateOf(false) }
+
     var expandedLokasi by remember { mutableStateOf(false) }
     var expandedSustain by remember { mutableStateOf(false) }
     var selectedCriteriaId by remember { mutableStateOf<Int?>(null) }
@@ -353,12 +356,45 @@ fun DetailInputInspeksiScreen(
                 )
 
                 // Value Dropdown
-                OutlinedTextField(
-                    value = value,
-                    onValueChange = { value = it },
-                    label = { Text("Nilai") },
-                    modifier = Modifier.fillMaxWidth()
-                )
+                ExposedDropdownMenuBox(
+                    expanded = expandedNilai,
+                    onExpandedChange = {
+                        if (isEditMode && !isTindakLanjut) {
+                            expandedNilai = !expandedNilai
+                        }
+                    }
+                ) {
+                    OutlinedTextField(
+                        value = value,
+                        onValueChange = {},
+                        readOnly = true,
+                        enabled = isEditMode && !isTindakLanjut,
+                        label = { Text("Nilai") },
+                        trailingIcon = {
+                            if (isEditMode && !isTindakLanjut)
+                                ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedNilai)
+                        },
+                        modifier = Modifier
+                            .menuAnchor()
+                            .fillMaxWidth()
+                    )
+                    if (expandedNilai) {
+                        ExposedDropdownMenu(
+                            expanded = expandedNilai,
+                            onDismissRequest = { expandedNilai = false }
+                        ) {
+                            nilaiOptions.forEach { option ->
+                                DropdownMenuItem(
+                                    text = { Text(option) },
+                                    onClick = {
+                                        value = option
+                                        expandedNilai = false
+                                    }
+                                )
+                            }
+                        }
+                    }
+                }
 
                 // Sustainability Dropdown
                 ExposedDropdownMenuBox(
