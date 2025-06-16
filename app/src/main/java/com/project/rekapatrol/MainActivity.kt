@@ -139,11 +139,24 @@ class MainActivity : ComponentActivity() {
 
         NavHost(navController = navController, startDestination = if (tokenExists) "mainMenu" else "loginScreen") {
             composable("loginScreen") {
-                LoginScreen(onLoginSuccess = {
-                    navController.navigate("mainMenu") {
-                        popUpTo("loginScreen") { inclusive = true }
+                LoginScreen(
+                    onLoginSuccess = {
+                        navController.navigate("mainMenu") {
+                            popUpTo("loginScreen") { inclusive = true }
+                        }
+                    },
+                    onForgotPasswordClick = {
+                        navController.navigate("forgotPassword")
                     }
-                })
+                )
+            }
+
+            composable("forgotPassword") {
+                ForgotPasswordScreen(
+                    onNavigateBack = {
+                        navController.popBackStack()
+                    }
+                )
             }
 
             composable("mainMenu") {

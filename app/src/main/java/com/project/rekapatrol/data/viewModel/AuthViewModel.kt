@@ -9,6 +9,8 @@ import androidx.lifecycle.viewModelScope
 import com.project.rekapatrol.data.repository.Repository
 import com.project.rekapatrol.data.response.LoginResponse
 import com.project.rekapatrol.data.response.LogoutResponse
+import com.project.rekapatrol.data.response.ResetPasswordResponse
+import com.project.rekapatrol.data.response.ResetPasswordResult
 import com.project.rekapatrol.support.TokenHandler
 import kotlinx.coroutines.launch
 import org.json.JSONObject
@@ -20,6 +22,9 @@ class AuthViewModel(
 ): ViewModel() {
     private val _authLoginResult = MutableLiveData<LoginResponse>()
     val authLoginResult: LiveData<LoginResponse> = _authLoginResult
+
+    private val _resetPasswordResult = MutableLiveData<ResetPasswordResult>()
+    val resetPasswordResult: LiveData<ResetPasswordResult> get() = _resetPasswordResult
 
     fun login(nip: String, password: String){
         viewModelScope.launch {
@@ -48,6 +53,38 @@ class AuthViewModel(
                 }
             } catch (e: Exception) {
                 Toast.makeText(context,"Server Error!", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
+    fun resetPassword(nip: String, password: String, passwordConfirmation: String) {
+        viewModelScope.launch {
+            try {
+                val response = repository.resetPassword(nip, password, passwordConfirmation)
+
+                if (response.isSuccessful && response.body() != null) {
+                    _resetPasswordResult.value = ResetPasswordResult(
+                        success = true,
+                        message = response.body()!!.message,
+                        data = response.body()
+                    )
+                } else {
+                    val errorBody = response.errorBody()?.string()
+                    val json = JSONObject(errorBody ?: "{}")
+                    val message = json.optString("message", "Terjadi kesalahan.")
+                    val errors = json.optJSONObject("errors")
+                    val firstPasswordError = errors?.optJSONArray("password")?.optString(0)
+
+                    _resetPasswordResult.value = ResetPasswordResult(
+                        success = false,
+                        message = firstPasswordError ?: message
+                    )
+                }
+            } catch (e: Exception) {
+                _resetPasswordResult.value = ResetPasswordResult(
+                    success = false,
+                    message = "Terjadi kesalahan jaringan atau server."
+                )
             }
         }
     }

@@ -2,6 +2,7 @@ package com.project.rekapatrol.network
 
 import com.project.rekapatrol.data.request.DateRangeRequest
 import com.project.rekapatrol.data.request.LoginRequest
+import com.project.rekapatrol.data.request.ResetPasswordRequest
 import com.project.rekapatrol.data.response.CriteriaResponse
 import com.project.rekapatrol.data.response.DashboardNotifyResponse
 import com.project.rekapatrol.data.response.DetailInspeksiResponse
@@ -13,6 +14,7 @@ import com.project.rekapatrol.data.response.ListInspeksiResponse
 import com.project.rekapatrol.data.response.ListSafetyPatrolsResponse
 import com.project.rekapatrol.data.response.LoginResponse
 import com.project.rekapatrol.data.response.LogoutResponse
+import com.project.rekapatrol.data.response.ResetPasswordResponse
 import com.project.rekapatrol.data.response.TindakLanjutInspeksiResponse
 import com.project.rekapatrol.data.response.TindakLanjutSafetyPatrolsResponse
 import com.project.rekapatrol.data.response.UpdateInspeksiResponse
@@ -44,6 +46,14 @@ interface ApiService {
     @POST("logout")
     suspend fun authLogout(): Response<LogoutResponse>
     //End of autentikasi
+
+    //password
+    @POST("reset-password")
+    suspend fun resetPassword(
+        @Body request: ResetPasswordRequest,
+        @Query("relations") relations: String = "position"
+    ): Response<ResetPasswordResponse>
+    //End of password
 
     //Safety-patrol
     //input safety-patrol

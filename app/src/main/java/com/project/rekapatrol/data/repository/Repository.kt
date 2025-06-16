@@ -8,6 +8,7 @@ import com.project.rekapatrol.data.pagingSource.InspeksiPagingSource
 import com.project.rekapatrol.data.pagingSource.SafetyPatrolPagingSource
 import com.project.rekapatrol.data.request.DateRangeRequest
 import com.project.rekapatrol.data.request.LoginRequest
+import com.project.rekapatrol.data.request.ResetPasswordRequest
 import com.project.rekapatrol.data.response.DashboardNotifyResponse
 import com.project.rekapatrol.data.response.DataItemCriterias
 import com.project.rekapatrol.data.response.DataItemDocuments
@@ -19,6 +20,7 @@ import com.project.rekapatrol.data.response.InputInspeksiResponse
 import com.project.rekapatrol.data.response.InputSafetyPatrolsResponse
 import com.project.rekapatrol.data.response.LoginResponse
 import com.project.rekapatrol.data.response.LogoutResponse
+import com.project.rekapatrol.data.response.ResetPasswordResponse
 import com.project.rekapatrol.data.response.TindakLanjutInspeksiResponse
 import com.project.rekapatrol.data.response.TindakLanjutSafetyPatrolsResponse
 import com.project.rekapatrol.data.response.UpdateInspeksiResponse
@@ -40,6 +42,11 @@ class Repository(private val apiService: ApiService) {
 
     suspend fun authLogout(): Response<LogoutResponse>{
         return apiService.authLogout()
+    }
+
+    suspend fun resetPassword(nip: String, password: String, passwordConfirmation: String): Response<ResetPasswordResponse> {
+        val bodyRequest = ResetPasswordRequest(nip, password, passwordConfirmation)
+        return apiService.resetPassword(bodyRequest)
     }
 
     suspend fun inputSafetyPatrols(
