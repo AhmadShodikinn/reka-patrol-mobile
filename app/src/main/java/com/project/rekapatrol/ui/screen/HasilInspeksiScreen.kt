@@ -291,6 +291,7 @@ fun InspeksiCard(
                                     navController.navigate("detailInspeksi/${item.criteriaId}/${item.id}/true")
                                 }
                             )
+                            // kalau ada memo kuning berarti nambahkan isMemo
                             DropdownMenuItem(
                                 text = { Text("Evaluasi Temuan") },
                                 onClick = {
@@ -342,6 +343,7 @@ fun InspeksiCard(
                                 }
                             )
                         } else if (userRole == "Manajemen") {
+                            // kalau ada memo kuning berarti isMemo true, ubah jadi false
                             DropdownMenuItem(
                                 text = { Text("Evaluasi Temuan") },
                                 onClick = {
@@ -349,6 +351,7 @@ fun InspeksiCard(
                                     launcher.launch("application/pdf")
                                 }
                             )
+
                         }
 
                     }

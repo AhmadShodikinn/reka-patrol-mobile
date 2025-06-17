@@ -358,40 +358,30 @@ fun DetailInputInspeksiScreen(
                 // Value Dropdown
                 ExposedDropdownMenuBox(
                     expanded = expandedNilai,
-                    onExpandedChange = {
-                        if (isEditMode && !isTindakLanjut) {
-                            expandedNilai = !expandedNilai
-                        }
-                    }
+                    onExpandedChange = { expandedNilai = !expandedNilai }
                 ) {
                     OutlinedTextField(
                         value = value,
                         onValueChange = {},
                         readOnly = true,
-                        enabled = isEditMode && !isTindakLanjut,
                         label = { Text("Nilai") },
-                        trailingIcon = {
-                            if (isEditMode && !isTindakLanjut)
-                                ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedNilai)
-                        },
+                        trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedNilai) },
                         modifier = Modifier
                             .menuAnchor()
                             .fillMaxWidth()
                     )
-                    if (expandedNilai) {
-                        ExposedDropdownMenu(
-                            expanded = expandedNilai,
-                            onDismissRequest = { expandedNilai = false }
-                        ) {
-                            nilaiOptions.forEach { option ->
-                                DropdownMenuItem(
-                                    text = { Text(option) },
-                                    onClick = {
-                                        value = option
-                                        expandedNilai = false
-                                    }
-                                )
-                            }
+                    ExposedDropdownMenu(
+                        expanded = expandedNilai,
+                        onDismissRequest = { expandedNilai = false }
+                    ) {
+                        nilaiOptions.forEach {
+                            DropdownMenuItem(
+                                text = { Text(it) },
+                                onClick = {
+                                    value = it
+                                    expandedNilai = false
+                                }
+                            )
                         }
                     }
                 }
