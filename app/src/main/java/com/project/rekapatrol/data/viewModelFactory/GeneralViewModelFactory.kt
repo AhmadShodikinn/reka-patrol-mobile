@@ -15,10 +15,10 @@ class GeneralViewModelFactory(
 ): ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         val tokenHandler = TokenHandler(context)
-        val token = tokenHandler.getToken() ?: throw IllegalStateException("Token kosong")
+//        val token = tokenHandler.getToken() ?: throw IllegalStateException("Token kosong")
 
-        Log.e("GeneralViewModelFactory", "Token: $token")
-        val apiService = ApiConfig.getApiService(token)
+//        Log.e("GeneralViewModelFactory", "Token: $token")
+        val apiService = ApiConfig.getApiService(tokenHandler)
         val repository = Repository(apiService)
 
         return GeneralViewModel(repository, context) as T

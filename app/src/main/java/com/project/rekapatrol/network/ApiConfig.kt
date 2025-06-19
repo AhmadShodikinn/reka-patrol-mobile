@@ -1,6 +1,7 @@
 package com.project.rekapatrol.network
 
 import android.util.Log
+import com.project.rekapatrol.support.TokenHandler
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
@@ -14,27 +15,27 @@ object ApiConfig {
 //    private const val BASE_URL = "http://103.211.26.90/api/"
 //    private const val BASE_URL = "https://sipatka.ptrekaindo.co.id/api/"
 
-    fun getApiService(token: String): ApiService {
-        Log.d("ApiConfig", "Mendapatkan ApiService dengan token: $token")
+    fun getApiService(tokenHandler: TokenHandler): ApiService {
+//        Log.d("ApiConfig", "Mendapatkan ApiService dengan token: $token")
 
         return Retrofit.Builder()
             .baseUrl(BASE_URL)
             .addConverterFactory(GsonConverterFactory.create())
-            .client(getOkHttpClient(token))
+            .client(getOkHttpClient(tokenHandler))
             .build()
             .create(ApiService::class.java)
     }
 
-    private fun getOkHttpClient(token: String): OkHttpClient {
+    private fun getOkHttpClient(tokenHandler: TokenHandler): OkHttpClient {
         val logging = HttpLoggingInterceptor().apply {
             level = HttpLoggingInterceptor.Level.BODY
         }
 
-        Log.d("ApiConfig", "Mengonfigurasi OkHttpClient dengan token: $token")
+//        Log.d("ApiConfig", "Mengonfigurasi OkHttpClient dengan token: $token")
 
         return OkHttpClient.Builder()
             .addInterceptor(logging)
-            .addInterceptor(TokenInterceptor(token))
+            .addInterceptor(TokenInterceptor(tokenHandler))
             .connectTimeout(30, TimeUnit.SECONDS)
             .writeTimeout(30, TimeUnit.SECONDS)
             .readTimeout(30, TimeUnit.SECONDS)

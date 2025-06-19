@@ -48,6 +48,9 @@ class GeneralViewModel(
     private val _authLogoutResult = MutableLiveData<LogoutResponse>()
     val authLogoutResult: LiveData<LogoutResponse> = _authLogoutResult
 
+    private val _sessionExpired = MutableLiveData<Boolean>()
+    val sessionExpired: LiveData<Boolean> get() = _sessionExpired
+
     private val _inputSafetyPatrolsResult = MutableLiveData<InputSafetyPatrolsResponse>()
     val inputSafetyPatrolsResponse: LiveData<InputSafetyPatrolsResponse> = _inputSafetyPatrolsResult
 
@@ -92,6 +95,10 @@ class GeneralViewModel(
 
     private val _totalUnsolved = MutableLiveData<Int>()
     val totalUnsolved: LiveData<Int> = _totalUnsolved
+
+    fun onSessionExpired() {
+        _sessionExpired.postValue(true)
+    }
 
     fun logout(){
         viewModelScope.launch {

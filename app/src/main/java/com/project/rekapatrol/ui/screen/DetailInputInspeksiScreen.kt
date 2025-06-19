@@ -312,7 +312,6 @@ fun DetailInputInspeksiScreen(
                     }
                 }
 
-
                 // Gambar
                 ImagePickerSection(
                     imageUris = imageUris,

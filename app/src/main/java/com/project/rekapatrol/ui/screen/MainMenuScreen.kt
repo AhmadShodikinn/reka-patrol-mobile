@@ -31,6 +31,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.project.rekapatrol.R
 import com.project.rekapatrol.data.viewModel.GeneralViewModel
 import com.project.rekapatrol.data.viewModelFactory.GeneralViewModelFactory
+import com.project.rekapatrol.support.SessionHandler
 import com.project.rekapatrol.support.TokenHandler
 import com.project.rekapatrol.ui.theme.cream
 
@@ -42,15 +43,29 @@ fun MainMenuScreen(
     val context = LocalContext.current
     val generalViewModel: GeneralViewModel = viewModel(factory = GeneralViewModelFactory(context))
 
+    val sessionExpired by generalViewModel.sessionExpired.observeAsState()
+
     val logoutResult by generalViewModel.authLogoutResult.observeAsState()
     val totalUnsolved by generalViewModel.totalUnsolved.observeAsState(0)
 
     LaunchedEffect(Unit) {
+        SessionHandler.onSessionExpired = {
+            generalViewModel.onSessionExpired()
+        }
         generalViewModel.getInformationDashboard()
 
-        val tokenHandler = TokenHandler(context)
-        val userRole = tokenHandler.getUserRole()
+//        val tokenHandler = TokenHandler(context)
+//        val userRole = tokenHandler.getUserRole()
 //        Toast.makeText(context, "Selamat datang, $userRole", Toast.LENGTH_SHORT).show()
+    }
+
+
+
+    LaunchedEffect(sessionExpired) {
+        if (sessionExpired == true) {
+            Toast.makeText(context, "Session expired, silakan login kembali", Toast.LENGTH_SHORT).show()
+            onLogoutSuccess()
+        }
     }
 
     LaunchedEffect(logoutResult) {
