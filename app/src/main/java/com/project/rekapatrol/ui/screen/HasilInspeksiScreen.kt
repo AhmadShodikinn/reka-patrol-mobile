@@ -60,6 +60,8 @@ fun HasilInspeksiScreen(
     navController: NavController
 ) {
     val context = LocalContext.current
+    val tokenHandler = remember { TokenHandler(context) }
+    val userRole = tokenHandler.getUserRole()
     val generalViewModel: GeneralViewModel = viewModel(factory = GeneralViewModelFactory(context))
 
     var showFilterDialog by remember { mutableStateOf(false) }
@@ -116,13 +118,18 @@ fun HasilInspeksiScreen(
             )
         },
         floatingActionButton = {
-            FloatingActionButton(
-                onClick = { generalViewModel.downloadInspectionRecapExcel() },
-                containerColor = skyblue,
-                contentColor = Color.White,
-                shape = RoundedCornerShape(16.dp)
-            ) {
-                Icon(painterResource(id = R.drawable.download_24px), contentDescription = "Download")
+            if (userRole == "SHE" || userRole == "5R") {
+                FloatingActionButton(
+                    onClick = { generalViewModel.downloadInspectionRecapExcel() },
+                    containerColor = skyblue,
+                    contentColor = Color.White,
+                    shape = RoundedCornerShape(16.dp)
+                ) {
+                    Icon(
+                        painterResource(id = R.drawable.download_24px),
+                        contentDescription = "Download"
+                    )
+                }
             }
         },
         containerColor = Color.White
