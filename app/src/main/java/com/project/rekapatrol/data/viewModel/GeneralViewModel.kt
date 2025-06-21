@@ -27,6 +27,8 @@ import com.project.rekapatrol.data.response.TindakLanjutInspeksiResponse
 import com.project.rekapatrol.data.response.TindakLanjutSafetyPatrolsResponse
 import com.project.rekapatrol.data.response.UpdateInspeksiResponse
 import com.project.rekapatrol.data.response.UpdateSafetyPatrolResponse
+import com.project.rekapatrol.data.response.UpdateValidEntryInspectionResponse
+import com.project.rekapatrol.data.response.UpdateValidEntryResponse
 import com.project.rekapatrol.data.response.UploadMemosResponse
 import com.project.rekapatrol.ui.helper.savePdfToDownloads
 import com.project.rekapatrol.ui.helper.savePdftoDownloadUnder
@@ -59,6 +61,13 @@ class GeneralViewModel(
 
     private val _updateSafetyPatrolsActionResults = MutableLiveData<TindakLanjutSafetyPatrolsResponse>()
     val updateSafetyPatrolsActionResponse: LiveData<TindakLanjutSafetyPatrolsResponse> = _updateSafetyPatrolsActionResults
+
+    private val _updateValidEntryResult = MutableLiveData<UpdateValidEntryResponse?>()
+    val updateValidEntryResult: LiveData<UpdateValidEntryResponse?> get() = _updateValidEntryResult
+
+    private val _updateValidEntryInspectionResult = MutableLiveData<UpdateValidEntryInspectionResponse?>()
+    val updateValidEntryInspectionResult: LiveData<UpdateValidEntryInspectionResponse?> get() = _updateValidEntryInspectionResult
+
 
     private val _updateSafetyPatrolResults = MutableLiveData<UpdateSafetyPatrolResponse>()
     val updateSafetyPatrolResponse: LiveData<UpdateSafetyPatrolResponse> = _updateSafetyPatrolResults
@@ -225,6 +234,27 @@ class GeneralViewModel(
         }
     }
 
+    fun updateIsValidEntry(safetyPatrolId: Int, isValidEntry: Boolean, onComplete: () -> Unit) {
+        viewModelScope.launch {
+            try {
+                val response = repository.updateIsValidEntry(safetyPatrolId, isValidEntry)
+
+                if (response.isSuccessful) {
+                    _updateValidEntryResult.value = response.body()
+                    onComplete()
+                    Toast.makeText(context, "Status validasi berhasil diperbarui.", Toast.LENGTH_SHORT).show()
+                } else {
+                    val errorBody = response.errorBody()?.string()
+                    val message = JSONObject(errorBody).getString("message")
+                    Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+                }
+            } catch (e: Exception) {
+                Log.e("GeneralViewModel", "Server Error: ${e.message}", e)
+                Toast.makeText(context, "Gagal update validasi!", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
     fun deleteSafetyPatrol(safetyPatrolId: Int) {
         viewModelScope.launch {
             _deleteSafetyPatrolStatus.value = null
@@ -370,6 +400,27 @@ class GeneralViewModel(
             } catch (e: Exception) {
                 Log.e("GeneralViewModel", "Server Error: ${e.message}", e)
                 Toast.makeText(context, "Server Error!", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
+    fun updateIsValidEntryInspection(inspectionId: Int, isValidEntry: Boolean, onComplete: () -> Unit) {
+        viewModelScope.launch {
+            try {
+                val response = repository.updateIsValidEntryInspection(inspectionId, isValidEntry)
+
+                if (response.isSuccessful) {
+                    _updateValidEntryInspectionResult.value = response.body()
+                    onComplete()
+                    Toast.makeText(context, "Status validasi berhasil diperbarui.", Toast.LENGTH_SHORT).show()
+                } else {
+                    val errorBody = response.errorBody()?.string()
+                    val message = JSONObject(errorBody).getString("message")
+                    Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+                }
+            } catch (e: Exception) {
+                Log.e("GeneralViewModel", "Server Error: ${e.message}", e)
+                Toast.makeText(context, "Gagal update validasi!", Toast.LENGTH_SHORT).show()
             }
         }
     }

@@ -73,6 +73,9 @@ data class DataItemInspeksi(
 	@field:SerializedName("action_path")
 	val actionPath: String? = null,
 
+	@field:SerializedName("is_valid_entry")
+	val isValidEntry: String? = null,
+
 	@field:SerializedName("worker_id")
 	val workerId: Int? = null,
 

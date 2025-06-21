@@ -38,6 +38,7 @@ data class SafetyPatrolResult(
     val id: Int,
     val risk: String,
     val date: String,
+    val isValidEntry: Boolean?,
     val category: String,
     val location: String,
     val isSolved: Boolean
@@ -158,6 +159,11 @@ fun HasilSafetyPatrolScreen(
                     val inspectionResult = SafetyPatrolResult(
                         id = it.id ?: -1,
                         risk = it.risk ?: "-",
+                        isValidEntry = when (it.isValidEntry) {
+                            "1" -> true
+                            "0" -> false
+                            else -> null
+                        },
                         date = it.checkupDate ?: "-",
                         category = it.category ?: "-",
                         location = it.location ?: "-",
@@ -169,6 +175,11 @@ fun HasilSafetyPatrolScreen(
                         launcher = launcher,
                         onDeleteConfirmed = { safetyPatrolId ->
                             generalViewModel.deleteSafetyPatrol(safetyPatrolId)
+                        },
+                        onValidEntryUpdate = { id, isValid ->
+                            generalViewModel.updateIsValidEntry(id, isValid) {
+                                safetyPatrolItems.refresh()
+                            }
                         }
                     )
                     Spacer(modifier = Modifier.height(8.dp))
@@ -205,7 +216,8 @@ fun InspectionCard(
     result: SafetyPatrolResult,
     navController: NavController,
     launcher: ManagedActivityResultLauncher<String, Uri?>,
-    onDeleteConfirmed: (Int) -> Unit
+    onDeleteConfirmed: (Int) -> Unit,
+    onValidEntryUpdate: (safetyPatrolId: Int, isValid: Boolean) -> Unit
 ) {
     val context = LocalContext.current
     val tokenHandler = remember { TokenHandler(context) }
@@ -249,13 +261,20 @@ fun InspectionCard(
         )
     }
 
+    val containerColor = when {
+        result.isSolved -> disabled
+        result.isValidEntry == true -> Color.Green
+        result.isValidEntry == false -> Color.Red
+        else -> Color.White
+    }
+
     Card(
         modifier = Modifier
             .fillMaxWidth()
             .padding(8.dp),
         shape = RoundedCornerShape(2.dp),
         colors = CardDefaults.cardColors(
-            containerColor = if (result.isSolved) disabled else Color.White
+            containerColor = containerColor
         ),
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
     ) {
@@ -301,15 +320,54 @@ fun InspectionCard(
                                     navController.navigate("updateSafetyPatrol/${result.id}")
                                 }
                             )
-                            DropdownMenuItem(
-                                text = { Text("Tindak Lanjut") },
-                                onClick = {
-                                    expanded = false
-                                    navController.navigate("detailSafetyPatrol/${result.id}/true")
+                            if (result.isValidEntry != false) {
+                                DropdownMenuItem(
+                                    text = { Text("Tindak Lanjut") },
+                                    onClick = {
+                                        expanded = false
+                                        navController.navigate("detailSafetyPatrol/${result.id}/true")
+                                    }
+                                )
+                            }
+
+                            when (result.isValidEntry) {
+                                null -> {
+                                    DropdownMenuItem(
+                                        text = { Text("Konfirmasi Temuan") },
+                                        onClick = {
+                                            expanded = false
+                                            onValidEntryUpdate(result.id, true)
+                                        }
+                                    )
+                                    DropdownMenuItem(
+                                        text = { Text("Tolak Konfirmasi Temuan") },
+                                        onClick = {
+                                            expanded = false
+                                            onValidEntryUpdate(result.id, false)
+                                        }
+                                    )
                                 }
-                            )
+                                true -> {
+                                    DropdownMenuItem(
+                                        text = { Text("Tolak Konfirmasi Temuan") },
+                                        onClick = {
+                                            expanded = false
+                                            onValidEntryUpdate(result.id, false)
+                                        }
+                                    )
+                                }
+                                false -> {
+                                    DropdownMenuItem(
+                                        text = { Text("Konfirmasi Temuan") },
+                                        onClick = {
+                                            expanded = false
+                                            onValidEntryUpdate(result.id, true)
+                                        }
+                                    )
+                                }
+                            }
                             DropdownMenuItem(
-                                text = { Text("Evaluasi") },
+                                text = { Text("Evaluasi Temuan") },
                                 onClick = {
                                     expanded = false
                                     launcher.launch("application/pdf")
@@ -322,15 +380,55 @@ fun InspectionCard(
                                 }
                             )
                         } else if (userRole == "PIC") {
-                            DropdownMenuItem(
-                                text = { Text("Tindak Lanjut") },
-                                onClick = {
-                                    expanded = false
-                                    navController.navigate("detailSafetyPatrol/${result.id}/true")
+                            if (result.isValidEntry != false) {
+                                DropdownMenuItem(
+                                    text = { Text("Tindak Lanjut") },
+                                    onClick = {
+                                        expanded = false
+                                        navController.navigate("detailSafetyPatrol/${result.id}/true")
+                                    }
+                                )
+                            }
+                            // tapi kalau dia gini, pas ditolak gabisa lagi ngubah
+                            when (result.isValidEntry) {
+                                null -> {
+                                    DropdownMenuItem(
+                                        text = { Text("Konfirmasi Temuan") },
+                                        onClick = {
+                                            expanded = false
+                                            onValidEntryUpdate(result.id, true)
+                                        }
+                                    )
+                                    DropdownMenuItem(
+                                        text = { Text("Tolak Konfirmasi Temuan") },
+                                        onClick = {
+                                            expanded = false
+                                            onValidEntryUpdate(result.id, false)
+                                        }
+                                    )
                                 }
-                            )
+                                true -> {
+                                    DropdownMenuItem(
+                                        text = { Text("Tolak Konfirmasi Temuan") },
+                                        onClick = {
+                                            expanded = false
+                                            onValidEntryUpdate(result.id, false)
+                                        }
+                                    )
+                                }
+                                false -> {
+                                    DropdownMenuItem(
+                                        text = { Text("Konfirmasi Temuan") },
+                                        onClick = {
+                                            expanded = false
+                                            onValidEntryUpdate(result.id, true)
+                                        }
+                                    )
+                                }
+                            }
+
                             DropdownMenuItem(
-                                text = { Text("Evaluasi") },
+                                text = { Text("Evaluasi Temuan") },
                                 onClick = {
                                     expanded = false
                                     launcher.launch("application/pdf")

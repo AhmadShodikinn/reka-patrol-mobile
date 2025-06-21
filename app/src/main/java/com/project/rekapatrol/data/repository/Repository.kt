@@ -25,6 +25,8 @@ import com.project.rekapatrol.data.response.TindakLanjutInspeksiResponse
 import com.project.rekapatrol.data.response.TindakLanjutSafetyPatrolsResponse
 import com.project.rekapatrol.data.response.UpdateInspeksiResponse
 import com.project.rekapatrol.data.response.UpdateSafetyPatrolResponse
+import com.project.rekapatrol.data.response.UpdateValidEntryInspectionResponse
+import com.project.rekapatrol.data.response.UpdateValidEntryResponse
 import com.project.rekapatrol.data.response.UploadMemosResponse
 import com.project.rekapatrol.network.ApiService
 import com.project.rekapatrol.support.toIntPlainPart
@@ -109,6 +111,17 @@ class Repository(private val apiService: ApiService) {
         )
     }
 
+    suspend fun updateIsValidEntry(
+        safetyPatrolId: Int,
+        isValidEntry: Boolean
+    ): Response<UpdateValidEntryResponse> {
+        return apiService.updateValidEntry(
+            safetyPatrolId = safetyPatrolId,
+            _method = "PUT",
+            isValidEntry = isValidEntry.toIntPlainPart()
+        )
+    }
+
     suspend fun deleteSafetyPatrol(safetyPatrolId: Int): Boolean {
         return try {
             val response = apiService.deleteSafetyPatrol(safetyPatrolId)
@@ -157,6 +170,17 @@ class Repository(private val apiService: ApiService) {
             suitability = suitability.toIntPlainPart(),
             checkupDate = checkupDate.toPlainPart(),
             finding_paths = findingPaths
+        )
+    }
+
+    suspend fun updateIsValidEntryInspection(
+        inspectionId: Int,
+        isValidEntry: Boolean
+    ): Response<UpdateValidEntryInspectionResponse> {
+        return apiService.updateValidEntryInspection(
+            safetyPatrolId = inspectionId,
+            _method = "PUT",
+            isValidEntry = isValidEntry.toIntPlainPart()
         )
     }
 

@@ -115,6 +115,9 @@ data class DataItemSafetyPatrols(
 	@field:SerializedName("action_description")
 	val actionDescription: String? = null,
 
+	@field:SerializedName("is_valid_entry")
+	val isValidEntry: String? = null,
+
 	@field:SerializedName("updated_at")
 	val updatedAt: String? = null,
 

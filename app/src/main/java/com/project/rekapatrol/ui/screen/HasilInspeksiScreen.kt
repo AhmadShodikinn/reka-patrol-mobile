@@ -50,6 +50,7 @@ data class InspeksiResult(
     val id: Int,
     val criteriaId: Int,
     val keterangan: String,
+    val isValidEntry: Boolean?,
     val lokasi: String,
     val isSolved: Boolean
 )
@@ -158,6 +159,11 @@ fun HasilInspeksiScreen(
                         id = it.id ?: -1,
                         criteriaId = it.criteriaId ?: -1,
                         keterangan = it.findingsDescription ?: "-",
+                        isValidEntry = when (it.isValidEntry) {
+                            "1" -> true
+                            "0" -> false
+                            else -> null
+                        },
                         lokasi = it.inspectionLocation ?: "-",
                         isSolved = !it.actionDescription.isNullOrBlank()
                     )
@@ -167,6 +173,11 @@ fun HasilInspeksiScreen(
                         launcher = launcher,
                         onDeleteConfirmed = { inspectionId ->
                             generalViewModel.deleteInspection(inspectionId)
+                        },
+                        onValidEntryUpdate = { id, isValid ->
+                            generalViewModel.updateIsValidEntryInspection(id, isValid) {
+                                inspeksiItems.refresh()
+                            }
                         }
                     )
                     Spacer(modifier = Modifier.height(8.dp))
@@ -204,7 +215,8 @@ fun InspeksiCard(
     item: InspeksiResult,
     navController: NavController,
     launcher: ManagedActivityResultLauncher<String, Uri?>,
-    onDeleteConfirmed: (Int) -> Unit
+    onDeleteConfirmed: (Int) -> Unit,
+    onValidEntryUpdate: (safetyPatrolId: Int, isValid: Boolean) -> Unit
 ) {
     val context = LocalContext.current
     val tokenHandler = remember { TokenHandler(context) }
@@ -248,13 +260,20 @@ fun InspeksiCard(
         )
     }
 
+    val containerColor = when {
+        item.isSolved -> disabled
+        item.isValidEntry == true -> Color.Green
+        item.isValidEntry == false -> Color.Red
+        else -> Color.White
+    }
+
     Card(
         modifier = Modifier
             .fillMaxWidth()
             .padding(8.dp),
         shape = RoundedCornerShape(2.dp),
         colors = CardDefaults.cardColors(
-            containerColor = if (item.isSolved) disabled else Color.White
+            containerColor = containerColor
         ),
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
     ) {
@@ -298,7 +317,44 @@ fun InspeksiCard(
                                     navController.navigate("detailInspeksi/${item.criteriaId}/${item.id}/true")
                                 }
                             )
-                            // kalau ada memo kuning berarti nambahkan isMemo
+
+                            when (item.isValidEntry) {
+                                null -> {
+                                    DropdownMenuItem(
+                                        text = { Text("Konfirmasi Temuan") },
+                                        onClick = {
+                                            expanded = false
+                                            onValidEntryUpdate(item.id, true)
+                                        }
+                                    )
+                                    DropdownMenuItem(
+                                        text = { Text("Tolak Konfirmasi Temuan") },
+                                        onClick = {
+                                            expanded = false
+                                            onValidEntryUpdate(item.id, false)
+                                        }
+                                    )
+                                }
+                                true -> {
+                                    DropdownMenuItem(
+                                        text = { Text("Tolak Konfirmasi Temuan") },
+                                        onClick = {
+                                            expanded = false
+                                            onValidEntryUpdate(item.id, false)
+                                        }
+                                    )
+                                }
+                                false -> {
+                                    DropdownMenuItem(
+                                        text = { Text("Konfirmasi Temuan") },
+                                        onClick = {
+                                            expanded = false
+                                            onValidEntryUpdate(item.id, true)
+                                        }
+                                    )
+                                }
+                            }
+
                             DropdownMenuItem(
                                 text = { Text("Evaluasi Temuan") },
                                 onClick = {
@@ -336,21 +392,59 @@ fun InspeksiCard(
                             )
                         } else if (userRole == "PIC") {
                             DropdownMenuItem(
+                                    text = { Text("Tindak Lanjut") },
+                            onClick = {
+                                expanded = false
+                                navController.navigate("detailInspeksi/${item.criteriaId}/${item.id}/true")
+                            }
+                            )
+
+                            when (item.isValidEntry) {
+                                null -> {
+                                    DropdownMenuItem(
+                                        text = { Text("Konfirmasi Temuan") },
+                                        onClick = {
+                                            expanded = false
+                                            onValidEntryUpdate(item.id, true)
+                                        }
+                                    )
+                                    DropdownMenuItem(
+                                        text = { Text("Tolak Konfirmasi Temuan") },
+                                        onClick = {
+                                            expanded = false
+                                            onValidEntryUpdate(item.id, false)
+                                        }
+                                    )
+                                }
+                                true -> {
+                                    DropdownMenuItem(
+                                        text = { Text("Tolak Konfirmasi Temuan") },
+                                        onClick = {
+                                            expanded = false
+                                            onValidEntryUpdate(item.id, false)
+                                        }
+                                    )
+                                }
+                                false -> {
+                                    DropdownMenuItem(
+                                        text = { Text("Konfirmasi Temuan") },
+                                        onClick = {
+                                            expanded = false
+                                            onValidEntryUpdate(item.id, true)
+                                        }
+                                    )
+                                }
+                            }
+
+                            DropdownMenuItem(
                                 text = { Text("Evaluasi Temuan") },
                                 onClick = {
                                     expanded = false
                                     launcher.launch("application/pdf")
                                 }
                             )
-                            DropdownMenuItem(
-                                text = { Text("Tindak Lanjut") },
-                                onClick = {
-                                    expanded = false
-                                    navController.navigate("detailInspeksi/${item.criteriaId}/${item.id}/true")
-                                }
-                            )
+
                         } else if (userRole == "Manajemen") {
-                            // kalau ada memo kuning berarti isMemo true, ubah jadi false
                             DropdownMenuItem(
                                 text = { Text("Evaluasi Temuan") },
                                 onClick = {

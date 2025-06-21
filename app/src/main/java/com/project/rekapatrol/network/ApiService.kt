@@ -19,6 +19,8 @@ import com.project.rekapatrol.data.response.TindakLanjutInspeksiResponse
 import com.project.rekapatrol.data.response.TindakLanjutSafetyPatrolsResponse
 import com.project.rekapatrol.data.response.UpdateInspeksiResponse
 import com.project.rekapatrol.data.response.UpdateSafetyPatrolResponse
+import com.project.rekapatrol.data.response.UpdateValidEntryInspectionResponse
+import com.project.rekapatrol.data.response.UpdateValidEntryResponse
 import com.project.rekapatrol.data.response.UploadMemosResponse
 import okhttp3.MultipartBody
 import okhttp3.RequestBody
@@ -114,6 +116,16 @@ interface ApiService {
         @Part finding_paths: List<MultipartBody.Part>
     ): Response<UpdateSafetyPatrolResponse>
 
+    //update isValidEntry safety-patrol
+    @Multipart
+    @POST("safety-patrols/{id}")
+    suspend fun updateValidEntry(
+        @Path("id") safetyPatrolId: Int,
+        @Query("_method") _method:String,
+        @Query("relations[]") relations: List<String> = listOf("findings"),
+        @Part("is_valid_entry") isValidEntry: RequestBody
+    ): Response<UpdateValidEntryResponse>
+
     @DELETE("safety-patrols/{id}")
     suspend fun deleteSafetyPatrol(
         @Path("id") safetyPatrolId: Int
@@ -176,6 +188,16 @@ interface ApiService {
         @Part("checkup_date") checkupDate: RequestBody,
         @Part finding_paths: List<MultipartBody.Part>
     ): Response<UpdateInspeksiResponse>
+
+    //update isValidEntry safety-patrol
+    @Multipart
+    @POST("inspections/{id}")
+    suspend fun updateValidEntryInspection(
+        @Path("id") safetyPatrolId: Int,
+        @Query("_method") _method:String,
+//        @Query("relations[]") relations: List<String> = listOf("findings"),
+        @Part("is_valid_entry") isValidEntry: RequestBody
+    ): Response<UpdateValidEntryInspectionResponse>
 
     @DELETE("inspections/{id}")
     suspend fun deleteInspection(
