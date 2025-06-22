@@ -7,6 +7,7 @@ import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
 import okhttp3.RequestBody.Companion.asRequestBody
+import okhttp3.RequestBody.Companion.toRequestBody
 import java.io.File
 import java.io.FileOutputStream
 
@@ -39,6 +40,12 @@ fun createPdfMultipart(context: Context, uri: Uri): MultipartBody.Part? {
         e.printStackTrace()
         null
     }
+}
+
+fun createMemoIdPart(memoId: Int?): MultipartBody.Part {
+    val value = memoId?.toString() ?: ""
+    val requestBody = value.toRequestBody("text/plain".toMediaTypeOrNull())
+    return MultipartBody.Part.createFormData("memo_id", null, requestBody)
 }
 
 

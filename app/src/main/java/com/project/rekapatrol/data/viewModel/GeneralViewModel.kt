@@ -264,7 +264,7 @@ class GeneralViewModel(
 
     fun updateSafetyHasMemo(
         safetyPatrolId: Int,
-        hasMemo: Int,
+        hasMemo: Int?,
         onComplete: () -> Unit
     ) {
         viewModelScope.launch {
@@ -448,7 +448,7 @@ class GeneralViewModel(
         }
     }
 
-    fun updateInspectionHasMemo(inspectionId: Int, hasMemo: Int, onComplete: () -> Unit) {
+    fun updateInspectionHasMemo(inspectionId: Int, hasMemo: Int?, onComplete: () -> Unit) {
         viewModelScope.launch {
             try {
                 val response = repository.updateInspectionHasMemo(inspectionId, hasMemo)

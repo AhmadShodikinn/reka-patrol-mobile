@@ -197,6 +197,16 @@ fun HasilSafetyPatrolScreen(
                         onEvaluasiSelected = { safetyPatrolId ->
                             onEvaluasiUploadId = safetyPatrolId
                             launcher.launch("application/pdf")
+                        },
+                        onEvaluasiConfirmed = { safetyPatrolId ->
+                            generalViewModel.updateSafetyHasMemo(
+                                safetyPatrolId,
+                                null,
+                                onComplete = {
+                                    Toast.makeText(context, "Berhasil mengonfirmasi memo temuan.", Toast.LENGTH_SHORT).show()
+
+                                }
+                            )
                         }
                     )
                     Spacer(modifier = Modifier.height(8.dp))
@@ -230,6 +240,7 @@ fun InspectionCard(
     onDeleteConfirmed: (Int) -> Unit,
     onValidEntryUpdate: (safetyPatrolId: Int, isValid: Boolean) -> Unit,
     onEvaluasiSelected: (Int) -> Unit,
+    onEvaluasiConfirmed: (Int) -> Unit,
 ) {
     val context = LocalContext.current
     val tokenHandler = remember { TokenHandler(context) }
@@ -333,48 +344,49 @@ fun InspectionCard(
                                     navController.navigate("updateSafetyPatrol/${result.id}")
                                 }
                             )
-
-                            when (result.isValidEntry) {
-                                null -> {
-                                    DropdownMenuItem(
-                                        text = { Text("Konfirmasi Temuan") },
-                                        onClick = {
-                                            expanded = false
-                                            onValidEntryUpdate(result.id, true)
-                                        }
-                                    )
-                                    DropdownMenuItem(
-                                        text = { Text("Tolak Konfirmasi Temuan") },
-                                        onClick = {
-                                            expanded = false
-                                            onValidEntryUpdate(result.id, false)
-                                        }
-                                    )
-                                }
-                                true -> {
-                                    DropdownMenuItem(
-                                        text = { Text("Tindak Lanjut") },
-                                        onClick = {
-                                            expanded = false
-                                            navController.navigate("detailSafetyPatrol/${result.id}/true")
-                                        }
-                                    )
-                                    DropdownMenuItem(
-                                        text = { Text("Tolak Konfirmasi Temuan") },
-                                        onClick = {
-                                            expanded = false
-                                            onValidEntryUpdate(result.id, false)
-                                        }
-                                    )
-                                }
-                                false -> {
-                                    DropdownMenuItem(
-                                        text = { Text("Konfirmasi Temuan") },
-                                        onClick = {
-                                            expanded = false
-                                            onValidEntryUpdate(result.id, true)
-                                        }
-                                    )
+                            if (!result.hasMemo) {
+                                when (result.isValidEntry) {
+                                    null -> {
+                                        DropdownMenuItem(
+                                            text = { Text("Konfirmasi Temuan") },
+                                            onClick = {
+                                                expanded = false
+                                                onValidEntryUpdate(result.id, true)
+                                            }
+                                        )
+                                        DropdownMenuItem(
+                                            text = { Text("Tolak Konfirmasi Temuan") },
+                                            onClick = {
+                                                expanded = false
+                                                onValidEntryUpdate(result.id, false)
+                                            }
+                                        )
+                                    }
+                                    true -> {
+                                        DropdownMenuItem(
+                                            text = { Text("Tindak Lanjut") },
+                                            onClick = {
+                                                expanded = false
+                                                navController.navigate("detailSafetyPatrol/${result.id}/true")
+                                            }
+                                        )
+                                        DropdownMenuItem(
+                                            text = { Text("Tolak Konfirmasi Temuan") },
+                                            onClick = {
+                                                expanded = false
+                                                onValidEntryUpdate(result.id, false)
+                                            }
+                                        )
+                                    }
+                                    false -> {
+                                        DropdownMenuItem(
+                                            text = { Text("Konfirmasi Temuan") },
+                                            onClick = {
+                                                expanded = false
+                                                onValidEntryUpdate(result.id, true)
+                                            }
+                                        )
+                                    }
                                 }
                             }
 
@@ -446,13 +458,15 @@ fun InspectionCard(
                                 }
                             )
                         } else if (userRole == "Manajemen") {
-                            DropdownMenuItem(
-                                text = { Text("Evaluasi Temuan") },
-                                onClick = {
-                                    expanded = false
-                                    launcher.launch("application/pdf")
-                                }
-                            )
+                            if (result.hasMemo) {
+                                DropdownMenuItem(
+                                    text = { Text("Konfirmasi Evaluasi Temuan") },
+                                    onClick = {
+                                        expanded = false
+                                        onEvaluasiConfirmed(result.id)
+                                    }
+                                )
+                            }
                         }
                     }
                 }

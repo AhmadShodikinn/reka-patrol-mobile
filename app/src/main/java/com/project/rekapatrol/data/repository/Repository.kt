@@ -33,6 +33,7 @@ import com.project.rekapatrol.data.response.UploadMemosResponse
 import com.project.rekapatrol.network.ApiService
 import com.project.rekapatrol.support.toIntPlainPart
 import com.project.rekapatrol.support.toPlainPart
+import com.project.rekapatrol.ui.helper.createMemoIdPart
 import okhttp3.MultipartBody
 import okhttp3.ResponseBody
 import retrofit2.HttpException
@@ -126,14 +127,27 @@ class Repository(private val apiService: ApiService) {
 
     suspend fun updateSafetyHasMemo(
         safetyPatrolId: Int,
-        hasMemo: Int
+        hasMemo: Int?
     ): Response<UpdateSafetyMemoResponse> {
+        val memoIdPart = createMemoIdPart(hasMemo)
         return apiService.updateHasMemoSafety(
             safetyPatrolId = safetyPatrolId,
             _method = "PUT",
-            memoId = hasMemo
+            memoIdPart = memoIdPart
         )
     }
+
+//    suspend fun updateInspectionHasMemo(
+//        inspectionId: Int,
+//        hasMemo: Int?
+//    ): Response<UpdateInspeksiMemoResponse> {
+//        val memoIdPart = createMemoIdPart(hasMemo)
+//        return apiService.updateHasMemoInspection(
+//            inspectionId = inspectionId,
+//            _method = "PUT",
+//            memoIdPart = memoIdPart
+//        )
+//    }
 
     suspend fun deleteSafetyPatrol(safetyPatrolId: Int): Boolean {
         return try {
@@ -286,12 +300,13 @@ class Repository(private val apiService: ApiService) {
 
     suspend fun updateInspectionHasMemo(
         inspectionId: Int,
-        hasMemo: Int
+        hasMemo: Int?
     ): Response<UpdateInspeksiMemoResponse> {
+        val memoIdPart = createMemoIdPart(hasMemo)
         return apiService.updateHasMemoInspection(
             inspectionId = inspectionId,
             _method = "PUT",
-            memoId = hasMemo
+            memoIdPart = memoIdPart
         )
     }
 

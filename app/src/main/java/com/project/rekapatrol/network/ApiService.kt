@@ -134,7 +134,7 @@ interface ApiService {
     suspend fun updateHasMemoSafety(
         @Path("id") safetyPatrolId: Int,
         @Query("_method") _method:String,
-        @Part("memo_id") memoId: Int
+        @Part memoIdPart: MultipartBody.Part? = null
     ): Response<UpdateSafetyMemoResponse>
 
     @DELETE("safety-patrols/{id}")
@@ -216,7 +216,7 @@ interface ApiService {
     suspend fun updateHasMemoInspection(
         @Path("id") inspectionId: Int,
         @Query("_method") _method:String,
-        @Part("memo_id") memoId: Int
+        @Part memoIdPart: MultipartBody.Part? = null
     ): Response<UpdateInspeksiMemoResponse>
 
     @DELETE("inspections/{id}")
