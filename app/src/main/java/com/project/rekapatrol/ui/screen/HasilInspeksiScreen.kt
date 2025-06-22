@@ -286,17 +286,10 @@ fun InspeksiCard(
                     ) {
                         if (userRole == "SHE") {
                             DropdownMenuItem(
-                                text = { Text("Edit Temuan") },
+                                text = { Text("Revisi Temuan") },
                                 onClick = {
                                     expanded = false
                                     navController.navigate("updateInspeksi/${item.criteriaId}/${item.id}")
-                                }
-                            )
-                            DropdownMenuItem(
-                                text = { Text("Tindak Lanjut") },
-                                onClick = {
-                                    expanded = false
-                                    navController.navigate("detailInspeksi/${item.criteriaId}/${item.id}/true")
                                 }
                             )
 
@@ -318,6 +311,13 @@ fun InspeksiCard(
                                     )
                                 }
                                 true -> {
+                                    DropdownMenuItem(
+                                        text = { Text("Tindak Lanjut") },
+                                        onClick = {
+                                            expanded = false
+                                            navController.navigate("detailInspeksi/${item.criteriaId}/${item.id}/true")
+                                        }
+                                    )
                                     DropdownMenuItem(
                                         text = { Text("Tolak Konfirmasi Temuan") },
                                         onClick = {
@@ -352,33 +352,11 @@ fun InspeksiCard(
                             )
                         } else if (userRole == "5R") {
                             DropdownMenuItem(
-                                text = { Text("Edit Temuan") },
+                                text = { Text("Revisi Temuan") },
                                 onClick = {
                                     expanded = false
                                     navController.navigate("updateInspeksi/${item.criteriaId}/${item.id}")
                                 }
-                            )
-                            DropdownMenuItem(
-                                text = { Text("Tindak Lanjut") },
-                                onClick = {
-                                    expanded = false
-                                    navController.navigate("detailInspeksi/${item.criteriaId}/${item.id}/true")
-                                }
-                            )
-                            DropdownMenuItem(
-                                text = { Text("Evaluasi Temuan") },
-                                onClick = {
-                                    expanded = false
-                                    launcher.launch("application/pdf")
-                                }
-                            )
-                        } else if (userRole == "PIC") {
-                            DropdownMenuItem(
-                                    text = { Text("Tindak Lanjut") },
-                            onClick = {
-                                expanded = false
-                                navController.navigate("detailInspeksi/${item.criteriaId}/${item.id}/true")
-                            }
                             )
 
                             when (item.isValidEntry) {
@@ -399,6 +377,72 @@ fun InspeksiCard(
                                     )
                                 }
                                 true -> {
+                                    DropdownMenuItem(
+                                        text = { Text("Tindak Lanjut") },
+                                        onClick = {
+                                            expanded = false
+                                            navController.navigate("detailInspeksi/${item.criteriaId}/${item.id}/true")
+                                        }
+                                    )
+                                    DropdownMenuItem(
+                                        text = { Text("Tolak Konfirmasi Temuan") },
+                                        onClick = {
+                                            expanded = false
+                                            onValidEntryUpdate(item.id, false)
+                                        }
+                                    )
+                                }
+                                false -> {
+                                    DropdownMenuItem(
+                                        text = { Text("Konfirmasi Temuan") },
+                                        onClick = {
+                                            expanded = false
+                                            onValidEntryUpdate(item.id, true)
+                                        }
+                                    )
+                                }
+                            }
+
+                            DropdownMenuItem(
+                                text = { Text("Evaluasi Temuan") },
+                                onClick = {
+                                    expanded = false
+                                    launcher.launch("application/pdf")
+                                }
+                            )
+                            DropdownMenuItem(
+                                text = { Text("Hapus Temuan") },
+                                onClick = {
+                                    showDeleteDialog = true
+                                }
+                            )
+                        } else if (userRole == "PIC") {
+
+                            when (item.isValidEntry) {
+                                null -> {
+                                    DropdownMenuItem(
+                                        text = { Text("Konfirmasi Temuan") },
+                                        onClick = {
+                                            expanded = false
+                                            onValidEntryUpdate(item.id, true)
+                                        }
+                                    )
+                                    DropdownMenuItem(
+                                        text = { Text("Tolak Konfirmasi Temuan") },
+                                        onClick = {
+                                            expanded = false
+                                            onValidEntryUpdate(item.id, false)
+                                        }
+                                    )
+                                }
+                                true -> {
+                                    DropdownMenuItem(
+                                        text = { Text("Tindak Lanjut") },
+                                        onClick = {
+                                            expanded = false
+                                            navController.navigate("detailInspeksi/${item.criteriaId}/${item.id}/true")
+                                        }
+                                    )
                                     DropdownMenuItem(
                                         text = { Text("Tolak Konfirmasi Temuan") },
                                         onClick = {

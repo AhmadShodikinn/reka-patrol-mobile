@@ -299,21 +299,12 @@ fun InspectionCard(
                     ) {
                         if (userRole == "SHE") {
                             DropdownMenuItem(
-                                text = { Text("Edit") },
+                                text = { Text("Revisi temuan") },
                                 onClick = {
                                     expanded = false
                                     navController.navigate("updateSafetyPatrol/${result.id}")
                                 }
                             )
-                            if (result.isValidEntry != false) {
-                                DropdownMenuItem(
-                                    text = { Text("Tindak Lanjut") },
-                                    onClick = {
-                                        expanded = false
-                                        navController.navigate("detailSafetyPatrol/${result.id}/true")
-                                    }
-                                )
-                            }
 
                             when (result.isValidEntry) {
                                 null -> {
@@ -334,6 +325,13 @@ fun InspectionCard(
                                 }
                                 true -> {
                                     DropdownMenuItem(
+                                        text = { Text("Tindak Lanjut") },
+                                        onClick = {
+                                            expanded = false
+                                            navController.navigate("detailSafetyPatrol/${result.id}/true")
+                                        }
+                                    )
+                                    DropdownMenuItem(
                                         text = { Text("Tolak Konfirmasi Temuan") },
                                         onClick = {
                                             expanded = false
@@ -351,6 +349,7 @@ fun InspectionCard(
                                     )
                                 }
                             }
+
                             DropdownMenuItem(
                                 text = { Text("Evaluasi Temuan") },
                                 onClick = {
@@ -365,16 +364,6 @@ fun InspectionCard(
                                 }
                             )
                         } else if (userRole == "PIC") {
-                            if (result.isValidEntry != false) {
-                                DropdownMenuItem(
-                                    text = { Text("Tindak Lanjut") },
-                                    onClick = {
-                                        expanded = false
-                                        navController.navigate("detailSafetyPatrol/${result.id}/true")
-                                    }
-                                )
-                            }
-                            // tapi kalau dia gini, pas ditolak gabisa lagi ngubah
                             when (result.isValidEntry) {
                                 null -> {
                                     DropdownMenuItem(
@@ -393,6 +382,13 @@ fun InspectionCard(
                                     )
                                 }
                                 true -> {
+                                    DropdownMenuItem(
+                                        text = { Text("Tindak Lanjut") },
+                                        onClick = {
+                                            expanded = false
+                                            navController.navigate("detailSafetyPatrol/${result.id}/true")
+                                        }
+                                    )
                                     DropdownMenuItem(
                                         text = { Text("Tolak Konfirmasi Temuan") },
                                         onClick = {

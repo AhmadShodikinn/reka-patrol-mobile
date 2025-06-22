@@ -48,14 +48,17 @@ fun MainMenuScreen(
     val logoutResult by generalViewModel.authLogoutResult.observeAsState()
     val totalUnsolved by generalViewModel.totalUnsolved.observeAsState(0)
 
+
+    val tokenHandler = remember { TokenHandler(context) }
+    val userRole = remember { mutableStateOf("") }
+
     LaunchedEffect(Unit) {
+        userRole.value = tokenHandler.getUserRole() ?: ""
         SessionHandler.onSessionExpired = {
             generalViewModel.onSessionExpired()
         }
         generalViewModel.getInformationDashboard()
 
-//        val tokenHandler = TokenHandler(context)
-//        val userRole = tokenHandler.getUserRole()
 //        Toast.makeText(context, "Selamat datang, $userRole", Toast.LENGTH_SHORT).show()
     }
 
@@ -103,14 +106,18 @@ fun MainMenuScreen(
                     .padding(20.dp)
             ) {
                 // hanya manajemen
-                IconButton(
-                    onClick = { onNavigate("memos") }
-                ) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.ic_notifications),
-                        contentDescription = "Notifikasi",
-                        tint = Color.Black
-                    )
+                if (userRole.value == "Manajemen") {
+                    IconButton(
+                        onClick = { onNavigate("memos") }
+                    ) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.ic_notifications),
+                            contentDescription = "Notifikasi",
+                            tint = Color.Black
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.width(2.dp))
                 }
 
                 Spacer(modifier = Modifier.width(2.dp))
@@ -188,21 +195,27 @@ fun MainMenuScreen(
                             verticalArrangement = Arrangement.SpaceEvenly,
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {
-                            // SHE & 5R
                             MenuButton(
                                 iconId = R.drawable.ic_inspeksi1,
                                 label = "Input Inspeksi 5R",
-                                onClick = { onNavigate("inputInspeksi") }
+                                onClick = { onNavigate("inputInspeksi") },
+                                allowedRoles = listOf("SHE", "5R"),
+                                userRole = userRole.value
                             )
                             MenuButton(
                                 iconId = R.drawable.ic_inspeksi2,
                                 label = "Hasil Inspeksi 5R",
-                                onClick = { onNavigate("hasilInspeksi") }
+                                onClick = { onNavigate("hasilInspeksi") },
+                                allowedRoles = listOf("SHE", "5R", "Manajemen", "PIC"),
+                                userRole = userRole.value
                             )
+
                             MenuButton(
                                 iconId = R.drawable.ic_documentjsa,
                                 label = "Dokumen JSA",
-                                onClick = { onNavigate("jsa") }
+                                onClick = { onNavigate("jsa") },
+                                allowedRoles = listOf("SHE", "5R", "Manajemen", "PIC", "Admin"),
+                                userRole = userRole.value
                             )
                         }
 
@@ -212,21 +225,26 @@ fun MainMenuScreen(
                             verticalArrangement = Arrangement.SpaceEvenly,
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {
-                            // SHE
                             MenuButton(
                                 iconId = R.drawable.ic_patrol1,
                                 label = "Input Safety Patrol",
-                                onClick = { onNavigate("inputSafetyPatrol") }
+                                onClick = { onNavigate("inputSafetyPatrol") },
+                                allowedRoles = listOf("SHE"),
+                                userRole = userRole.value
                             )
                             MenuButton(
                                 iconId = R.drawable.ic_patrol2,
                                 label = "Hasil Safety Patrol",
-                                onClick = { onNavigate("hasilSafetyPatrol") }
+                                onClick = { onNavigate("hasilSafetyPatrol") },
+                                allowedRoles = listOf("SHE", "Manajemen", "PIC"),
+                                userRole = userRole.value
                             )
                             MenuButton(
                                 iconId = R.drawable.ic_documentrules,
                                 label = "Peraturan K3",
-                                onClick = { onNavigate("peraturan") }
+                                onClick = { onNavigate("peraturan") },
+                                allowedRoles = listOf("SHE", "5R", "Manajemen", "PIC", "Admin"),
+                                userRole = userRole.value
                             )
                         }
                     }
@@ -238,11 +256,29 @@ fun MainMenuScreen(
 }
 
 @Composable
-fun MenuButton(iconId: Int, label: String, onClick: () -> Unit) {
+fun MenuButton(
+    iconId: Int,
+    label: String,
+    onClick: () -> Unit,
+    allowedRoles: List<String>,
+    userRole: String
+) {
+    val context = LocalContext.current
+
     Column(
         modifier = Modifier
             .size(150.dp)
-            .clickable { onClick() },
+            .clickable {
+                if (allowedRoles.contains(userRole)) {
+                    onClick()
+                } else {
+                    Toast.makeText(
+                        context,
+                        "Anda tidak memiliki akses ke $label",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+            },
         verticalArrangement = Arrangement.Center
     ) {
         Box(
@@ -269,135 +305,136 @@ fun MenuButton(iconId: Int, label: String, onClick: () -> Unit) {
     }
 }
 
-@Preview(showSystemUi = true)
-@Composable
-fun MainMenuPreview() {
-//    MainMenuScreen(
-//        onNavigate = {},
-//        onLogoutSuccess = {}
-//    )
-//    MainMenuUiOnly()
-}
 
-@Composable
-fun MainMenuUiOnly(
-    totalUnsolved: Int = 5,
-    onNavigate: (String) -> Unit = {},
-    onLogoutClick: () -> Unit = {}
-) {
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Color.White)
-    ) {
-        // Gambar atas dengan tombol logout
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(180.dp)
-        ) {
-            Image(
-                painter = painterResource(id = R.mipmap.bg_illustration2_foreground),
-                contentDescription = "Vector Gelombang Atas",
-                contentScale = ContentScale.FillWidth,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .align(Alignment.TopCenter)
-            )
+//@Preview(showSystemUi = true)
+//@Composable
+//fun MainMenuPreview() {
+////    MainMenuScreen(
+////        onNavigate = {},
+////        onLogoutSuccess = {}
+////    )
+////    MainMenuUiOnly()
+//}
 
-            IconButton(
-                onClick = onLogoutClick,
-                modifier = Modifier
-                    .align(Alignment.TopEnd)
-                    .padding(20.dp)
-            ) {
-                Icon(
-                    painter = painterResource(id = R.drawable.download_24px),
-                    contentDescription = "Logout",
-                    tint = Color.Black
-                )
-            }
-        }
-
-        // Gambar bawah
-        Image(
-            painter = painterResource(id = R.drawable.bg_vector3),
-            contentDescription = "Vector Gelombang Bawah",
-            modifier = Modifier
-                .height(80.dp)
-                .align(Alignment.BottomStart)
-        )
-
-        // Konten tengah
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(top = 120.dp, start = 15.dp, end = 15.dp, bottom = 90.dp)
-                .align(Alignment.BottomCenter),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            Text(
-                text = "DASHBOARD",
-                fontSize = 24.sp,
-                style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold),
-                modifier = Modifier
-                    .padding(vertical = 8.dp)
-                    .align(Alignment.CenterHorizontally),
-                color = Color.Black
-            )
-
-            Text(
-                buildAnnotatedString {
-                    append("Temuan belum ditutup: ")
-                    withStyle(style = SpanStyle(color = Color.Red)) {
-                        append(totalUnsolved.toString())
-                    }
-                },
-                fontSize = 15.sp,
-                style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Medium),
-                modifier = Modifier.align(Alignment.Start),
-                color = Color.Black
-            )
-
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .border(1.dp, cream, RoundedCornerShape(8.dp))
-            ) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(16.dp),
-                    verticalArrangement = Arrangement.Center,
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxSize(),
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        Column(
-                            modifier = Modifier.weight(1f),
-                            verticalArrangement = Arrangement.SpaceEvenly,
-                            horizontalAlignment = Alignment.CenterHorizontally
-                        ) {
-                            MenuButton(R.drawable.ic_inspeksi1, "Input Inspeksi 5R", { onNavigate("inputInspeksi") })
-                            MenuButton(R.drawable.ic_inspeksi2, "Hasil Inspeksi 5R", { onNavigate("hasilInspeksi") })
-                            MenuButton(R.drawable.ic_documentjsa, "Dokumen JSA", { onNavigate("jsa") })
-                        }
-                        Column(
-                            modifier = Modifier.weight(1f),
-                            verticalArrangement = Arrangement.SpaceEvenly,
-                            horizontalAlignment = Alignment.CenterHorizontally
-                        ) {
-                            MenuButton(R.drawable.ic_patrol1, "Input Inspeksi Patrol", { onNavigate("inputSafetyPatrol") })
-                            MenuButton(R.drawable.ic_patrol2, "Hasil Inspeksi Patrol", { onNavigate("hasilSafetyPatrol") })
-                            MenuButton(R.drawable.ic_documentjsa, "Peraturan K3", { onNavigate("peraturan") })
-                        }
-                    }
-                }
-            }
-        }
-    }
-}
+//@Composable
+//fun MainMenuUiOnly(
+//    totalUnsolved: Int = 5,
+//    onNavigate: (String) -> Unit = {},
+//    onLogoutClick: () -> Unit = {}
+//) {
+//    Box(
+//        modifier = Modifier
+//            .fillMaxSize()
+//            .background(Color.White)
+//    ) {
+//        // Gambar atas dengan tombol logout
+//        Box(
+//            modifier = Modifier
+//                .fillMaxWidth()
+//                .height(180.dp)
+//        ) {
+//            Image(
+//                painter = painterResource(id = R.mipmap.bg_illustration2_foreground),
+//                contentDescription = "Vector Gelombang Atas",
+//                contentScale = ContentScale.FillWidth,
+//                modifier = Modifier
+//                    .fillMaxWidth()
+//                    .align(Alignment.TopCenter)
+//            )
+//
+//            IconButton(
+//                onClick = onLogoutClick,
+//                modifier = Modifier
+//                    .align(Alignment.TopEnd)
+//                    .padding(20.dp)
+//            ) {
+//                Icon(
+//                    painter = painterResource(id = R.drawable.download_24px),
+//                    contentDescription = "Logout",
+//                    tint = Color.Black
+//                )
+//            }
+//        }
+//
+//        // Gambar bawah
+//        Image(
+//            painter = painterResource(id = R.drawable.bg_vector3),
+//            contentDescription = "Vector Gelombang Bawah",
+//            modifier = Modifier
+//                .height(80.dp)
+//                .align(Alignment.BottomStart)
+//        )
+//
+//        // Konten tengah
+//        Column(
+//            modifier = Modifier
+//                .fillMaxSize()
+//                .padding(top = 120.dp, start = 15.dp, end = 15.dp, bottom = 90.dp)
+//                .align(Alignment.BottomCenter),
+//            verticalArrangement = Arrangement.spacedBy(8.dp)
+//        ) {
+//            Text(
+//                text = "DASHBOARD",
+//                fontSize = 24.sp,
+//                style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold),
+//                modifier = Modifier
+//                    .padding(vertical = 8.dp)
+//                    .align(Alignment.CenterHorizontally),
+//                color = Color.Black
+//            )
+//
+//            Text(
+//                buildAnnotatedString {
+//                    append("Temuan belum ditutup: ")
+//                    withStyle(style = SpanStyle(color = Color.Red)) {
+//                        append(totalUnsolved.toString())
+//                    }
+//                },
+//                fontSize = 15.sp,
+//                style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Medium),
+//                modifier = Modifier.align(Alignment.Start),
+//                color = Color.Black
+//            )
+//
+//            Box(
+//                modifier = Modifier
+//                    .fillMaxSize()
+//                    .border(1.dp, cream, RoundedCornerShape(8.dp))
+//            ) {
+//                Column(
+//                    modifier = Modifier
+//                        .fillMaxSize()
+//                        .padding(16.dp),
+//                    verticalArrangement = Arrangement.Center,
+//                    horizontalAlignment = Alignment.CenterHorizontally
+//                ) {
+//                    Row(
+//                        modifier = Modifier
+//                            .fillMaxSize(),
+//                        horizontalArrangement = Arrangement.SpaceBetween
+//                    ) {
+//                        Column(
+//                            modifier = Modifier.weight(1f),
+//                            verticalArrangement = Arrangement.SpaceEvenly,
+//                            horizontalAlignment = Alignment.CenterHorizontally
+//                        ) {
+//                            MenuButton(R.drawable.ic_inspeksi1, "Input Inspeksi 5R", { onNavigate("inputInspeksi") })
+//                            MenuButton(R.drawable.ic_inspeksi2, "Hasil Inspeksi 5R", { onNavigate("hasilInspeksi") })
+//                            MenuButton(R.drawable.ic_documentjsa, "Dokumen JSA", { onNavigate("jsa") })
+//                        }
+//                        Column(
+//                            modifier = Modifier.weight(1f),
+//                            verticalArrangement = Arrangement.SpaceEvenly,
+//                            horizontalAlignment = Alignment.CenterHorizontally
+//                        ) {
+//                            MenuButton(R.drawable.ic_patrol1, "Input Inspeksi Patrol", { onNavigate("inputSafetyPatrol") })
+//                            MenuButton(R.drawable.ic_patrol2, "Hasil Inspeksi Patrol", { onNavigate("hasilSafetyPatrol") })
+//                            MenuButton(R.drawable.ic_documentjsa, "Peraturan K3", { onNavigate("peraturan") })
+//                        }
+//                    }
+//                }
+//            }
+//        }
+//    }
+//}
 
