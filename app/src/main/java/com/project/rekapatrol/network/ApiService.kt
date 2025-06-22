@@ -77,8 +77,9 @@ interface ApiService {
         @Query("per_page") perPage: Int = 2,
         @Query("page") page: Int = 2,
         @Query("sort_date_by") sortDateBy: String,
-        @Query("from_year") fromYear: Int? = null,
-        @Query("from_month") fromMonth: Int? = null
+        @Query("from_date") fromDate: String? = null,
+        @Query("to_date") toDate: String? = null,
+        @Query("is_valid_entry") isValid: String? = null
     ): Response<ListSafetyPatrolsResponse>
 
 
@@ -162,8 +163,9 @@ interface ApiService {
         @Query("per_page") perPage: Int = 10,
         @Query("page") page: Int = 1,
         @Query("sort_date_by") sortDateBy: String,
-        @Query("from_year") fromYear: Int? = null,
-        @Query("from_month") fromMonth: Int? = null
+        @Query("from_date") fromDate: String? = null,
+        @Query("to_date") toDate: String? = null,
+        @Query("is_valid_entry") isValid: String? = null
     ): Response<ListInspeksiResponse>
 
     //tindak lanjut inspection

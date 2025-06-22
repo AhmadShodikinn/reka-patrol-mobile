@@ -7,8 +7,9 @@ import com.project.rekapatrol.network.ApiService
 
 class SafetyPatrolPagingSource(
     private val apiService: ApiService,
-    private val fromYear: Int?,
-    private val fromMonth: Int?
+    private val toDate: String?,
+    private val fromDate: String?,
+    private val isValid: String?
 ): PagingSource<Int, DataItemSafetyPatrols>() {
     override fun getRefreshKey(state: PagingState<Int, DataItemSafetyPatrols>): Int? {
         return state.anchorPosition?.let { position ->
@@ -25,8 +26,9 @@ class SafetyPatrolPagingSource(
                 perPage = params.loadSize,
                 page = page,
                 sortDateBy = "updated_at",
-                fromYear = fromYear,
-                fromMonth = fromMonth
+                toDate = toDate,
+                fromDate = fromDate,
+                isValid = isValid
             )
 
             val data = response.body()?.data?.filterNotNull() ?: emptyList()

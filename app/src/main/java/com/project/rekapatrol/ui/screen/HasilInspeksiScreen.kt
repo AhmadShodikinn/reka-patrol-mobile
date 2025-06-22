@@ -66,11 +66,11 @@ fun HasilInspeksiScreen(
     val generalViewModel: GeneralViewModel = viewModel(factory = GeneralViewModelFactory(context))
 
     var showFilterDialog by remember { mutableStateOf(false) }
-    var selectedMonth by remember { mutableStateOf<Int?>(null) }
-    var selectedYear by remember { mutableStateOf<Int?>(null) }
+    var fromDate by remember { mutableStateOf<String?>(null) }
+    var toDate by remember { mutableStateOf<String?>(null) }
+    var selectedStatus by remember { mutableStateOf<String?>(null) }
 
-
-    val inspeksiItems = generalViewModel.getInspeksiFlow(selectedYear, selectedMonth).collectAsLazyPagingItems()
+    val inspeksiItems = generalViewModel.getInspeksiFlow(fromDate, toDate, selectedStatus).collectAsLazyPagingItems()
 
     val launcher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
@@ -135,17 +135,6 @@ fun HasilInspeksiScreen(
         },
         containerColor = Color.White
     ) { paddingValues ->
-        if (selectedMonth != null || selectedYear != null) {
-            FilterIndicator(
-                selectedMonth = selectedMonth,
-                selectedYear = selectedYear,
-                onClearFilter = {
-                    selectedMonth = null
-                    selectedYear = null
-                }
-            )
-        }
-
         LazyColumn(
             modifier = Modifier
                 .padding(paddingValues)
@@ -187,25 +176,18 @@ fun HasilInspeksiScreen(
 
         if (showFilterDialog) {
             FilterDialog(
-                currentMonth = selectedMonth,
-                currentYear = selectedYear,
+                currentFrom = fromDate,
+                currentTo = toDate,
+                currentStatus = selectedStatus,
                 onDismiss = { showFilterDialog = false },
-                onApplyFilter = { month, year ->
-                    selectedMonth = month
-                    selectedYear = year
+                onApplyFilter = { f, t, s ->
+                    fromDate = f
+                    toDate = t
+                    selectedStatus = s
                     showFilterDialog = false
                 }
             )
         }
-
-        FilterIndicator(
-            selectedMonth = selectedMonth,
-            selectedYear = selectedYear,
-            onClearFilter = {
-                selectedMonth = null
-                selectedYear = null
-            }
-        )
     }
 }
 

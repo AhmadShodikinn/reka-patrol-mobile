@@ -102,6 +102,7 @@ fun MainMenuScreen(
                     .align(Alignment.TopEnd)
                     .padding(20.dp)
             ) {
+                // hanya manajemen
                 IconButton(
                     onClick = { onNavigate("memos") }
                 ) {
@@ -187,6 +188,7 @@ fun MainMenuScreen(
                             verticalArrangement = Arrangement.SpaceEvenly,
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {
+                            // SHE & 5R
                             MenuButton(
                                 iconId = R.drawable.ic_inspeksi1,
                                 label = "Input Inspeksi 5R",
@@ -210,6 +212,7 @@ fun MainMenuScreen(
                             verticalArrangement = Arrangement.SpaceEvenly,
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {
+                            // SHE
                             MenuButton(
                                 iconId = R.drawable.ic_patrol1,
                                 label = "Input Safety Patrol",

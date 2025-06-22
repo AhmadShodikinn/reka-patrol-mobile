@@ -7,8 +7,9 @@ import com.project.rekapatrol.network.ApiService
 
 class InspeksiPagingSource(
     private val apiService: ApiService,
-    private val fromYear: Int?,
-    private val fromMonth: Int?
+    private val fromDate: String?,
+    private val toDate: String?,
+    private val isValid: String?
 ): PagingSource<Int, DataItemInspeksi>() {
     override fun getRefreshKey(state: PagingState<Int, DataItemInspeksi>): Int? {
         return state.anchorPosition?.let { position ->
@@ -24,8 +25,9 @@ class InspeksiPagingSource(
                 perPage = params.loadSize,
                 page = page,
                 sortDateBy = "updated_at",
-                fromYear = fromYear,
-                fromMonth = fromMonth
+                fromDate = fromDate,
+                toDate = toDate,
+                isValid = isValid
             )
 
             val data = response.body()?.data?.filterNotNull() ?: emptyList()

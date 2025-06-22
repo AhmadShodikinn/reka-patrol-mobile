@@ -8,6 +8,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -15,19 +16,27 @@ import com.project.rekapatrol.ui.theme.skyblue
 
 @Composable
 fun FilterIndicator(
-    selectedMonth: Int?,
-    selectedYear: Int?,
+    selectedFrom: String?,
+    selectedTo: String?,
     onClearFilter: () -> Unit
 ) {
-    val monthNames = listOf(
-        "Januari", "Februari", "Maret", "April", "Mei", "Juni",
-        "Juli", "Agustus", "September", "Oktober", "November", "Desember"
-    )
+    if (selectedFrom.isNullOrBlank() && selectedTo.isNullOrBlank()) return
+
+    val filterLabel = when {
+        !selectedFrom.isNullOrBlank() && !selectedTo.isNullOrBlank() ->
+            "Dari $selectedFrom sampai $selectedTo"
+        !selectedFrom.isNullOrBlank() -> "Dari $selectedFrom"
+        !selectedTo.isNullOrBlank() -> "Sampai $selectedTo"
+        else -> ""
+    }
+
 
     Surface(
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp, vertical = 8.dp),
+        shape = RoundedCornerShape(8.dp),
+        color = Color(0xFFF0F0F0)
     ) {
         Row(
             modifier = Modifier
@@ -43,17 +52,7 @@ fun FilterIndicator(
                     fontWeight = FontWeight.Medium
                 )
                 Text(
-                    text = buildString {
-                        if (selectedMonth != null) {
-                            append(monthNames[selectedMonth - 1])
-                        }
-                        if (selectedMonth != null && selectedYear != null) {
-                            append(" ")
-                        }
-                        if (selectedYear != null) {
-                            append(selectedYear)
-                        }
-                    },
+                    text = filterLabel,
                     fontSize = 14.sp,
                     color = skyblue,
                     fontWeight = FontWeight.Bold
@@ -71,135 +70,122 @@ fun FilterIndicator(
     }
 }
 
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FilterDialog(
-    currentMonth: Int?,
-    currentYear: Int?,
+    currentFrom: String?,
+    currentTo: String?,
+    currentStatus: String?,
     onDismiss: () -> Unit,
-    onApplyFilter: (month: Int?, year: Int?) -> Unit
+    onApplyFilter: (from: String?, to: String?, status: String?) -> Unit
 ) {
-    var selectedMonth by remember { mutableStateOf(currentMonth) }
-    var selectedYear by remember { mutableStateOf(currentYear) }
-    var showMonthDropdown by remember { mutableStateOf(false) }
-    var showYearDropdown by remember { mutableStateOf(false) }
+    val context = LocalContext.current
+    val calendar = Calendar.getInstance()
 
-    val monthNames = listOf(
-        "Januari", "Februari", "Maret", "April", "Mei", "Juni",
-        "Juli", "Agustus", "September", "Oktober", "November", "Desember"
+    var fromDate by remember { mutableStateOf(currentFrom) }
+    var toDate by remember { mutableStateOf(currentTo) }
+
+    var showFromPicker by remember { mutableStateOf(false) }
+    var showToPicker by remember { mutableStateOf(false) }
+
+    val statusOptions = listOf(
+        "" to "Belum Dikonfirmasi",
+        "1" to "Dikonfirmasi",
+        "0" to "Ditolak"
     )
 
-    val currentCalendar = Calendar.getInstance()
-    val currentRealYear = currentCalendar.get(Calendar.YEAR)
-    val yearRange = (currentRealYear - 10)..(currentRealYear + 10)
+    var selectedStatus by remember { mutableStateOf(currentStatus) }
+    var expandedStatus by remember { mutableStateOf(false) }
+
+    // Show DatePicker dialogs
+    if (showFromPicker) {
+        android.app.DatePickerDialog(
+            context,
+            { _, y, m, d ->
+                fromDate = "%04d-%02d-%02d".format(y, m + 1, d)
+                showFromPicker = false
+            },
+            calendar.get(Calendar.YEAR),
+            calendar.get(Calendar.MONTH),
+            calendar.get(Calendar.DAY_OF_MONTH)
+        ).show()
+    }
+    if (showToPicker) {
+        android.app.DatePickerDialog(
+            context,
+            { _, y, m, d ->
+                toDate = "%04d-%02d-%02d".format(y, m + 1, d)
+                showToPicker = false
+            },
+            calendar.get(Calendar.YEAR),
+            calendar.get(Calendar.MONTH),
+            calendar.get(Calendar.DAY_OF_MONTH)
+        ).show()
+    }
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = {
-            Text(
-                text = "Filter Temuan",
-                fontSize = 18.sp,
-                fontWeight = FontWeight.Bold
-            )
-        },
+        title = { Text("Filter Temuan") },
         text = {
             Column {
-                // Dropdown untuk memilih bulan
+                Text("Rentang tanggal", fontWeight = FontWeight.Bold)
+                OutlinedButton(onClick = { showFromPicker = true }, modifier = Modifier.fillMaxWidth()) {
+                    Text(text = fromDate ?: "Dari Tanggal")
+                }
+                Spacer(modifier = Modifier.height(8.dp))
+                OutlinedButton(onClick = { showToPicker = true }, modifier = Modifier.fillMaxWidth()) {
+                    Text(text = toDate ?: "Ke Tanggal")
+                }
+                Spacer(modifier = Modifier.height(8.dp))
+                Text("Status Konfirmasi", fontWeight = FontWeight.Bold)
                 ExposedDropdownMenuBox(
-                    expanded = showMonthDropdown,
-                    onExpandedChange = { showMonthDropdown = !showMonthDropdown }
+                    expanded = expandedStatus,
+                    onExpandedChange = { expandedStatus = !expandedStatus }
                 ) {
                     OutlinedTextField(
-                        value = selectedMonth?.let { monthNames[it - 1] } ?: "Semua Bulan",
-                        onValueChange = { },
                         readOnly = true,
-                        label = { Text("Bulan") },
+                        value = statusOptions.firstOrNull { it.first == selectedStatus }?.second ?: "Semua",
+                        onValueChange = {},
                         trailingIcon = {
-                            ExposedDropdownMenuDefaults.TrailingIcon(expanded = showMonthDropdown)
+                            ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedStatus)
                         },
                         modifier = Modifier
-                            .fillMaxWidth()
                             .menuAnchor()
+                            .fillMaxWidth(),
+                        shape = RoundedCornerShape(50)
                     )
-
                     ExposedDropdownMenu(
-                        expanded = showMonthDropdown,
-                        onDismissRequest = { showMonthDropdown = false }
+                        expanded = expandedStatus,
+                        onDismissRequest = { expandedStatus = false }
                     ) {
-                        DropdownMenuItem(
-                            text = { Text("Semua Bulan") },
-                            onClick = {
-                                selectedMonth = null
-                                showMonthDropdown = false
-                            }
-                        )
-                        monthNames.forEachIndexed { index, month ->
+                        statusOptions.forEach { (value, label) ->
                             DropdownMenuItem(
-                                text = { Text(month) },
+                                text = { Text(label) },
                                 onClick = {
-                                    selectedMonth = index + 1
-                                    showMonthDropdown = false
+                                    selectedStatus = value
+                                    expandedStatus = false
                                 }
                             )
                         }
                     }
                 }
+                Spacer(modifier = Modifier.height(8.dp))
 
-                Spacer(modifier = Modifier.height(12.dp))
-
-                ExposedDropdownMenuBox(
-                    expanded = showYearDropdown,
-                    onExpandedChange = { showYearDropdown = !showYearDropdown }
-                ) {
-                    OutlinedTextField(
-                        value = selectedYear?.toString() ?: "Semua Tahun",
-                        onValueChange = { },
-                        readOnly = true,
-                        label = { Text("Tahun") },
-                        trailingIcon = {
-                            ExposedDropdownMenuDefaults.TrailingIcon(expanded = showYearDropdown)
-                        },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .menuAnchor()
-                    )
-
-                    ExposedDropdownMenu(
-                        expanded = showYearDropdown,
-                        onDismissRequest = { showYearDropdown = false }
-                    ) {
-                        DropdownMenuItem(
-                            text = { Text("Semua Tahun") },
-                            onClick = {
-                                selectedYear = null
-                                showYearDropdown = false
-                            }
-                        )
-                        yearRange.forEach { year ->
-                            DropdownMenuItem(
-                                text = { Text(year.toString()) },
-                                onClick = {
-                                    selectedYear = year
-                                    showYearDropdown = false
-                                }
-                            )
-                        }
-                    }
-                }
             }
         },
         confirmButton = {
-            Button(
-                onClick = { onApplyFilter(selectedMonth, selectedYear) },
-                colors = ButtonDefaults.buttonColors(containerColor = skyblue)
-            ) {
-                Text("Terapkan", color = Color.White)
-            }
+            TextButton(
+                onClick = {
+                    onApplyFilter(fromDate, toDate, selectedStatus)
+                    onDismiss()
+                }
+            ) { Text("Terapkan") }
         },
         dismissButton = {
-            TextButton(onClick = onDismiss) {
-                Text("Batal", color = skyblue)
-            }
+            TextButton(onClick = onDismiss) { Text("Batal") }
         }
     )
 }
+
+

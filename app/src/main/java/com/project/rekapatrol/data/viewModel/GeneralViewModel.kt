@@ -277,13 +277,13 @@ class GeneralViewModel(
 //        pagingSourceFactory = { repository.getSafetyPatrolsPagingSource() }
 //    ).flow.cachedIn(viewModelScope)
 
-    fun getSafetyPatrolFlow(fromYear: Int?, fromMonth: Int?): Flow<PagingData<DataItemSafetyPatrols>> {
+    fun getSafetyPatrolFlow(toDate: String?, fromDate: String?, isValid: String?): Flow<PagingData<DataItemSafetyPatrols>> {
         return Pager(
             config = PagingConfig(
                 pageSize = 10,
                 enablePlaceholders = false
             ),
-            pagingSourceFactory = { repository.getSafetyPatrolsPagingSource(fromYear, fromMonth) }
+            pagingSourceFactory = { repository.getSafetyPatrolsPagingSource(toDate, fromDate, isValid) }
         ).flow.cachedIn(viewModelScope)
     }
 
@@ -334,13 +334,13 @@ class GeneralViewModel(
         ).flow.cachedIn(viewModelScope)
     }
 
-    fun getInspeksiFlow(fromYear: Int?, fromMonth: Int?): Flow<PagingData<DataItemInspeksi>> {
+    fun getInspeksiFlow(fromDate: String?, toDate: String?, isValid: String?): Flow<PagingData<DataItemInspeksi>> {
         return Pager(
             config = PagingConfig(
                 pageSize = 10,
                 enablePlaceholders = false
             ),
-            pagingSourceFactory = {repository.getInspeksiPagingSource(fromYear, fromMonth)}
+            pagingSourceFactory = {repository.getInspeksiPagingSource(fromDate, toDate, isValid)}
         ).flow.cachedIn(viewModelScope)
     }
 

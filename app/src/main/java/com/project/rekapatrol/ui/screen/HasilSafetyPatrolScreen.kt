@@ -29,7 +29,6 @@ import com.project.rekapatrol.data.viewModel.GeneralViewModel
 import com.project.rekapatrol.data.viewModelFactory.GeneralViewModelFactory
 import com.project.rekapatrol.support.TokenHandler
 import com.project.rekapatrol.ui.helper.FilterDialog
-import com.project.rekapatrol.ui.helper.FilterIndicator
 import com.project.rekapatrol.ui.helper.createPdfMultipart
 import com.project.rekapatrol.ui.theme.cream
 import com.project.rekapatrol.ui.theme.disabled
@@ -55,10 +54,11 @@ fun HasilSafetyPatrolScreen(
     val generalViewModel: GeneralViewModel = viewModel(factory = GeneralViewModelFactory(context))
 
     var showFilterDialog by remember { mutableStateOf(false) }
-    var selectedMonth by remember { mutableStateOf<Int?>(null) }
-    var selectedYear by remember { mutableStateOf<Int?>(null) }
+    var fromDate by remember { mutableStateOf<String?>(null) }
+    var toDate by remember { mutableStateOf<String?>(null) }
+    var selectedStatus by remember { mutableStateOf<String?>(null) }
 
-    val safetyPatrolItems = generalViewModel.getSafetyPatrolFlow(selectedYear, selectedMonth).collectAsLazyPagingItems()
+    val safetyPatrolItems = generalViewModel.getSafetyPatrolFlow(toDate, fromDate, selectedStatus).collectAsLazyPagingItems()
 
     val deleteStatus by generalViewModel.deleteSafetyPatrolStatus.collectAsState()
 
@@ -136,16 +136,7 @@ fun HasilSafetyPatrolScreen(
         },
         containerColor = Color.White
     ) { paddingValues ->
-        if (selectedMonth != null || selectedYear != null) {
-            FilterIndicator(
-                selectedMonth = selectedMonth,
-                selectedYear = selectedYear,
-                onClearFilter = {
-                    selectedMonth = null
-                    selectedYear = null
-                }
-            )
-        }
+
 
         LazyColumn(
             modifier = Modifier
@@ -189,25 +180,19 @@ fun HasilSafetyPatrolScreen(
 
         if (showFilterDialog) {
             FilterDialog(
-                currentMonth = selectedMonth,
-                currentYear = selectedYear,
+                currentFrom = fromDate,
+                currentTo = toDate,
+                currentStatus = selectedStatus,
                 onDismiss = { showFilterDialog = false },
-                onApplyFilter = { month, year ->
-                    selectedMonth = month
-                    selectedYear = year
+                onApplyFilter = { f, t, s ->
+                    fromDate = f
+                    toDate = t
+                    selectedStatus = s
                     showFilterDialog = false
                 }
             )
-        }
 
-        FilterIndicator(
-            selectedMonth = selectedMonth,
-            selectedYear = selectedYear,
-            onClearFilter = {
-                selectedMonth = null
-                selectedYear = null
-            }
-        )
+        }
     }
 }
 
@@ -436,7 +421,7 @@ fun InspectionCard(
                             )
                         } else if (userRole == "Manajemen") {
                             DropdownMenuItem(
-                                text = { Text("Evaluasi") },
+                                text = { Text("Evaluasi Temuan") },
                                 onClick = {
                                     expanded = false
                                     launcher.launch("application/pdf")
