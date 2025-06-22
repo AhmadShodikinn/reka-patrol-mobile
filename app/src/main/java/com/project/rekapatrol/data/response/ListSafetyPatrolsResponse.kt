@@ -130,6 +130,9 @@ data class DataItemSafetyPatrols(
 	@field:SerializedName("id")
 	val id: Int? = null,
 
+	@field:SerializedName("has_memo")
+	val hasMemo: Boolean? = null,
+
 	@field:SerializedName("findings_description")
 	val findingsDescription: String? = null,
 

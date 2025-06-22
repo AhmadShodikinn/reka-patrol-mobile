@@ -13,6 +13,7 @@ import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -40,7 +41,8 @@ data class SafetyPatrolResult(
     val isValidEntry: Boolean?,
     val category: String,
     val location: String,
-    val isSolved: Boolean
+    val isSolved: Boolean,
+    val hasMemo: Boolean = false
 )
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -59,8 +61,11 @@ fun HasilSafetyPatrolScreen(
     var selectedStatus by remember { mutableStateOf<String?>(null) }
 
     val safetyPatrolItems = generalViewModel.getSafetyPatrolFlow(toDate, fromDate, selectedStatus).collectAsLazyPagingItems()
+    var onEvaluasiUploadId by remember { mutableStateOf<Int?>(null) }
 
     val deleteStatus by generalViewModel.deleteSafetyPatrolStatus.collectAsState()
+    val uploadResult by generalViewModel.uploadMemosResult.observeAsState()
+    var memoId by remember { mutableStateOf<Int?>(null) }
 
     LaunchedEffect(deleteStatus) {
         deleteStatus?.let { success ->
@@ -85,6 +90,22 @@ fun HasilSafetyPatrolScreen(
             }
         } else {
             Toast.makeText(context, "Tidak ada file yang dipilih", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    LaunchedEffect(uploadResult) {
+        uploadResult?.data?.id?.let {
+            memoId = it
+
+            onEvaluasiUploadId?.let { evaluasiId ->
+                generalViewModel.updateSafetyHasMemo(
+                    safetyPatrolId = evaluasiId,
+                    hasMemo = it,
+                    onComplete = {
+                        Toast.makeText(context, "Berhasil menandai temuan memiliki memo.", Toast.LENGTH_SHORT).show()
+                    }
+                )
+            }
         }
     }
 
@@ -158,7 +179,8 @@ fun HasilSafetyPatrolScreen(
                         date = it.checkupDate ?: "-",
                         category = it.category ?: "-",
                         location = it.location ?: "-",
-                        isSolved = !it.actionDescription.isNullOrBlank()
+                        isSolved = !it.actionDescription.isNullOrBlank(),
+                        hasMemo = it.hasMemo ?: false
                     )
                     InspectionCard(
                         result = inspectionResult,
@@ -171,6 +193,10 @@ fun HasilSafetyPatrolScreen(
                             generalViewModel.updateIsValidEntry(id, isValid) {
                                 safetyPatrolItems.refresh()
                             }
+                        },
+                        onEvaluasiSelected = { safetyPatrolId ->
+                            onEvaluasiUploadId = safetyPatrolId
+                            launcher.launch("application/pdf")
                         }
                     )
                     Spacer(modifier = Modifier.height(8.dp))
@@ -202,7 +228,8 @@ fun InspectionCard(
     navController: NavController,
     launcher: ManagedActivityResultLauncher<String, Uri?>,
     onDeleteConfirmed: (Int) -> Unit,
-    onValidEntryUpdate: (safetyPatrolId: Int, isValid: Boolean) -> Unit
+    onValidEntryUpdate: (safetyPatrolId: Int, isValid: Boolean) -> Unit,
+    onEvaluasiSelected: (Int) -> Unit,
 ) {
     val context = LocalContext.current
     val tokenHandler = remember { TokenHandler(context) }
@@ -247,6 +274,7 @@ fun InspectionCard(
     }
 
     val containerColor = when {
+        result.hasMemo == true -> Color.Yellow
         result.isSolved -> disabled
         result.isValidEntry == true -> Color.Green
         result.isValidEntry == false -> Color.Red
@@ -354,6 +382,7 @@ fun InspectionCard(
                                 text = { Text("Evaluasi Temuan") },
                                 onClick = {
                                     expanded = false
+                                    onEvaluasiSelected(result.id)
                                     launcher.launch("application/pdf")
                                 }
                             )
@@ -412,6 +441,7 @@ fun InspectionCard(
                                 text = { Text("Evaluasi Temuan") },
                                 onClick = {
                                     expanded = false
+                                    onEvaluasiSelected(result.id)
                                     launcher.launch("application/pdf")
                                 }
                             )

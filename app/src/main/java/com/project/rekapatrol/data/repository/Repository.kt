@@ -23,7 +23,9 @@ import com.project.rekapatrol.data.response.LogoutResponse
 import com.project.rekapatrol.data.response.ResetPasswordResponse
 import com.project.rekapatrol.data.response.TindakLanjutInspeksiResponse
 import com.project.rekapatrol.data.response.TindakLanjutSafetyPatrolsResponse
+import com.project.rekapatrol.data.response.UpdateInspeksiMemoResponse
 import com.project.rekapatrol.data.response.UpdateInspeksiResponse
+import com.project.rekapatrol.data.response.UpdateSafetyMemoResponse
 import com.project.rekapatrol.data.response.UpdateSafetyPatrolResponse
 import com.project.rekapatrol.data.response.UpdateValidEntryInspectionResponse
 import com.project.rekapatrol.data.response.UpdateValidEntryResponse
@@ -119,6 +121,17 @@ class Repository(private val apiService: ApiService) {
             safetyPatrolId = safetyPatrolId,
             _method = "PUT",
             isValidEntry = isValidEntry.toIntPlainPart()
+        )
+    }
+
+    suspend fun updateSafetyHasMemo(
+        safetyPatrolId: Int,
+        hasMemo: Int
+    ): Response<UpdateSafetyMemoResponse> {
+        return apiService.updateHasMemoSafety(
+            safetyPatrolId = safetyPatrolId,
+            _method = "PUT",
+            memoId = hasMemo
         )
     }
 
@@ -270,5 +283,27 @@ class Repository(private val apiService: ApiService) {
             type = documentType.toPlainPart()
         )
     }
+
+    suspend fun updateInspectionHasMemo(
+        inspectionId: Int,
+        hasMemo: Int
+    ): Response<UpdateInspeksiMemoResponse> {
+        return apiService.updateHasMemoInspection(
+            inspectionId = inspectionId,
+            _method = "PUT",
+            memoId = hasMemo
+        )
+    }
+
+//    suspend fun updateIsValidEntryInspection(
+//        inspectionId: Int,
+//        isValidEntry: Boolean
+//    ): Response<UpdateValidEntryInspectionResponse> {
+//        return apiService.updateValidEntryInspection(
+//            safetyPatrolId = inspectionId,
+//            _method = "PUT",
+//            isValidEntry = isValidEntry.toIntPlainPart()
+//        )
+//    }
 
 }

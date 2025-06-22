@@ -17,7 +17,9 @@ import com.project.rekapatrol.data.response.LogoutResponse
 import com.project.rekapatrol.data.response.ResetPasswordResponse
 import com.project.rekapatrol.data.response.TindakLanjutInspeksiResponse
 import com.project.rekapatrol.data.response.TindakLanjutSafetyPatrolsResponse
+import com.project.rekapatrol.data.response.UpdateInspeksiMemoResponse
 import com.project.rekapatrol.data.response.UpdateInspeksiResponse
+import com.project.rekapatrol.data.response.UpdateSafetyMemoResponse
 import com.project.rekapatrol.data.response.UpdateSafetyPatrolResponse
 import com.project.rekapatrol.data.response.UpdateValidEntryInspectionResponse
 import com.project.rekapatrol.data.response.UpdateValidEntryResponse
@@ -127,6 +129,14 @@ interface ApiService {
         @Part("is_valid_entry") isValidEntry: RequestBody
     ): Response<UpdateValidEntryResponse>
 
+    @Multipart
+    @POST("safety-patrols/{id}")
+    suspend fun updateHasMemoSafety(
+        @Path("id") safetyPatrolId: Int,
+        @Query("_method") _method:String,
+        @Part("memo_id") memoId: Int
+    ): Response<UpdateSafetyMemoResponse>
+
     @DELETE("safety-patrols/{id}")
     suspend fun deleteSafetyPatrol(
         @Path("id") safetyPatrolId: Int
@@ -200,6 +210,14 @@ interface ApiService {
 //        @Query("relations[]") relations: List<String> = listOf("findings"),
         @Part("is_valid_entry") isValidEntry: RequestBody
     ): Response<UpdateValidEntryInspectionResponse>
+
+    @Multipart
+    @POST("inspections/{id}")
+    suspend fun updateHasMemoInspection(
+        @Path("id") inspectionId: Int,
+        @Query("_method") _method:String,
+        @Part("memo_id") memoId: Int
+    ): Response<UpdateInspeksiMemoResponse>
 
     @DELETE("inspections/{id}")
     suspend fun deleteInspection(

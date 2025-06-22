@@ -25,7 +25,9 @@ import com.project.rekapatrol.data.response.InputSafetyPatrolsResponse
 import com.project.rekapatrol.data.response.LogoutResponse
 import com.project.rekapatrol.data.response.TindakLanjutInspeksiResponse
 import com.project.rekapatrol.data.response.TindakLanjutSafetyPatrolsResponse
+import com.project.rekapatrol.data.response.UpdateInspeksiMemoResponse
 import com.project.rekapatrol.data.response.UpdateInspeksiResponse
+import com.project.rekapatrol.data.response.UpdateSafetyMemoResponse
 import com.project.rekapatrol.data.response.UpdateSafetyPatrolResponse
 import com.project.rekapatrol.data.response.UpdateValidEntryInspectionResponse
 import com.project.rekapatrol.data.response.UpdateValidEntryResponse
@@ -68,6 +70,11 @@ class GeneralViewModel(
     private val _updateValidEntryInspectionResult = MutableLiveData<UpdateValidEntryInspectionResponse?>()
     val updateValidEntryInspectionResult: LiveData<UpdateValidEntryInspectionResponse?> get() = _updateValidEntryInspectionResult
 
+    private val _updateHasMemoResult = MutableLiveData<UpdateInspeksiMemoResponse>()
+    val updateHasMemoResult: LiveData<UpdateInspeksiMemoResponse> = _updateHasMemoResult
+
+    private val _updateHasMemoSafetyResult = MutableLiveData<UpdateSafetyMemoResponse>()
+    val updateHasMemoSafetyResult: LiveData<UpdateSafetyMemoResponse> = _updateHasMemoSafetyResult
 
     private val _updateSafetyPatrolResults = MutableLiveData<UpdateSafetyPatrolResponse>()
     val updateSafetyPatrolResponse: LiveData<UpdateSafetyPatrolResponse> = _updateSafetyPatrolResults
@@ -255,6 +262,30 @@ class GeneralViewModel(
         }
     }
 
+    fun updateSafetyHasMemo(
+        safetyPatrolId: Int,
+        hasMemo: Int,
+        onComplete: () -> Unit
+    ) {
+        viewModelScope.launch {
+            try {
+                val response = repository.updateSafetyHasMemo(safetyPatrolId, hasMemo)
+
+                if (response.isSuccessful) {
+                    _updateHasMemoSafetyResult.value = response.body()
+                    onComplete()
+                } else {
+                    val errorBody = response.errorBody()?.string()
+                    val message = JSONObject(errorBody ?: "{}").optString("message", "Gagal update memo pada temuan.")
+                    Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+                }
+            } catch (e: Exception) {
+                Log.e("GeneralViewModel", "Error updateSafetyHasMemo: ${e.message}", e)
+                Toast.makeText(context, "Gagal update memo!", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
     fun deleteSafetyPatrol(safetyPatrolId: Int) {
         viewModelScope.launch {
             _deleteSafetyPatrolStatus.value = null
@@ -268,14 +299,6 @@ class GeneralViewModel(
             }
         }
     }
-
-//    val safetyPatrolFlow = Pager(
-//        config = PagingConfig(
-//            pageSize = 10,
-//            enablePlaceholders = false
-//        ),
-//        pagingSourceFactory = { repository.getSafetyPatrolsPagingSource() }
-//    ).flow.cachedIn(viewModelScope)
 
     fun getSafetyPatrolFlow(toDate: String?, fromDate: String?, isValid: String?): Flow<PagingData<DataItemSafetyPatrols>> {
         return Pager(
@@ -421,6 +444,26 @@ class GeneralViewModel(
             } catch (e: Exception) {
                 Log.e("GeneralViewModel", "Server Error: ${e.message}", e)
                 Toast.makeText(context, "Gagal update validasi!", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
+    fun updateInspectionHasMemo(inspectionId: Int, hasMemo: Int, onComplete: () -> Unit) {
+        viewModelScope.launch {
+            try {
+                val response = repository.updateInspectionHasMemo(inspectionId, hasMemo)
+
+                if (response.isSuccessful) {
+                    _updateHasMemoResult.value = response.body()
+                    onComplete()
+                } else {
+                    val errorBody = response.errorBody()?.string()
+                    val message = JSONObject(errorBody ?: "{}").optString("message", "Gagal update memo pada temuan.")
+                    Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+                }
+            } catch (e: Exception) {
+                Log.e("GeneralViewModel", "updateInspectionHasMemo error: ${e.message}", e)
+                Toast.makeText(context, "Terjadi kesalahan saat update memo pada temuan.", Toast.LENGTH_SHORT).show()
             }
         }
     }

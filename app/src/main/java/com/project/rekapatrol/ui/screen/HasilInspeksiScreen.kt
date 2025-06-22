@@ -5,13 +5,10 @@ import android.widget.Toast
 import androidx.activity.compose.ManagedActivityResultLauncher
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -35,16 +32,14 @@ import androidx.paging.compose.collectAsLazyPagingItems
 import com.project.rekapatrol.R
 import com.project.rekapatrol.data.viewModel.GeneralViewModel
 import com.project.rekapatrol.data.viewModelFactory.GeneralViewModelFactory
-import com.project.rekapatrol.ui.theme.cream
 import com.project.rekapatrol.ui.theme.disabled
 import com.project.rekapatrol.ui.theme.skyblue
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.livedata.observeAsState
 import com.project.rekapatrol.support.TokenHandler
 import com.project.rekapatrol.ui.helper.FilterDialog
-import com.project.rekapatrol.ui.helper.FilterIndicator
 import com.project.rekapatrol.ui.helper.createPdfMultipart
-import java.util.Calendar
 
 data class InspeksiResult(
     val id: Int,
@@ -52,7 +47,8 @@ data class InspeksiResult(
     val keterangan: String,
     val isValidEntry: Boolean?,
     val lokasi: String,
-    val isSolved: Boolean
+    val isSolved: Boolean,
+    val hasMemo: Boolean = false
 )
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -71,6 +67,11 @@ fun HasilInspeksiScreen(
     var selectedStatus by remember { mutableStateOf<String?>(null) }
 
     val inspeksiItems = generalViewModel.getInspeksiFlow(fromDate, toDate, selectedStatus).collectAsLazyPagingItems()
+    var onEvaluasiUploadId by remember { mutableStateOf<Int?>(null) }
+
+    val uploadResult by generalViewModel.uploadMemosResult.observeAsState()
+    var memoId by remember { mutableStateOf<Int?>(null) }
+
 
     val launcher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
@@ -84,6 +85,22 @@ fun HasilInspeksiScreen(
             }
         } else {
             Toast.makeText(context, "Tidak ada file yang dipilih", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    LaunchedEffect(uploadResult) {
+        uploadResult?.data?.id?.let {
+            memoId = it
+
+            onEvaluasiUploadId?.let { evaluasiId ->
+                generalViewModel.updateInspectionHasMemo(
+                    inspectionId = evaluasiId,
+                    hasMemo = it,
+                    onComplete = {
+                        Toast.makeText(context, "Berhasil menandai temuan memiliki memo.", Toast.LENGTH_SHORT).show()
+                    }
+                )
+            }
         }
     }
 
@@ -154,7 +171,8 @@ fun HasilInspeksiScreen(
                             else -> null
                         },
                         lokasi = it.inspectionLocation ?: "-",
-                        isSolved = !it.actionDescription.isNullOrBlank()
+                        isSolved = !it.actionDescription.isNullOrBlank(),
+                        hasMemo = it.hasMemo ?: false
                     )
                     InspeksiCard(
                         item = inspeksiResult,
@@ -167,6 +185,10 @@ fun HasilInspeksiScreen(
                             generalViewModel.updateIsValidEntryInspection(id, isValid) {
                                 inspeksiItems.refresh()
                             }
+                        },
+                        onEvaluasiSelected = { inspectionId ->
+                            onEvaluasiUploadId = inspectionId
+                            launcher.launch("application/pdf")
                         }
                     )
                     Spacer(modifier = Modifier.height(8.dp))
@@ -198,7 +220,8 @@ fun InspeksiCard(
     navController: NavController,
     launcher: ManagedActivityResultLauncher<String, Uri?>,
     onDeleteConfirmed: (Int) -> Unit,
-    onValidEntryUpdate: (safetyPatrolId: Int, isValid: Boolean) -> Unit
+    onValidEntryUpdate: (safetyPatrolId: Int, isValid: Boolean) -> Unit,
+    onEvaluasiSelected: (Int) -> Unit,
 ) {
     val context = LocalContext.current
     val tokenHandler = remember { TokenHandler(context) }
@@ -243,6 +266,7 @@ fun InspeksiCard(
     }
 
     val containerColor = when {
+        item.hasMemo == true -> Color.Yellow
         item.isSolved -> disabled
         item.isValidEntry == true -> Color.Green
         item.isValidEntry == false -> Color.Red
@@ -341,6 +365,7 @@ fun InspeksiCard(
                                 text = { Text("Evaluasi Temuan") },
                                 onClick = {
                                     expanded = false
+                                    onEvaluasiSelected(item.id)
                                     launcher.launch("application/pdf")
                                 }
                             )
@@ -407,6 +432,7 @@ fun InspeksiCard(
                                 text = { Text("Evaluasi Temuan") },
                                 onClick = {
                                     expanded = false
+                                    onEvaluasiSelected(item.id)
                                     launcher.launch("application/pdf")
                                 }
                             )
@@ -466,6 +492,7 @@ fun InspeksiCard(
                                 text = { Text("Evaluasi Temuan") },
                                 onClick = {
                                     expanded = false
+                                    onEvaluasiSelected(item.id)
                                     launcher.launch("application/pdf")
                                 }
                             )
