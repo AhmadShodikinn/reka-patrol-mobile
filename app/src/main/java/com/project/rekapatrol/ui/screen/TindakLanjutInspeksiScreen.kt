@@ -69,7 +69,8 @@ fun TindakLanjutInspeksiScreen(navController: NavController, inspectionId: Int) 
     val inspectionDetail by generalViewModel.inspectionDetailResposne.observeAsState()
 
     // Menyediakan fallback value jika data masih kosong
-    val criteriaName = inspectionDetail?.data?.criteria?.criteriaName ?: "Memuat kriteria..."
+//    val criteriaName = inspectionDetail?.data?.criteria?.criteriaName ?: "Memuat kriteria..."
+    val findingDescription = inspectionDetail?.data?.findingsDescription ?: "Memuat Deskripsi Temuan..."
 
     // State untuk input dan gambar
     var tindakLanjut by remember { mutableStateOf("") }
@@ -114,13 +115,15 @@ fun TindakLanjutInspeksiScreen(navController: NavController, inspectionId: Int) 
         }
     }
 
+    val criteriaType = inspectionDetail?.data?.criteria?.criteriaType ?: ""
+
     Scaffold(
         topBar = {
             if (!isCameraActive) {
                 CenterAlignedTopAppBar(
                     title = {
                         Text(
-                            text = "Tindak Lanjut Inspeksi Ringkas",
+                            text = "Tindak Lanjut Inspeksi $criteriaType",
                             fontSize = 20.sp,
                             fontWeight = FontWeight.Medium,
                             color = Color.White
@@ -166,13 +169,13 @@ fun TindakLanjutInspeksiScreen(navController: NavController, inspectionId: Int) 
                     .fillMaxSize()
             ) {
                 Text(
-                    text = "Kriteria:",
+                    text = "Deskripsi Temuan:",
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Medium,
                     modifier = Modifier.fillMaxWidth()
                 )
                 Text(
-                    text = criteriaName,
+                    text = findingDescription,
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Normal,
                     modifier = Modifier.fillMaxWidth()

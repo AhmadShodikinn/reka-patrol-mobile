@@ -3,6 +3,7 @@ package com.project.rekapatrol.ui.helper
 import android.content.Context
 import android.net.Uri
 import android.provider.MediaStore
+import android.provider.OpenableColumns
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
@@ -29,8 +30,29 @@ fun uriToMultipartAction(context: Context, uri: Uri, maxSizeKB: Int = 512): Mult
 
 fun createPdfMultipart(context: Context, uri: Uri): MultipartBody.Part? {
     return try {
-        val inputStream = context.contentResolver.openInputStream(uri) ?: return null
-        val file = File(context.cacheDir, "temp_upload.pdf")
+        val contentResolver = context.contentResolver
+
+        var originalFileName = "file.pdf"
+        contentResolver.query(uri, null, null, null, null)?.use { cursor ->
+            val nameIndex = cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME)
+            if (cursor.moveToFirst() && nameIndex != -1) {
+                originalFileName = cursor.getString(nameIndex)
+            }
+        }
+
+        val nameWithoutExt = originalFileName.substringBeforeLast(".")
+        val ext = originalFileName.substringAfterLast(".", "pdf")
+
+        val maxNameLength = 30
+        val trimmedName = if (nameWithoutExt.length > maxNameLength)
+            nameWithoutExt.take(maxNameLength)
+        else
+            nameWithoutExt
+
+        val newFileName = "$trimmedName.$ext"
+
+        val inputStream = contentResolver.openInputStream(uri) ?: return null
+        val file = File(context.cacheDir, newFileName)
         file.outputStream().use { inputStream.copyTo(it) }
 
         val requestBody = file
@@ -41,6 +63,7 @@ fun createPdfMultipart(context: Context, uri: Uri): MultipartBody.Part? {
         null
     }
 }
+
 
 fun createMemoIdPart(memoId: Int?): MultipartBody.Part {
     val value = memoId?.toString() ?: ""

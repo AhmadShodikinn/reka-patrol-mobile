@@ -5,6 +5,7 @@ import android.widget.Toast
 import android.net.Uri
 import android.provider.MediaStore
 import android.graphics.Bitmap
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
@@ -60,6 +61,10 @@ fun TindakLanjutSafetyPatrolScreen(navController: NavController, safetyPatrolId:
     val context = LocalContext.current
     val generalViewModel: GeneralViewModel = viewModel(factory = GeneralViewModelFactory(context))
 
+
+    val safetyPatrolDetail by generalViewModel.safetyPatrolDetailResponse.observeAsState()
+    val findingDescription = safetyPatrolDetail?.data?.findingsDescription ?: "Memuat Deskripsi Temuan..."
+
     //form states
     var tindaklanjut by remember { mutableStateOf("") }
 
@@ -83,6 +88,11 @@ fun TindakLanjutSafetyPatrolScreen(navController: NavController, safetyPatrolId:
     }
 
     val result by generalViewModel.updateSafetyPatrolsActionResponse.observeAsState()
+
+    //get data detail
+    LaunchedEffect(safetyPatrolId) {
+        generalViewModel.getDetailSafetyPatrol(safetyPatrolId)
+    }
 
     // Displaying Toast when the screen is composed
     LaunchedEffect(result) {
@@ -146,6 +156,20 @@ fun TindakLanjutSafetyPatrolScreen(navController: NavController, safetyPatrolId:
                     .fillMaxSize()
                     .padding(16.dp)
             ) {
+                Text(
+                    text = "Deskripsi Temuan:",
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Medium,
+                    modifier = Modifier.fillMaxWidth()
+                )
+                Text(
+                    text = findingDescription,
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Normal,
+                    modifier = Modifier.fillMaxWidth()
+                )
+                Spacer(modifier = Modifier.height(2.dp))
+
                 ImagePickerSection(
                     imageUris = imageUris,
                     imageUrl = imageUrl,

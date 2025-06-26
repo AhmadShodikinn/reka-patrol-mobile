@@ -16,6 +16,7 @@ import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -42,7 +43,7 @@ fun PeraturanScreen(
             CenterAlignedTopAppBar(
                 title = {
                     Text(
-                        text = "Permenaker",
+                        text = "Peraturan K3",
                         fontSize = 20.sp,
                         fontWeight = FontWeight.Medium,
                         color = Color.White
@@ -127,7 +128,9 @@ fun PermenakerCard(
                 Text(
                     text = item.title,
                     fontSize = 16.sp,
-                    fontWeight = FontWeight.Bold
+                    fontWeight = FontWeight.Bold,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
