@@ -1,6 +1,7 @@
 package com.project.rekapatrol.data.viewModel
 
 import android.content.Context
+import android.util.Log
 import android.widget.Toast
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -34,18 +35,19 @@ class AuthViewModel(
                 if (response.isSuccessful) {
                     _authLoginResult.value = response.body()
 
-                    response.body()?.token?.let {
-                        tokenHandler.saveToken(it)
+                    response.body()?.user?.positionId.let {
+                        if (it != 1) {
+                            response.body()?.token?.let {
+                                tokenHandler.saveToken(it)
+                            }
+                            response.body()?.user?.position?.positionName?.let {
+                                tokenHandler.saveUserRole(it)
+                                Toast.makeText(context, "Selamat datang, $it", Toast.LENGTH_SHORT).show()
+                            }
+                        } else {
+                            Toast.makeText(context, "Admin tidak bisa akses mobile!", Toast.LENGTH_SHORT).show()
+                        }
                     }
-
-                    response.body()?.user?.position?.positionName?.let {
-                        tokenHandler.saveUserRole(it)
-
-                        Toast.makeText(context, "Selamat datang, $it", Toast.LENGTH_SHORT).show()
-                    }
-
-
-
                 } else {
                     val errorBody = response.errorBody()?.string()
                     val message = JSONObject(errorBody).getString("message")

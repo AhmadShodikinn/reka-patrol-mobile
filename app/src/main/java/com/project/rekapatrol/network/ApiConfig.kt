@@ -13,10 +13,10 @@ object ApiConfig {
 //    private const val BASE_URL = "http://10.0.2.2:8001/api/"
 //    private const val BASE_URL = "http://192.168.18.5:8001/api/"
 //    private const val BASE_URL = "http://103.211.26.90/api/"
-    private const val BASE_URL = "https://rekapatrol.dikiahmad.site/api/"
+//    private const val BASE_URL = "https://rekapatrol.dikiahmad.site/api/"
+    private const val BASE_URL = "https://rekapatrol.ptrekaindo.co.id/api/"
 
     fun getApiService(tokenHandler: TokenHandler): ApiService {
-//        Log.d("ApiConfig", "Mendapatkan ApiService dengan token: $token")
 
         return Retrofit.Builder()
             .baseUrl(BASE_URL)
@@ -30,8 +30,6 @@ object ApiConfig {
         val logging = HttpLoggingInterceptor().apply {
             level = HttpLoggingInterceptor.Level.BODY
         }
-
-//        Log.d("ApiConfig", "Mengonfigurasi OkHttpClient dengan token: $token")
 
         return OkHttpClient.Builder()
             .addInterceptor(logging)

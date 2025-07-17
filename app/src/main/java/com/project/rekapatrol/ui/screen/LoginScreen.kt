@@ -45,7 +45,9 @@ fun LoginScreen(
     LaunchedEffect(loginResult) {
         loginResult?.let {
             if (it.token != null){
-                onLoginSuccess()
+                if (it.user?.positionId != 1) {
+                    onLoginSuccess()
+                }
             } else {
                 Toast.makeText(context, "Login gagal!", Toast.LENGTH_SHORT).show()
             }
